@@ -1,0 +1,56 @@
+{
+  "name": "cyberstreams-enhanced",
+  "private": true,
+  "version": "2.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "concurrently \"npm run server:dev\" \"npm run client:dev\"",
+    "client:dev": "vite",
+    "server:dev": "nodemon server.js",
+    "build": "tsc -b && vite build",
+    "preview": "vite preview",
+    "start": "node server.js",
+    "migrate": "node scripts/migrate.js",
+    "deploy:cloudflare": "npm run build && wrangler pages deploy dist",
+    "deploy:workers": "wrangler deploy",
+    "brand:brandA": "cross-env VITE_BRAND=brandA vite",
+    "brand:brandB": "cross-env VITE_BRAND=brandB vite",
+    "brand:brandC": "cross-env VITE_BRAND=brandC vite"
+  },
+  "dependencies": {
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "react-router-dom": "^6.20.0",
+    "express": "^4.19.2",
+    "pg": "^8.11.3",
+    "pgvector": "^0.1.8",
+    "cors": "^2.8.5",
+    "puppeteer": "^21.6.0",
+    "rss-parser": "^3.13.0",
+    "axios": "^1.6.2",
+    "openai": "^4.20.0",
+    "@langchain/core": "^0.1.0",
+    "@langchain/openai": "^0.0.10",
+    "@langchain/community": "^0.0.10",
+    "langchain": "^0.0.200",
+    "dotenv": "^16.3.1"
+  },
+  "devDependencies": {
+    "@types/react": "^18.3.3",
+    "@types/react-dom": "^18.3.0",
+    "@types/express": "^4.17.21",
+    "@types/pg": "^8.10.9",
+    "@types/node": "^20.10.0",
+    "@cloudflare/workers-types": "^4.20231218.0",
+    "wrangler": "^3.22.0",
+    "cross-env": "^7.0.3",
+    "typescript": "^5.6.2",
+    "vite": "^5.4.0",
+    "ts-node": "^10.9.1",
+    "nodemon": "^3.0.2",
+    "concurrently": "^8.2.2"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

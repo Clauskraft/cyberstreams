@@ -1,0 +1,33 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(powershell:*)",
+      "Bash(tar:*)",
+      "Bash(npm install)",
+      "Bash(npx wrangler:*)",
+      "Bash(cat:*)",
+      "Bash(bash ../cloudflare-deploy.sh)",
+      "Bash(npm install:*)",
+      "Bash(curl -X GET \"https://api.cloudflare.com/client/v4/user/tokens/verify\" -H \"Authorization: Bearer wkAVuCu-jmXgn5N42rJEq7lxROL_AE-wybUjo8Yg\" -H \"Content-Type: application/json\")",
+      "Bash(curl -X GET \"https://api.cloudflare.com/client/v4/accounts/23b3799e11009b55048086157faff1a1/pages/projects\" -H \"Authorization: Bearer wkAVuCu-jmXgn5N42rJEq7lxROL_AE-wybUjo8Yg\" -H \"Content-Type: application/json\")",
+      "Bash(ping:*)",
+      "Bash(curl -X POST \"https://api.cloudflare.com/client/v4/accounts/23b3799e11009b55048086157faff1a1/pages/projects\" -H \"Authorization: Bearer wkAVuCu-jmXgn5N42rJEq7lxROL_AE-wybUjo8Yg\" -H \"Content-Type: application/json\" -d \"{\"\"name\"\":\"\"cyberstreams\"\",\"\"production_branch\"\":\"\"main\"\"}\")",
+      "Bash(python:*)",
+      "Bash(set CLOUDFLARE_API_TOKEN=wkAVuCu-jmXgn5N42rJEq7lxROL_AE-wybUjo8Yg)",
+      "Bash(curl -s -X GET \"https://api.cloudflare.com/client/v4/accounts/23b3799e11009b55048086157faff1a1/pages/projects\" -H \"Authorization: Bearer wkAVuCu-jmXgn5N42rJEq7lxROL_AE-wybUjo8Yg\" -H \"Content-Type: application/json\")",
+      "Bash(curl -s -X POST \"https://api.cloudflare.com/client/v4/accounts/23b3799e11009b55048086157faff1a1/pages/projects\" -H \"Authorization: Bearer wkAVuCu-jmXgn5N42rJEq7lxROL_AE-wybUjo8Yg\" -H \"Content-Type: application/json\" -d \"{\"\"name\"\":\"\"cyberstreams\"\",\"\"production_branch\"\":\"\"main\"\"}\")",
+      "Bash(curl -s -X GET \"https://api.cloudflare.com/client/v4/accounts/23b3799e11009b55048086157faff1a1/pages/projects/cyberstreams\" -H \"Authorization: Bearer XJ-bepxEWOLiOj-EccLAkFikA9X5t7E3sOEGVWag\" -H \"Content-Type: application/json\")",
+      "Bash(curl -s -X POST \"https://api.cloudflare.com/client/v4/accounts/23b3799e11009b55048086157faff1a1/pages/projects/cyberstreams/domains\" -H \"Authorization: Bearer XJ-bepxEWOLiOj-EccLAkFikA9X5t7E3sOEGVWag\" -H \"Content-Type: application/json\" -d \"{\"\"name\"\":\"\"cyberstreams.dk\"\"}\")",
+      "Bash(curl -s -X POST \"https://api.cloudflare.com/client/v4/accounts/23b3799e11009b55048086157faff1a1/pages/projects/cyberstreams/domains\" -H \"Authorization: Bearer XJ-bepxEWOLiOj-EccLAkFikA9X5t7E3sOEGVWag\" -H \"Content-Type: application/json\" -d \"{\"\"name\"\":\"\"www.cyberstreams.dk\"\"}\")",
+      "Bash(curl -s -X GET \"https://api.cloudflare.com/client/v4/zones/2438ce0e8cc359b89fe9c75f22b1f222/dns_records\" -H \"Authorization: Bearer XJ-bepxEWOLiOj-EccLAkFikA9X5t7E3sOEGVWag\" -H \"Content-Type: application/json\")",
+      "Bash(curl -s -X POST \"https://api.cloudflare.com/client/v4/zones/2438ce0e8cc359b89fe9c75f22b1f222/dns_records\" -H \"Authorization: Bearer XJ-bepxEWOLiOj-EccLAkFikA9X5t7E3sOEGVWag\" -H \"Content-Type: application/json\" -d \"{\"\"type\"\":\"\"CNAME\"\",\"\"name\"\":\"\"@\"\",\"\"content\"\":\"\"cyberstreams.pages.dev\"\",\"\"ttl\"\":1,\"\"proxied\"\":true}\")",
+      "Bash(npm run build)",
+      "Bash(gh:*)",
+      "Bash(git init:*)",
+      "Bash(git config:*)",
+      "Bash(git add:*)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}
