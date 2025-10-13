@@ -1,10 +1,11 @@
 import { useState, lazy, Suspense } from 'react'
-import { Shield, Activity, Radio, FileText } from 'lucide-react'
+import { Shield, Activity, Radio, FileText, Network } from 'lucide-react'
 
 const HomeContent = lazy(() => import('@modules/HomeContent'))
 const ThreatsModule = lazy(() => import('@modules/ThreatsModule'))
 const ActivityModule = lazy(() => import('@modules/ActivityModule'))
 const DagensPuls = lazy(() => import('@modules/DagensPuls'))
+const ConsolidatedIntelligence = lazy(() => import('@modules/ConsolidatedIntelligence'))
 
 const LoadingSpinner = () => (
   <div className="flex items-center justify-center py-20">
@@ -43,12 +44,13 @@ function App() {
       {/* Navigation Tabs */}
       <div className="border-b border-gray-800 backdrop-blur-xl bg-cyber-dark/30">
         <div className="container mx-auto px-4">
-          <nav className="flex space-x-1">
+          <nav className="flex space-x-1 overflow-x-auto">
             {[
               { id: 'dashboard', label: 'Dashboard', icon: Shield },
               { id: 'threats', label: 'Threats', icon: Activity },
               { id: 'pulse', label: 'Dagens Puls', icon: Radio },
               { id: 'activity', label: 'Activity', icon: FileText },
+              { id: 'intel', label: 'Consolidated Intel', icon: Network },
             ].map((tab) => (
               <button
                 key={tab.id}
@@ -74,6 +76,7 @@ function App() {
           {activeTab === 'threats' && <ThreatsModule />}
           {activeTab === 'pulse' && <DagensPuls />}
           {activeTab === 'activity' && <ActivityModule />}
+          {activeTab === 'intel' && <ConsolidatedIntelligence />}
         </Suspense>
       </main>
     </div>

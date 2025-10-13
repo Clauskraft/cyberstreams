@@ -25,7 +25,12 @@
       "Bash(gh:*)",
       "Bash(git init:*)",
       "Bash(git config:*)",
-      "Bash(git add:*)"
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(git tag:*)",
+      "Bash(git push:*)",
+      "Bash(where cmd)",
+      "Bash(cmd /c:*)"
     ],
     "deny": [],
     "ask": []
