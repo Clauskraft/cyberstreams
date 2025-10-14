@@ -4,6 +4,7 @@
 ![License](https://img.shields.io/badge/license-MIT-green)
 ![React](https://img.shields.io/badge/React-18.2.0-61dafb)
 ![TypeScript](https://img.shields.io/badge/TypeScript-5.0.2-3178c6)
+[![Deploy to Cloudflare Pages](https://github.com/Clauskraft/cyberstreams/actions/workflows/deploy-cloudflare.yml/badge.svg)](https://github.com/Clauskraft/cyberstreams/actions/workflows/deploy-cloudflare.yml)
 
 Advanced threat intelligence platform for monitoring and analyzing dark web activities, cyber threats, and security incidents.
 
@@ -141,25 +142,20 @@ cyberstreams/
 
 ## 🚀 Deployment
 
-### Cloudflare Pages (Recommended)
+### Automatisk Deployment via GitHub Actions (Anbefalet)
 
-1. Build the project:
-```bash
-cd cyberstreams
-npm run build
-```
+Dette projekt bruger GitHub Actions til automatisk deployment til Cloudflare Pages.
 
-2. Create deployment ZIP:
-```bash
-cd dist
-tar -czf ../../cyberstreams-deploy.zip .
-```
+**Setup:**
+1. Tilføj Cloudflare secrets til GitHub repository (se [DEPLOYMENT.md](DEPLOYMENT.md))
+2. Merge til `main` branch
+3. GitHub Actions deployer automatisk!
 
-3. Upload to Cloudflare Pages:
-   - Go to: https://dash.cloudflare.com/pages/new/upload
-   - Upload ZIP file
-   - Project name: `cyberstreams`
-   - Deploy
+**Deployment Status:** Se badge øverst eller gå til [Actions](https://github.com/Clauskraft/cyberstreams/actions)
+
+**Live Site:** https://cyberstreams.pages.dev
+
+**Detaljeret Guide:** Se [DEPLOYMENT.md](DEPLOYMENT.md) for komplet vejledning
 
 ### Environment Variables
 No environment variables required for basic deployment. All data is currently mock data.
