@@ -1,4 +1,8 @@
 #!/bin/bash
 echo "🚀 VERCEL DEPLOYMENT"
-cd /home/claude/cyberstreams
+echo "===================="
+echo ""
+echo "Note: GitHub Actions is the recommended deployment method."
+echo "See DEPLOYMENT.md for detailed instructions."
+echo ""
 npx vercel --prod --yes

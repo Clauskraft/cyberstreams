@@ -120,6 +120,22 @@ Når deployment er succesfuld, kan du:
 - **Build Command:** `npm run build` (kører: `tsc && vite build`)
 - **Node Version:** 20.x
 
+### Alternative Deployment Scripts
+
+Hvis du vil deploye manuelt via command line:
+
+**Cloudflare Pages:**
+```bash
+bash cloudflare-deploy.sh
+```
+
+**Vercel:**
+```bash
+bash vercel-deploy.sh
+```
+
+*Note: Disse scripts er til manuel deployment. GitHub Actions er den anbefalede metode.*
+
 ---
 
 ## 🎯 Anbefaling
