@@ -183,6 +183,23 @@ No environment variables required for basic deployment. All data is currently mo
 - ✨ Dagens Puls threat intelligence feed
 - ✨ Basic navigation and layout
 
+## 🤖 AI-Assisted Development
+
+This repository uses Claude Code for AI-assisted development and automated code review:
+
+### GitHub Actions Integration
+- **Claude Code** (`@claude` trigger): Tag `@claude` in issues or PR comments to get AI assistance
+- **Automated Code Review**: All pull requests are automatically reviewed for:
+  - Code quality and best practices
+  - Potential bugs and security issues
+  - Performance considerations
+  - Test coverage
+
+For detailed information about the Claude integration, see [CLAUDE.md](CLAUDE.md).
+
+### Setup
+To use Claude integration, ensure you have set the `ANTHROPIC_API_KEY` secret in your repository settings.
+
 ## 🔐 Security
 
 This is a demonstration platform with mock data. For production use:
