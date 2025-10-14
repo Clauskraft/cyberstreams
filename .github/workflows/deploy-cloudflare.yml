@@ -1,56 +1,76 @@
 name: Deploy to Cloudflare Pages
 
-# Triggers:
-# - Automatically deploy on push to main branch
-# - Allow manual deployment via workflow dispatch
 on:
   push:
-    branches:
-      - main
-    # Path filters to avoid unnecessary deployments
-    # Only deploy when relevant files change
+    # Only run when relevant files change (no branch filter here);
+    # the job itself gates on main/master
     paths:
       - 'src/**'
       - 'public/**'
       - 'index.html'
       - 'package.json'
       - 'package-lock.json'
-      - 'vite.config.ts'
-      - 'tsconfig.json'
-      - 'tailwind.config.js'
-      - 'postcss.config.js'
+      - 'vite.config.*'
+      - 'tsconfig.*'
+      - 'tailwind.config.*'
+      - 'postcss.config.*'
       - '.github/workflows/deploy-cloudflare.yml'
-  
-  # Allow manual deployment from Actions tab
   workflow_dispatch:
 
-# Security: Grant minimal required permissions
 permissions:
-  contents: read        # Read repository contents
-  deployments: write    # Create deployment status
-  id-token: write      # Required for Cloudflare authentication
+  contents: read
+  deployments: write
+  id-token: write
+
+concurrency:
+  group: cf-pages-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   deploy:
-    name: Build and Deploy to Cloudflare Pages
+    name: Build and Deploy to Cloudflare Pages (Direct Uploads)
     runs-on: ubuntu-latest
-    
+    # Only deploy on main or master to avoid accidental branch deploys
+    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
+
     steps:
-      # Step 1: Checkout repository code
-      - name: Checkout repository
+      - name: Checkout
         uses: actions/checkout@v4
         with:
           fetch-depth: 1
 
-      # Step 2: Setup Node.js environment
-      - name: Setup Node.js
+      - name: Validate Cloudflare secrets
+        run: |
+          if [ -z "${{ secrets.CLOUDFLARE_API_TOKEN }}" ]; then
+            echo "CLOUDFLARE_API_TOKEN is missing or empty"; exit 1; fi
+          if [ -z "${{ secrets.CLOUDFLARE_ACCOUNT_ID }}" ]; then
+            echo "CLOUDFLARE_ACCOUNT_ID is missing or empty"; exit 1; fi
+
+      - name: Ensure Cloudflare Pages uses Direct Uploads
+        env:
+          CF_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          CF_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CF_PAGES_PROJECT: cyberstreams
+        run: |
+          set -euo pipefail
+          echo "Switching Cloudflare Pages project to Direct Uploads..."
+          RESP=$(curl -sS -X PATCH "https://api.cloudflare.com/client/v4/accounts/${CF_ACCOUNT_ID}/pages/projects/${CF_PAGES_PROJECT}" \
+            -H "Authorization: Bearer ${CF_API_TOKEN}" \
+            -H "Content-Type: application/json" \
+            --data '{"source":{"type":"direct_upload"}}')
+          echo "$RESP"
+          if echo "$RESP" | grep -q '"success":false'; then
+            echo "Failed to set Direct Uploads on Cloudflare Pages project" >&2
+            exit 1
+          fi
+          echo "Direct Uploads ensured."
+
+      - name: Setup Node 20
         uses: actions/setup-node@v4
         with:
           node-version: '20'
           cache: 'npm'
 
-      # Step 3: Install dependencies
-      # Use npm ci for clean install if package-lock.json exists, otherwise use npm install
       - name: Install dependencies
         run: |
           if [ -f package-lock.json ]; then
@@ -59,36 +79,21 @@ jobs:
             npm install
           fi
 
-      # Step 4: Build the Vite React application
-      - name: Build production bundle
+      - name: Build
         run: npm run build
         env:
           NODE_ENV: production
 
-      # Step 5: Deploy to Cloudflare Pages
-      # This action deploys the dist directory to Cloudflare Pages
-      # Required secrets (configure in repository Settings > Secrets and variables > Actions):
-      # - CLOUDFLARE_API_TOKEN: API token with "Cloudflare Pages:Edit" permission
-      #   Get your token at: https://dash.cloudflare.com/profile/api-tokens
-      #   Required permissions:
-      #     * Account → Cloudflare Pages → Edit
-      #     * Account → Account Settings → Read
-      #     * User → User Details → Read
-      # - CLOUDFLARE_ACCOUNT_ID: Your Cloudflare account ID
-      #   Account ID for cyberstreams: 23b3799e11009b55048086157faff1a1
-      - name: Deploy to Cloudflare Pages
+      - name: Deploy to Cloudflare Pages (Direct Upload)
         uses: cloudflare/pages-action@v1
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           projectName: cyberstreams
           directory: dist
-          # Optional: Add git commit info to deployment
           gitHubToken: ${{ secrets.GITHUB_TOKEN }}
 
-      # Step 6: Output deployment URL (for debugging and verification)
-      - name: Deployment completed
+      - name: Done
         run: |
-          echo "✅ Deployment successful!"
-          echo "🌐 Your app should be live at: https://cyberstreams.pages.dev"
-          echo "📝 Check Cloudflare Dashboard for deployment details"
+          echo "✅ Deployment successful"
+          echo "🌐 https://cyberstreams.pages.dev"
