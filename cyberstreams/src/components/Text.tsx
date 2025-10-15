@@ -1,21 +1,27 @@
-import { useTheme } from '@theme/ThemeProvider'
 import React from 'react'
 
-// Basic text component with support for a small set of variants.  The
-// variant determines font size, weight and line height.  Additional
-// styling may be supplied via the 'style' prop.
-export function Text({ children, variant = 'body', style }: { children: React.ReactNode; variant?: 'body' | 'title'; style?: React.CSSProperties }) {
-  const { theme } = useTheme()
-  const t = theme.components.Text[variant]
+// Basic text component with support for a small set of variants
+export function Text({ 
+  children, 
+  variant = 'body', 
+  className = '',
+  style 
+}: { 
+  children: React.ReactNode
+  variant?: 'body' | 'title'
+  className?: string
+  style?: React.CSSProperties 
+}) {
+  const baseClasses = 'text-gray-100'
+  const variantClasses = {
+    body: 'text-base leading-relaxed',
+    title: 'text-2xl font-bold leading-tight'
+  }
+  
   return (
     <div
-      style={{
-        fontFamily: t.fontFamily,
-        fontSize: t.size,
-        lineHeight: t.lineHeight,
-        fontWeight: t.weight,
-        ...style
-      }}
+      className={`${baseClasses} ${variantClasses[variant]} ${className}`}
+      style={style}
     >
       {children}
     </div>

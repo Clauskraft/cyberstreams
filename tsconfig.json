@@ -17,10 +17,13 @@
     "noFallthroughCasesInSwitch": true,
     "baseUrl": ".",
     "paths": {
-      "@/*": ["./src/*"],
-      "@modules/*": ["./src/modules/*"],
-      "@components/*": ["./src/components/*"]
+      "@/*": ["./cyberstreams/src/*"],
+      "@modules/*": ["./cyberstreams/src/modules/*"],
+      "@components/*": ["./cyberstreams/src/components/*"],
+      "@theme/*": ["./cyberstreams/src/theme/*"],
+      "@tokens/*": ["./cyberstreams/src/tokens/*"],
+      "@data/*": ["./cyberstreams/src/data/*"]
     }
   },
-  "include": ["src"]
+  "include": ["cyberstreams/src"]
 }
