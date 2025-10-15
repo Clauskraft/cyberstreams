@@ -1,73 +1,81 @@
-# 🚀 CYBERSTREAMS - 2-MINUTE QUICKSTART
+# 🚀 CYBERSTREAMS - HURTIG START
 
-## Option 1: Manual Upload (NEMMEST - 60 sekunder)
+## ✅ Status: KLAR TIL DEPLOYMENT
 
-### Step 1: Opret projekt i Cloudflare
-1. Åbn: https://dash.cloudflare.com/23b3799e11009b55048086157faff1a1/pages/new/upload
-2. **Project name**: `cyberstreams`
-3. **Upload**: `C:\Users\claus\Projects\Cyberstreams_dk\cyberstreams-deploy.zip`
-4. Klik **"Deploy site"**
-
-✅ **Din app er nu live på**: `https://cyberstreams.pages.dev`
-
-### Step 2: Add custom domain (30 sekunder)
-1. Gå til project settings
-2. Klik **"Custom domains"**
-3. Add: `cyberstreams.dk`
-4. Add: `www.cyberstreams.dk`
-
-✅ **FÆRDIG!** App er live på `https://cyberstreams.dk`
+**Projektet er bygget og klar!** (155.85 KB, gzipped: 49.89 kB)
 
 ---
 
-## Option 2: Fix API Token (hvis du vil automatisere)
+## 🎯 Sådan Deployer Du (Anbefalet Metode)
 
-### Token Permissions (VIGTIGT!)
+### Trin 1: Tilføj Cloudflare Secrets til GitHub
 
-Gå til: https://dash.cloudflare.com/profile/api-tokens
+1. **Opret API Token:**
+   - Gå til: https://dash.cloudflare.com/profile/api-tokens
+   - Klik "Create Token"
+   - Template: **"Edit Cloudflare Workers"**
+   - Permissions: Cloudflare Pages → **Edit**
+   - Account: `23b3799e11009b55048086157faff1a1`
+   - **Kopier tokenet!**
 
-Find dit token og sæt disse permissions:
+2. **Tilføj til GitHub:**
+   - Gå til: https://github.com/Clauskraft/cyberstreams/settings/secrets/actions
+   - Opret secret: `CLOUDFLARE_API_TOKEN` = [dit token]
+   - Opret secret: `CLOUDFLARE_ACCOUNT_ID` = `23b3799e11009b55048086157faff1a1`
 
-```
-✅ Account → Cloudflare Pages → EDIT (IKKE Read!)
-✅ Zone → DNS → Edit
-✅ Account → Account Settings → Read
-```
+### Trin 2: Deploy via GitHub Actions
 
-**Account Resources**: Include → Specific account → [Din account]
-**Zone Resources**: Include → Specific zone → cyberstreams.dk
+**Automatisk:**
+- Merge denne PR til `main` branch
+- GitHub Actions deployer automatisk!
 
-### Kør Deployment
+**Manuel trigger:**
+1. Gå til: https://github.com/Clauskraft/cyberstreams/actions/workflows/deploy-cloudflare.yml
+2. Klik "Run workflow"
+3. Vælg `main` branch
+4. Klik "Run workflow"
 
-```bash
-python deploy-cloudflare.py
-```
+### Trin 3: Verificer
+
+Din app er nu live på: **https://cyberstreams.pages.dev** 🎉
+
+---
+
+## 🛠️ Alternativ: Manuel Upload
+
+Hvis du vil deploye manuelt:
+
+1. **Build lokalt:**
+   ```bash
+   npm install
+   npm run build
+   ```
+
+2. **Upload til Cloudflare:**
+   - Gå til: https://dash.cloudflare.com/23b3799e11009b55048086157faff1a1/pages/new/upload
+   - Project name: `cyberstreams`
+   - Upload `dist/` mappen
+   - Klik "Deploy site"
 
 ---
 
 ## ✅ Success Checklist
 
-- [ ] ZIP fil uploaded til Cloudflare
-- [ ] Pages projekt oprettet
-- [ ] `https://cyberstreams.pages.dev` virker
-- [ ] Custom domains tilføjet
-- [ ] `https://cyberstreams.dk` virker (kan tage 5-10 min)
-- [ ] SSL aktiveret (🔒 i browser)
+- [ ] Cloudflare secrets tilføjet til GitHub
+- [ ] PR merged til main (eller workflow kørt manuelt)
+- [ ] `https://cyberstreams.pages.dev` viser din app
+- [ ] Dagens Puls vises på homepage
+- [ ] Threats og Activity moduler virker
 
 ---
 
-## 🆘 Hvis noget går galt
+## 🆘 Hjælp
 
-**API Token fejl?**
-→ Tjek at permission er "Edit" ikke "Read"
-
-**Custom domain virker ikke?**
-→ Vent 5-10 minutter på DNS propagation
-→ Test `https://cyberstreams.pages.dev` i mellemtiden
-
-**ZIP upload fejler?**
-→ Prøv at uploade `dist/` mappen direkte i stedet
+**Detaljeret guide:** [DEPLOYMENT.md](DEPLOYMENT.md)
+**Deployment status:** https://github.com/Clauskraft/cyberstreams/actions
+**Cloudflare Dashboard:** https://dash.cloudflare.com/23b3799e11009b55048086157faff1a1/pages
 
 ---
 
-**🎯 ANBEFALING**: Bare brug Option 1 - det er hurtigst og virker 100%!
+**🎯 ANBEFALING**: Brug GitHub Actions - det er automatisk fremover! 🚀
+
