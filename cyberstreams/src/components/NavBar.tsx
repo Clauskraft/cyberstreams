@@ -1,6 +1,3 @@
-import React from 'react'
-import { useTheme } from '@theme/ThemeProvider'
-
 // Props for the NavBar component.  'current' holds the currently selected
 // page and 'onSelect' is a callback invoked with the name of the new page
 // when a navigation item is clicked.
@@ -10,7 +7,6 @@ interface NavBarProps {
 }
 
 export function NavBar({ current, onSelect }: NavBarProps) {
-  const { theme } = useTheme()
   const items: { key: NavBarProps['current']; label: string }[] = [
     { key: 'home', label: 'Home' },
     { key: 'intelligence', label: 'Threat Intelligence' },
@@ -20,32 +16,18 @@ export function NavBar({ current, onSelect }: NavBarProps) {
   ]
 
   return (
-    <nav
-      style={{
-        display: 'flex',
-        gap: theme.space?.md || '12px',
-        alignItems: 'center',
-        padding: theme.space?.lg || '16px',
-        background: theme.semantic.bg.brand,
-        color: theme.semantic.fg.onBrand,
-        boxShadow: theme.shadow?.md || '0 2px 8px rgba(0,0,0,0.12)'
-      }}
-    >
+    <nav className="flex gap-3 items-center p-4 bg-cyber-blue text-white shadow-md">
       {items.map(item => {
         const active = item.key === current
         return (
           <button
             key={item.key}
             onClick={() => onSelect(item.key)}
-            style={{
-              background: active ? theme.semantic.action.primary : 'transparent',
-              color: active ? theme.semantic.fg.onBrand : theme.semantic.fg.onBrand,
-              border: 'none',
-              padding: `${theme.space?.sm || '8px'} ${theme.space?.md || '12px'}`,
-              borderRadius: theme.radius?.md || '8px',
-              cursor: 'pointer',
-              fontWeight: 600
-            }}
+            className={`px-3 py-2 rounded-lg cursor-pointer font-semibold border-none transition-all ${
+              active 
+                ? 'bg-white/20 text-white' 
+                : 'bg-transparent text-white/80 hover:text-white hover:bg-white/10'
+            }`}
           >
             {item.label}
           </button>

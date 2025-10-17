@@ -39,6 +39,29 @@ Advanced threat intelligence platform for monitoring and analyzing dark web acti
 - Curated security news and updates
 - Severity-based color coding
 
+### 🤖 Cyberstreams Agent (NEW)
+- AI-powered threat analysis
+- Automated finding collection
+- Severity classification
+- Source correlation and tracking
+- Interactive threat exploration
+
+### 🔍 Consolidated Intelligence (NEW)
+- Multi-source intelligence aggregation
+- 30+ European CERT/CSIRT sources
+- Advanced filtering and search
+- IOC extraction and correlation
+- Confidence scoring
+- Visual analytics and charts
+
+### ⚙️ Admin Panel (NEW)
+- Keyword management (CRUD operations)
+- Source configuration
+- RAG (Retrieval-Augmented Generation) settings
+- LLM model selection
+- Vector store configuration
+- Scraper controls
+
 ### 🔒 Error Handling
 - Professional ErrorBoundary component
 - Graceful error recovery
@@ -81,6 +104,20 @@ assets/react-vendor.js        139.45 KB │ gzip: 44.76 KB
 - Node.js 18+ and npm
 - Git
 
+### Quick Start with GitHub Codespaces 🚀
+The fastest way to get started! Click the button below to open in a cloud-based development environment:
+
+[![Open in GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://codespaces.new/Clauskraft/cyberstreams)
+
+Everything is pre-configured:
+- ✅ Node.js 20 environment
+- ✅ All dependencies installed automatically
+- ✅ VS Code extensions ready
+- ✅ Development server ports forwarded
+- ✅ GitHub Copilot enabled
+
+See [`.devcontainer/README.md`](.devcontainer/README.md) for details.
+
 ### Local Development
 ```bash
 # Clone repository
@@ -88,7 +125,6 @@ git clone https://github.com/Clauskraft/cyberstreams.git
 cd cyberstreams
 
 # Install dependencies
-cd cyberstreams
 npm install
 
 # Run development server
@@ -182,6 +218,23 @@ No environment variables required for basic deployment. All data is currently mo
 - ✨ Dashboard with threat statistics
 - ✨ Dagens Puls threat intelligence feed
 - ✨ Basic navigation and layout
+
+## 🤖 AI-Assisted Development
+
+This repository uses Claude Code for AI-assisted development and automated code review:
+
+### GitHub Actions Integration
+- **Claude Code** (`@claude` trigger): Tag `@claude` in issues or PR comments to get AI assistance
+- **Automated Code Review**: All pull requests are automatically reviewed for:
+  - Code quality and best practices
+  - Potential bugs and security issues
+  - Performance considerations
+  - Test coverage
+
+For detailed information about the Claude integration, see [CLAUDE.md](CLAUDE.md).
+
+### Setup
+To use Claude integration, ensure you have set the `ANTHROPIC_API_KEY` secret in your repository settings.
 
 ## 🔐 Security
 

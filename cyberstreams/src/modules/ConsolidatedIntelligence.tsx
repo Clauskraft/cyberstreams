@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react'
 import {
-  Search, Filter, TrendingUp, AlertTriangle, Shield,
+  Search, Filter, AlertTriangle,
   Globe, Database, Clock, Users, Activity, Eye,
-  Target, Zap, Map, BarChart3, PieChart, Network
+  Target, Zap, BarChart3, PieChart, Network
 } from 'lucide-react'
 
 interface ThreatFinding {
@@ -23,11 +23,6 @@ interface ThreatFinding {
   link?: string
 }
 
-interface SourceStats {
-  source: string
-  count: number
-  lastUpdate: string
-}
 
 const ConsolidatedIntelligence = () => {
   const [findings, setFindings] = useState<ThreatFinding[]>([])
@@ -35,7 +30,7 @@ const ConsolidatedIntelligence = () => {
   const [searchQuery, setSearchQuery] = useState('')
   const [filterSeverity, setFilterSeverity] = useState<string>('all')
   const [filterSource, setFilterSource] = useState<string>('all')
-  const [filterCategory, setFilterCategory] = useState<string>('all')
+  const [filterCategory] = useState<string>('all')
   const [timeRange, setTimeRange] = useState('24h')
 
   useEffect(() => {
@@ -357,7 +352,7 @@ const ConsolidatedIntelligence = () => {
               placeholder="Search findings, indicators, categories... (AI-powered)"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 bg-gray-800 border border-gray-700 rounded-lg focus:outline-none focus:border-cyber-blue"
+              className="w-full pl-10 pr-4 py-2 bg-gray-800 border border-gray-700 rounded-lg focus:outline-none focus:border-cyber-blue text-white placeholder-gray-400"
             />
           </div>
 
@@ -410,7 +405,7 @@ const ConsolidatedIntelligence = () => {
             <h3 className="font-semibold">Top Threat Categories</h3>
           </div>
           <div className="space-y-2">
-            {topCategoriesList.map(([category, count], idx) => (
+            {topCategoriesList.map(([category, count]) => (
               <div key={category} className="flex items-center gap-2">
                 <div className="flex-1 bg-gray-800 rounded-full h-8 overflow-hidden">
                   <div
@@ -559,7 +554,21 @@ const ConsolidatedIntelligence = () => {
                       <div className="flex items-center gap-4 text-xs text-gray-500">
                         <span className="flex items-center gap-1">
                           <Globe className="w-3 h-3" />
-                          {finding.source}
+                          {finding.link ? (
+                            <a
+                              href={finding.link}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-cyber-blue hover:text-cyber-blue/80 underline cursor-pointer"
+                            >
+                              {finding.source}
+                            </a>
+                          ) : (
+                            <span className="cursor-pointer text-gray-300 hover:text-white"
+                                  title="Click to search for source">
+                              {finding.source}
+                            </span>
+                          )}
                         </span>
                         <span className="flex items-center gap-1">
                           <Clock className="w-3 h-3" />

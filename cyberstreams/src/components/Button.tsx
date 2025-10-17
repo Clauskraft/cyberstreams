@@ -1,29 +1,32 @@
-import { useTheme } from '@theme/ThemeProvider'
 import React from 'react'
 
 type ButtonVariant = 'default' | 'danger'
 
 type Props = React.ButtonHTMLAttributes<HTMLButtonElement> & {
   variant?: ButtonVariant
+  className?: string
 }
 
-// Generic button component.  It reads its styling from the theme and
-// supports a 'danger' variant for destructive actions.
-export function Button({ variant = 'default', children, style, ...rest }: Props) {
-  const { theme } = useTheme()
-  const t = theme.components.Button[variant]
-  const base: React.CSSProperties = {
-    background: t.bg,
-    color: t.color,
-    borderRadius: t.radius,
-    padding: `${t.paddingY} ${t.paddingX}`,
-    boxShadow: t.shadow,
-    border: 'none',
-    fontWeight: 600,
-    cursor: 'pointer'
+// Generic button component with Tailwind CSS styling
+export function Button({ 
+  variant = 'default', 
+  children, 
+  className = '',
+  style, 
+  ...rest 
+}: Props) {
+  const baseClasses = 'px-4 py-2 rounded-lg font-semibold cursor-pointer border-none transition-all'
+  const variantClasses = {
+    default: 'bg-cyber-blue hover:bg-cyber-blue/80 text-white',
+    danger: 'bg-red-600 hover:bg-red-700 text-white'
   }
+  
   return (
-    <button style={{ ...base, ...style }} {...rest}>
+    <button 
+      className={`${baseClasses} ${variantClasses[variant]} ${className}`} 
+      style={style} 
+      {...rest}
+    >
       {children}
     </button>
   )

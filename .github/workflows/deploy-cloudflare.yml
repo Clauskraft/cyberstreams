@@ -1,0 +1,99 @@
+name: Deploy to Cloudflare Pages
+
+on:
+  push:
+    # Only run when relevant files change (no branch filter here);
+    # the job itself gates on main/master
+    paths:
+      - 'src/**'
+      - 'public/**'
+      - 'index.html'
+      - 'package.json'
+      - 'package-lock.json'
+      - 'vite.config.*'
+      - 'tsconfig.*'
+      - 'tailwind.config.*'
+      - 'postcss.config.*'
+      - '.github/workflows/deploy-cloudflare.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  deployments: write
+  id-token: write
+
+concurrency:
+  group: cf-pages-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    name: Build and Deploy to Cloudflare Pages (Direct Uploads)
+    runs-on: ubuntu-latest
+    # Only deploy on main or master to avoid accidental branch deploys
+    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Validate Cloudflare secrets
+        run: |
+          if [ -z "${{ secrets.CLOUDFLARE_API_TOKEN }}" ]; then
+            echo "CLOUDFLARE_API_TOKEN is missing or empty"; exit 1; fi
+          if [ -z "${{ secrets.CLOUDFLARE_ACCOUNT_ID }}" ]; then
+            echo "CLOUDFLARE_ACCOUNT_ID is missing or empty"; exit 1; fi
+
+      - name: Ensure Cloudflare Pages uses Direct Uploads
+        env:
+          CF_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          CF_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CF_PAGES_PROJECT: cyberstreams
+        run: |
+          set -euo pipefail
+          echo "Switching Cloudflare Pages project to Direct Uploads..."
+          RESP=$(curl -sS -X PATCH "https://api.cloudflare.com/client/v4/accounts/${CF_ACCOUNT_ID}/pages/projects/${CF_PAGES_PROJECT}" \
+            -H "Authorization: Bearer ${CF_API_TOKEN}" \
+            -H "Content-Type: application/json" \
+            --data '{"source":{"type":"direct_upload"}}')
+          echo "$RESP"
+          if echo "$RESP" | grep -q '"success":false'; then
+            echo "Failed to set Direct Uploads on Cloudflare Pages project" >&2
+            exit 1
+          fi
+          echo "Direct Uploads ensured."
+
+      - name: Setup Node 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: |
+          if [ -f package-lock.json ]; then
+            npm ci
+          else
+            npm install
+          fi
+
+      - name: Build
+        run: npm run build
+        env:
+          NODE_ENV: production
+
+      - name: Deploy to Cloudflare Pages (Direct Upload)
+        uses: cloudflare/pages-action@v1
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          projectName: cyberstreams
+          directory: dist
+          gitHubToken: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Done
+        run: |
+          echo "✅ Deployment successful"
+          echo "🌐 https://cyberstreams.pages.dev"

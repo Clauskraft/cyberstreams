@@ -1,4 +1,3 @@
-import React from 'react'
 // The Home page now delegates all rendering to the `HomeContent` module. This
 // keeps the page component lightweight and adheres to our separation of
 // concerns: route-level pages handle routing, while modules provide the

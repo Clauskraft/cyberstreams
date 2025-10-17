@@ -6,13 +6,28 @@ export default defineConfig({
   plugins: [react()],
   resolve: {
     alias: {
-      '@': path.resolve(__dirname, './src'),
-      '@modules': path.resolve(__dirname, './src/modules'),
-      '@components': path.resolve(__dirname, './src/components'),
+      '@': path.resolve(__dirname, './cyberstreams/src'),
+      '@modules': path.resolve(__dirname, './cyberstreams/src/modules'),
+      '@components': path.resolve(__dirname, './cyberstreams/src/components'),
+      '@theme': path.resolve(__dirname, './cyberstreams/src/theme'),
+      '@tokens': path.resolve(__dirname, './cyberstreams/src/tokens'),
+      '@data': path.resolve(__dirname, './cyberstreams/src/data'),
     },
   },
   build: {
     outDir: 'dist',
-    sourcemap: true,
+    sourcemap: false,
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          'react-vendor': ['react', 'react-dom'],
+          'lucide': ['lucide-react'],
+        },
+      },
+    },
+  },
+  server: {
+    port: 5173,
+    host: true,
   },
 })

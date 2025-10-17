@@ -1,11 +1,13 @@
 import { useState, lazy, Suspense } from 'react'
-import { Shield, Activity, Radio, FileText, Network } from 'lucide-react'
+import { Shield, Activity, Radio, FileText, Network, Settings, Bot } from 'lucide-react'
 
 const HomeContent = lazy(() => import('@modules/HomeContent'))
 const ThreatsModule = lazy(() => import('@modules/ThreatsModule'))
 const ActivityModule = lazy(() => import('@modules/ActivityModule'))
 const DagensPuls = lazy(() => import('@modules/DagensPuls'))
 const ConsolidatedIntelligence = lazy(() => import('@modules/ConsolidatedIntelligence'))
+const CyberstreamsAgent = lazy(() => import('@modules/CyberstreamsAgent'))
+const AdminPage = lazy(() => import('./pages/Admin'))
 
 const LoadingSpinner = () => (
   <div className="flex items-center justify-center py-20">
@@ -47,10 +49,12 @@ function App() {
           <nav className="flex space-x-1 overflow-x-auto">
             {[
               { id: 'dashboard', label: 'Dashboard', icon: Shield },
+              { id: 'agent', label: 'Agent', icon: Bot },
               { id: 'threats', label: 'Threats', icon: Activity },
               { id: 'pulse', label: 'Dagens Puls', icon: Radio },
               { id: 'activity', label: 'Activity', icon: FileText },
               { id: 'intel', label: 'Consolidated Intel', icon: Network },
+              { id: 'admin', label: 'Admin', icon: Settings },
             ].map((tab) => (
               <button
                 key={tab.id}
@@ -73,10 +77,12 @@ function App() {
       <main className="container mx-auto px-4 py-8">
         <Suspense fallback={<LoadingSpinner />}>
           {activeTab === 'dashboard' && <HomeContent />}
+          {activeTab === 'agent' && <CyberstreamsAgent />}
           {activeTab === 'threats' && <ThreatsModule />}
           {activeTab === 'pulse' && <DagensPuls />}
           {activeTab === 'activity' && <ActivityModule />}
           {activeTab === 'intel' && <ConsolidatedIntelligence />}
+          {activeTab === 'admin' && <AdminPage />}
         </Suspense>
       </main>
     </div>

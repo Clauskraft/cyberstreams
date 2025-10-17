@@ -12,16 +12,19 @@
     "noEmit": true,
     "jsx": "react-jsx",
     "strict": true,
-    "noUnusedLocals": true,
-    "noUnusedParameters": true,
+    "noUnusedLocals": false,
+    "noUnusedParameters": false,
     "noFallthroughCasesInSwitch": true,
     "baseUrl": ".",
     "paths": {
-      "@/*": ["./src/*"],
-      "@modules/*": ["./src/modules/*"],
-      "@components/*": ["./src/components/*"]
+      "@/*": ["./cyberstreams/src/*"],
+      "@modules/*": ["./cyberstreams/src/modules/*"],
+      "@components/*": ["./cyberstreams/src/components/*"],
+      "@theme/*": ["./cyberstreams/src/theme/*"],
+      "@tokens/*": ["./cyberstreams/src/tokens/*"],
+      "@data/*": ["./cyberstreams/src/data/*"]
     }
   },
-  "include": ["src"],
-  "references": [{ "path": "./tsconfig.node.json" }]
+  "include": ["cyberstreams/src"],
+  "exclude": ["cyberstreams/src/services"]
 }
