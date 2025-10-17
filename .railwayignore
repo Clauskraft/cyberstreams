@@ -1,0 +1,68 @@
+# Railway should ignore these files/directories
+
+# Local development
+node_modules/
+.env
+.env.local
+.env*.local
+dist/
+build/
+
+# IDE & editor
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Git
+.git
+.gitignore
+
+# Testing
+.coverage/
+.nyc_output/
+
+# Temporary files
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Build artifacts
+*.tgz
+*.tar.gz
+
+# Documentation (optional, remove if needed)
+README.md
+CLAUDE.md
+
+# Project specific
+CLOUDFLARE_DEPLOYMENT_SETUP.md
+CODESPACES_GUIDE.md
+CODESPACES_SETUP_COMPLETE.md
+CODESPACES_VISUAL_SUMMARY.md
+COPILOT_SETUP_COMPLETE.md
+DAILYPULSE_IMPLEMENTATION_STATUS.md
+FUNCTION_LIST.md
+FUNKTIONS_LISTE.md
+INTEL_SCRAPER_COMPLETE.md
+MERGE_STATUS.md
+QUICK_REFERENCE.md
+PROJECT_ANALYSIS.md
+
+# Deployment configs for other platforms
+vercel.json
+vercel-deploy.sh
+netlify.toml
+*.yml
+*.yaml
+
+# Debug and analysis
+claudedocs/
+error-screenshot.png
+
+# Temporary directories
+CYBERSTREAMS-COMPLETE-V1.2.0/
+CYBERSTREAMS-FINAL-V1.2.1/

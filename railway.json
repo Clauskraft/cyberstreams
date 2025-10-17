@@ -1,0 +1,12 @@
+{
+  "name": "cyberstreams",
+  "dockerfile": "./Dockerfile",
+  "builder": "dockerfile",
+  "startCommand": "node server.js",
+  "env": {
+    "PORT": "3000",
+    "NODE_ENV": "production"
+  },
+  "volumes": [],
+  "crons": []
+}
