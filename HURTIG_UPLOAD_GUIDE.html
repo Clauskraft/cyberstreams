@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>🚀 HURTIG UPLOAD GUIDE</title>
+    <style>
+        body { 
+            font-family: system-ui; 
+            max-width: 900px; 
+            margin: 50px auto; 
+            padding: 30px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        .card {
+            background: white;
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+        h1 { color: #667eea; margin: 0 0 30px 0; }
+        .step {
+            background: #f8f9fa;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 10px;
+            border-left: 4px solid #667eea;
+        }
+        .step h2 {
+            margin: 0 0 10px 0;
+            color: #667eea;
+            font-size: 20px;
+        }
+        .warning {
+            background: #fff3cd;
+            border-left-color: #ffc107;
+            border: 2px solid #ffc107;
+        }
+        code {
+            background: #e9ecef;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            color: #d63384;
+        }
+        .success {
+            background: #d1e7dd;
+            border-left-color: #198754;
+            color: #0f5132;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <h1>🚀 CYBERSTREAMS - HURTIG UPLOAD</h1>
+        
+        <div class="step warning">
+            <h2>⚠️ STOP DEN NUVÆRENDE UPLOAD</h2>
+            <p><strong>Klik "Remove all"</strong> knappen i Cloudflare Dashboard for at annullere ZIP upload.</p>
+            <p>ZIP upload hænger - vi uploader dist mappen direkte i stedet!</p>
+        </div>
+
+        <div class="step">
+            <h2>📂 STEP 1: Åbn dist mappen</h2>
+            <p>Åbn Windows Explorer og naviger til:</p>
+            <code>C:\Users\claus\Projects\Cyberstreams_dk\dist</code>
+            <p style="margin-top: 10px;">Du kan også klikke her: <a href="file:///C:/Users/claus/Projects/Cyberstreams_dk/dist">Åbn dist mappe</a></p>
+        </div>
+
+        <div class="step">
+            <h2>📁 STEP 2: Vælg ALLE filer i dist</h2>
+            <p>I dist mappen skal du vælge:</p>
+            <ul>
+                <li><code>index.html</code> ✓</li>
+                <li><code>assets</code> mappe ✓</li>
+                <li><code>_worker.js</code> ✓ (hvis den findes)</li>
+            </ul>
+            <p><strong>Markér ALLE filer:</strong> Tryk <code>Ctrl+A</code></p>
+        </div>
+
+        <div class="step">
+            <h2>🖱️ STEP 3: Træk og slip til Cloudflare</h2>
+            <ol>
+                <li>Hold museknappen nede på de valgte filer</li>
+                <li>Træk filerne DIREKTE til upload-boksen i Cloudflare Dashboard</li>
+                <li>Slip filerne</li>
+            </ol>
+            <p><strong>Dette tager 5-10 sekunder! ⚡</strong></p>
+        </div>
+
+        <div class="step">
+            <h2>✅ STEP 4: Deploy</h2>
+            <p>Når alle filer er uploadet (du ser grønne checkmarks):</p>
+            <p><strong>Klik "Save and deploy"</strong></p>
+        </div>
+
+        <div class="step success">
+            <h2>🎉 FÆRDIG!</h2>
+            <p>Deployment starter med det samme og er færdig på 1-2 minutter.</p>
+            <p>Alle 8 websites går live automatisk!</p>
+        </div>
+    </div>
+</body>
+</html>
