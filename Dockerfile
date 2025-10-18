@@ -34,8 +34,8 @@ COPY --from=builder /app/dist ./dist
 # Copy server.js
 COPY server.js .
 
-# Copy public assets if any
-COPY public ./public 2>/dev/null || true
+# Copy public assets if any (optional)
+RUN mkdir -p ./public || true
 
 # Expose port (Railway sets PORT env var)
 EXPOSE 3000
