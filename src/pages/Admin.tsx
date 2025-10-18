@@ -4,9 +4,10 @@ import { Text } from '@components/Text'
 import { Button } from '@components/Button'
 import IntelControlPanel from '@components/IntelControlPanel'
 import { VectorDBTable } from '@components/VectorDBTable'
+import { LinkChecker } from '@components/LinkChecker'
 import {
   Settings, Database, Search, Globe, Key, Shield,
-  Play, Pause, RefreshCw, Trash2, Plus,
+  Play, Pause, RefreshCw, Trash2, Plus, ExternalLink,
   Activity, CheckCircle, Bot, Brain, Zap, Eye, AlertCircle, XCircle, Clock, AlertTriangle
 } from 'lucide-react'
 
@@ -46,7 +47,7 @@ interface VectorDBStats {
 }
 
 export default function Admin() {
-  const [activeTab, setActiveTab] = useState<'keywords' | 'sources' | 'scraper' | 'database' | 'settings' | 'intel-scraper' | 'control-panel'>('keywords')
+  const [activeTab, setActiveTab] = useState<'keywords' | 'sources' | 'scraper' | 'database' | 'settings' | 'intel-scraper' | 'control-panel' | 'link-checker'>('keywords')
   const [status, setStatus] = useState<string>('')
   const [keywords, setKeywords] = useState<Keyword[]>([])
   const [sources, setSources] = useState<Source[]>([])
@@ -420,6 +421,7 @@ export default function Admin() {
     { id: 'intel-scraper' as const, label: 'Intel Scraper', icon: Bot },
     { id: 'control-panel' as const, label: 'Control Panel', icon: Brain },
     { id: 'database' as const, label: 'Vector DB', icon: Database },
+    { id: 'link-checker' as const, label: 'Link Checker', icon: ExternalLink },
     { id: 'settings' as const, label: 'Settings', icon: Settings }
   ]
 
@@ -970,6 +972,19 @@ export default function Admin() {
               </p>
               <VectorDBTable />
             </Card>
+          </>
+        )}
+
+        {activeTab === 'link-checker' && (
+          <>
+            {/* Link Checker */}
+            <Card>
+              <Text variant="title">Link Validator</Text>
+              <p className="text-sm text-gray-400 mt-1 mb-4">
+                Test og valider URLs for at sikre de virker og er tilgængelige
+              </p>
+            </Card>
+            <LinkChecker />
           </>
         )}
 

@@ -1,0 +1,17 @@
+# Custom headers for Cyberstreams
+
+# Security headers for all pages
+/*
+  X-Frame-Options: DENY
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: strict-origin-when-cross-origin
+  X-XSS-Protection: 1; mode=block
+
+# Assets can be cached and accessed cross-origin
+/assets/*
+  Cache-Control: public, max-age=31536000, immutable
+  Access-Control-Allow-Origin: *
+
+# Main application
+/
+  Cache-Control: public, max-age=0, must-revalidate

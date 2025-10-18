@@ -247,6 +247,112 @@ app.delete('/api/sources/:id', (req, res) => {
   }
 })
 
+// Link Validation Endpoints
+app.post('/api/validate-link', async (req, res) => {
+  const { url } = req.body
+  if (!url) {
+    return res.status(400).json({ success: false, error: 'URL required' })
+  }
+
+  try {
+    const controller = new AbortController()
+    const timeout = setTimeout(() => controller.abort(), 10000)
+
+    const startTime = Date.now()
+    const response = await fetch(url, {
+      method: 'HEAD',
+      signal: controller.signal,
+      redirect: 'follow'
+    })
+
+    clearTimeout(timeout)
+
+    res.json({
+      success: true,
+      data: {
+        url,
+        valid: true,
+        reachable: response.ok,
+        statusCode: response.status,
+        responseTime: Date.now() - startTime,
+        hasSSL: url.startsWith('https://'),
+        redirectsTo: response.url !== url ? response.url : null,
+        contentType: response.headers.get('content-type'),
+        checkedAt: new Date().toISOString()
+      }
+    })
+  } catch (error) {
+    res.json({
+      success: true,
+      data: {
+        url,
+        valid: false,
+        reachable: false,
+        hasSSL: url.startsWith('https://'),
+        error: error.message || 'Failed to reach URL',
+        checkedAt: new Date().toISOString()
+      }
+    })
+  }
+})
+
+app.post('/api/validate-links-bulk', async (req, res) => {
+  const { urls } = req.body
+  if (!urls || !Array.isArray(urls)) {
+    return res.status(400).json({ success: false, error: 'URLs array required' })
+  }
+
+  const results = []
+  for (const url of urls.slice(0, 50)) { // Max 50 URLs per request
+    try {
+      const controller = new AbortController()
+      const timeout = setTimeout(() => controller.abort(), 5000)
+
+      const startTime = Date.now()
+      const response = await fetch(url, {
+        method: 'HEAD',
+        signal: controller.signal
+      })
+
+      clearTimeout(timeout)
+
+      results.push({
+        url,
+        valid: true,
+        reachable: response.ok,
+        statusCode: response.status,
+        responseTime: Date.now() - startTime,
+        hasSSL: url.startsWith('https://')
+      })
+    } catch (error) {
+      results.push({
+        url,
+        valid: false,
+        reachable: false,
+        error: error.message
+      })
+    }
+
+    // Small delay to avoid rate limiting
+    await new Promise(resolve => setTimeout(resolve, 200))
+  }
+
+  const valid = results.filter(r => r.valid).length
+  const reachable = results.filter(r => r.reachable).length
+
+  res.json({
+    success: true,
+    data: {
+      total: results.length,
+      valid,
+      invalid: results.length - valid,
+      reachable,
+      unreachable: results.length - reachable,
+      results
+    }
+  })
+})
+
 // Serve static files from dist directory (MUST be after API routes)
 app.use(express.static(path.join(__dirname, 'dist')))
 
