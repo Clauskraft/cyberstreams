@@ -74,6 +74,32 @@ app.get('/api/pulse', (req, res) => {
   })
 })
 
+app.get('/api/daily-pulse', (req, res) => {
+  res.json({
+    success: true,
+    timestamp: new Date().toISOString(),
+    timezone: 'Europe/Copenhagen',
+    totalSources: 5,
+    validDocuments: mockPulseData.length,
+    selectedItems: mockPulseData.length,
+    data: mockPulseData.map(item => ({
+      ...item,
+      summary: item.description,
+      category: 'incident',
+      sourceIcon: 'shield',
+      categoryIcon: 'alert-triangle',
+      severityColor: 'bg-red-500',
+      relativeTime: item.timestamp,
+      url: item.url || '#',
+      verified: true,
+      qualityScore: 95,
+      tags: [item.category]
+    })),
+    lastUpdate: new Date().toISOString(),
+    nextUpdate: new Date(Date.now() + 60 * 60 * 1000).toISOString()
+  })
+})
+
 app.get('/api/threats', (req, res) => {
   res.json({
     success: true,

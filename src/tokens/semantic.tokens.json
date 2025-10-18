@@ -1,0 +1,19 @@
+{
+  "semantic": {
+    "bg": {
+      "app": { "value": "{color.neutral-0}" },
+      "surface": { "value": "{color.neutral-0}" },
+      "brand": { "value": "{color.primary}" }
+    },
+    "fg": {
+      "default": { "value": "{color.neutral-900}" },
+      "onBrand": { "value": "{color.primary-contrast}" }
+    },
+    "action": {
+      "primary": { "value": "{color.primary}" },
+      "danger": { "value": "{color.danger}" }
+    },
+    "border": { "subtle": { "value": "rgba(0,0,0,0.1)" } },
+    "focus": { "ring": { "value": "0 0 0 3px rgba(0,80,255,0.35)" } }
+  }
+}

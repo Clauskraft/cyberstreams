@@ -1,9 +1,19 @@
 import { useState, lazy, Suspense } from 'react'
-import { Shield, Activity, Radio, FileText, Settings } from 'lucide-react'
-import { HomeContent } from '@modules/HomeContent'
-import { LoadingSpinner } from '@components/ui/LoadingSpinner'
+import { Shield, Activity, Radio, FileText, Network, Settings, Bot } from 'lucide-react'
 
-const SettingsModule = lazy(() => import('@modules/SettingsModule'))
+const HomeContent = lazy(() => import('@modules/HomeContent'))
+const ThreatsModule = lazy(() => import('@modules/ThreatsModule'))
+const ActivityModule = lazy(() => import('@modules/ActivityModule'))
+const DagensPuls = lazy(() => import('@modules/DagensPuls'))
+const ConsolidatedIntelligence = lazy(() => import('@modules/ConsolidatedIntelligence'))
+const CyberstreamsAgent = lazy(() => import('@modules/CyberstreamsAgent'))
+const AdminPage = lazy(() => import('./pages/Admin'))
+
+const LoadingSpinner = () => (
+  <div className="flex items-center justify-center py-20">
+    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-cyber-blue"></div>
+  </div>
+)
 
 function App() {
   const [activeTab, setActiveTab] = useState('dashboard')
@@ -36,13 +46,15 @@ function App() {
       {/* Navigation Tabs */}
       <div className="border-b border-gray-800 backdrop-blur-xl bg-cyber-dark/30">
         <div className="container mx-auto px-4">
-          <nav className="flex space-x-1">
+          <nav className="flex space-x-1 overflow-x-auto">
             {[
               { id: 'dashboard', label: 'Dashboard', icon: Shield },
+              { id: 'agent', label: 'Agent', icon: Bot },
               { id: 'threats', label: 'Threats', icon: Activity },
               { id: 'pulse', label: 'Dagens Puls', icon: Radio },
               { id: 'activity', label: 'Activity', icon: FileText },
-              { id: 'settings', label: 'Settings', icon: Settings },
+              { id: 'intel', label: 'Consolidated Intel', icon: Network },
+              { id: 'admin', label: 'Admin', icon: Settings },
             ].map((tab) => (
               <button
                 key={tab.id}
@@ -63,15 +75,15 @@ function App() {
 
       {/* Main Content */}
       <main className="container mx-auto px-4 py-8">
-        {activeTab === 'dashboard' && <HomeContent />}
-        {activeTab === 'threats' && <div className="text-center py-20 text-gray-400">Threats module coming soon...</div>}
-        {activeTab === 'pulse' && <div className="text-center py-20 text-gray-400">Pulse module coming soon...</div>}
-        {activeTab === 'activity' && <div className="text-center py-20 text-gray-400">Activity module coming soon...</div>}
-        {activeTab === 'settings' && (
-          <Suspense fallback={<LoadingSpinner message="Loading settings..." />}>
-            <SettingsModule />
-          </Suspense>
-        )}
+        <Suspense fallback={<LoadingSpinner />}>
+          {activeTab === 'dashboard' && <HomeContent />}
+          {activeTab === 'agent' && <CyberstreamsAgent />}
+          {activeTab === 'threats' && <ThreatsModule />}
+          {activeTab === 'pulse' && <DagensPuls />}
+          {activeTab === 'activity' && <ActivityModule />}
+          {activeTab === 'intel' && <ConsolidatedIntelligence />}
+          {activeTab === 'admin' && <AdminPage />}
+        </Suspense>
       </main>
     </div>
   )
