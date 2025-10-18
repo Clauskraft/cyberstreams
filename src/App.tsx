@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Shield, Activity, Radio, FileText } from 'lucide-react'
-import HomeContent from '@modules/HomeContent'
+import { HomeContent } from '@modules/HomeContent'
 
 function App() {
   const [activeTab, setActiveTab] = useState('dashboard')

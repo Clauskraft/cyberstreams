@@ -1,32 +1,65 @@
-import DagensPuls from './DagensPuls'
+import React from 'react'
+import { DagensPuls } from './DagensPuls'
+import { StatCard } from '@components/ui/StatCard'
 import { TrendingUp, AlertTriangle, Shield, Globe } from 'lucide-react'
 
-const HomeContent = () => {
-  const stats = [
-    { label: 'Active Threats', value: '156', change: '+12%', icon: AlertTriangle, color: 'red' },
-    { label: 'Monitored Sources', value: '89', change: '+5%', icon: Globe, color: 'blue' },
-    { label: 'Protected Systems', value: '2.4K', change: '+8%', icon: Shield, color: 'green' },
-    { label: 'Trend Score', value: '94', change: '+2%', icon: TrendingUp, color: 'purple' },
+interface Stat {
+  label: string
+  value: string
+  trend: { value: string; direction: 'up' | 'down' }
+  icon: typeof AlertTriangle
+  color: 'red' | 'blue' | 'green' | 'purple'
+}
+
+/**
+ * Home content - Dashboard overview
+ * Displays key statistics, threat feed, and activity tracking
+ */
+export const HomeContent: React.FC = () => {
+  const stats: Stat[] = [
+    {
+      label: 'Active Threats',
+      value: '156',
+      trend: { value: '+12%', direction: 'up' },
+      icon: AlertTriangle,
+      color: 'red'
+    },
+    {
+      label: 'Monitored Sources',
+      value: '89',
+      trend: { value: '+5%', direction: 'up' },
+      icon: Globe,
+      color: 'blue'
+    },
+    {
+      label: 'Protected Systems',
+      value: '2.4K',
+      trend: { value: '+8%', direction: 'up' },
+      icon: Shield,
+      color: 'green'
+    },
+    {
+      label: 'Trend Score',
+      value: '94',
+      trend: { value: '+2%', direction: 'up' },
+      icon: TrendingUp,
+      color: 'purple'
+    }
   ]
 
   return (
     <div className="space-y-8">
-      {/* Stats Grid */}
+      {/* Stats Grid - Using Reusable StatCard Component */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        {stats.map((stat, idx) => (
-          <div
-            key={idx}
-            className="bg-gradient-to-br from-gray-900 to-gray-800 rounded-xl p-6 border border-gray-700 hover:border-gray-600 transition-all"
-          >
-            <div className="flex items-center justify-between mb-4">
-              <stat.icon className={`w-8 h-8 text-${stat.color}-500`} />
-              <span className={`text-xs font-medium px-2 py-1 rounded-full bg-${stat.color}-500/10 text-${stat.color}-400`}>
-                {stat.change}
-              </span>
-            </div>
-            <p className="text-3xl font-bold mb-1">{stat.value}</p>
-            <p className="text-sm text-gray-400">{stat.label}</p>
-          </div>
+        {stats.map((stat) => (
+          <StatCard
+            key={stat.label}
+            label={stat.label}
+            value={stat.value}
+            icon={stat.icon}
+            color={stat.color}
+            trend={stat.trend}
+          />
         ))}
       </div>
 
@@ -92,4 +125,4 @@ const HomeContent = () => {
   )
 }
 
-export default HomeContent
+export { HomeContent as default }
