@@ -12,8 +12,13 @@ const PORT = process.env.PORT || 3001
 app.use(cors())
 app.use(express.json())
 
-// In-memory storage for API keys (use database in production)
+// In-memory storage for API keys and sources (use database in production)
 const apiKeys = new Map()
+const sources = new Map([
+  ['src_1', { id: 'src_1', name: 'CERT-EU', url: 'https://cert.europa.eu/rss', type: 'rss', active: true, created: new Date().toISOString() }],
+  ['src_2', { id: 'src_2', name: 'ENISA', url: 'https://enisa.europa.eu/feed', type: 'rss', active: true, created: new Date().toISOString() }],
+  ['src_3', { id: 'src_3', name: 'CFCS', url: 'https://cfcs.dk/rss', type: 'rss', active: true, created: new Date().toISOString() }]
+])
 
 // Mock data for pulse endpoint
 const mockPulseData = [
@@ -184,6 +189,62 @@ app.post('/api/mcp/test', (req, res) => {
     message: `Connection to ${server} tested successfully`,
     data: { latency: '45ms', status: 'operational' }
   })
+})
+
+// Source Management Endpoints (Persistent Storage)
+app.get('/api/sources', (req, res) => {
+  const sourcesArray = Array.from(sources.values())
+  res.json({ success: true, data: sourcesArray, count: sourcesArray.length })
+})
+
+app.post('/api/sources', (req, res) => {
+  const { name, url, type } = req.body
+  if (!name || !url) {
+    return res.status(400).json({ success: false, error: 'Name and URL required' })
+  }
+  const id = `src_${Date.now()}`
+  const newSource = {
+    id,
+    name,
+    url,
+    type: type || 'rss',
+    active: true,
+    created: new Date().toISOString(),
+    lastScraped: null
+  }
+  sources.set(id, newSource)
+  res.json({ success: true, message: 'Source added successfully', data: newSource })
+})
+
+app.put('/api/sources/:id', (req, res) => {
+  const { id } = req.params
+  const { name, url, type, active } = req.body
+
+  if (!sources.has(id)) {
+    return res.status(404).json({ success: false, error: 'Source not found' })
+  }
+
+  const source = sources.get(id)
+  const updated = {
+    ...source,
+    name: name || source.name,
+    url: url || source.url,
+    type: type || source.type,
+    active: active !== undefined ? active : source.active,
+    updated: new Date().toISOString()
+  }
+  sources.set(id, updated)
+  res.json({ success: true, message: 'Source updated successfully', data: updated })
+})
+
+app.delete('/api/sources/:id', (req, res) => {
+  const { id } = req.params
+  if (sources.has(id)) {
+    sources.delete(id)
+    res.json({ success: true, message: 'Source deleted successfully' })
+  } else {
+    res.status(404).json({ success: false, error: 'Source not found' })
+  }
 })
 
 // Serve static files from dist directory (MUST be after API routes)

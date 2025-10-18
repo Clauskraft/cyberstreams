@@ -3,8 +3,9 @@ import { Card } from '@components/Card'
 import { Text } from '@components/Text'
 import { Button } from '@components/Button'
 import IntelControlPanel from '@components/IntelControlPanel'
-import { 
-  Settings, Database, Search, Globe, Key, Shield, 
+import { VectorDBTable } from '@components/VectorDBTable'
+import {
+  Settings, Database, Search, Globe, Key, Shield,
   Play, Pause, RefreshCw, Trash2, Plus,
   Activity, CheckCircle, Bot, Brain, Zap, Eye, AlertCircle, XCircle, Clock, AlertTriangle
 } from 'lucide-react'
@@ -66,6 +67,43 @@ export default function Admin() {
   // New keyword form
   const [newKeyword, setNewKeyword] = useState({ keyword: '', category: '', priority: 'medium' as const })
   const [newSource, setNewSource] = useState({ name: '', url: '', type: 'rss' as const })
+
+  // Settings state for API keys
+  const [settingsForm, setSettingsForm] = useState({
+    openaiKey: '',
+    anthropicKey: '',
+    scraperInterval: 30,
+    maxDocuments: 1000,
+    embeddingModel: 'text-embedding-ada-002'
+  })
+  const [settingsSaved, setSettingsSaved] = useState(false)
+
+  // Save settings function
+  const saveSettings = async () => {
+    try {
+      // Save OpenAI key
+      if (settingsForm.openaiKey) {
+        await fetch('/api/keys', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name: 'openai', value: settingsForm.openaiKey })
+        })
+      }
+      // Save Anthropic key
+      if (settingsForm.anthropicKey) {
+        await fetch('/api/keys', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name: 'anthropic', value: settingsForm.anthropicKey })
+        })
+      }
+      setSettingsSaved(true)
+      setStatus('Settings saved successfully!')
+      setTimeout(() => setSettingsSaved(false), 3000)
+    } catch (error) {
+      setStatus('Failed to save settings')
+    }
+  }
 
   // Intel Scraper specific state
   const [intelScraperStatus, setIntelScraperStatus] = useState({
@@ -923,6 +961,15 @@ export default function Admin() {
                 </Button>
               </div>
             </Card>
+
+            {/* Advanced Vector DB Table with Search and Filters */}
+            <Card>
+              <Text variant="title">Vector Database - Avanceret Visning</Text>
+              <p className="text-sm text-gray-400 mt-1 mb-4">
+                Søg og filtrer vectors med avancerede kolonnefiltre
+              </p>
+              <VectorDBTable />
+            </Card>
           </>
         )}
 
@@ -937,7 +984,19 @@ export default function Admin() {
                     <label className="block text-sm font-medium mb-2">OpenAI API Key</label>
                     <input
                       type="password"
+                      value={settingsForm.openaiKey}
+                      onChange={(e) => setSettingsForm({ ...settingsForm, openaiKey: e.target.value })}
                       placeholder="sk-..."
+                      className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded text-white placeholder-gray-400"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium mb-2">Anthropic API Key (Claude)</label>
+                    <input
+                      type="password"
+                      value={settingsForm.anthropicKey}
+                      onChange={(e) => setSettingsForm({ ...settingsForm, anthropicKey: e.target.value })}
+                      placeholder="sk-ant-..."
                       className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded text-white placeholder-gray-400"
                     />
                   </div>
@@ -966,10 +1025,16 @@ export default function Admin() {
                     </select>
                   </div>
                 </div>
-                <Button>
+                <Button onClick={saveSettings}>
                   <CheckCircle className="w-4 h-4 mr-2" />
                   Save Settings
                 </Button>
+                {settingsSaved && (
+                  <div className="mt-3 text-green-400 text-sm flex items-center gap-2">
+                    <CheckCircle className="w-4 h-4" />
+                    {status}
+                  </div>
+                )}
               </div>
             </Card>
           </>
