@@ -1,6 +1,9 @@
-import { useState } from 'react'
-import { Shield, Activity, Radio, FileText } from 'lucide-react'
+import { useState, lazy, Suspense } from 'react'
+import { Shield, Activity, Radio, FileText, Settings } from 'lucide-react'
 import { HomeContent } from '@modules/HomeContent'
+import { LoadingSpinner } from '@components/ui/LoadingSpinner'
+
+const SettingsModule = lazy(() => import('@modules/SettingsModule'))
 
 function App() {
   const [activeTab, setActiveTab] = useState('dashboard')
@@ -39,6 +42,7 @@ function App() {
               { id: 'threats', label: 'Threats', icon: Activity },
               { id: 'pulse', label: 'Dagens Puls', icon: Radio },
               { id: 'activity', label: 'Activity', icon: FileText },
+              { id: 'settings', label: 'Settings', icon: Settings },
             ].map((tab) => (
               <button
                 key={tab.id}
@@ -63,6 +67,11 @@ function App() {
         {activeTab === 'threats' && <div className="text-center py-20 text-gray-400">Threats module coming soon...</div>}
         {activeTab === 'pulse' && <div className="text-center py-20 text-gray-400">Pulse module coming soon...</div>}
         {activeTab === 'activity' && <div className="text-center py-20 text-gray-400">Activity module coming soon...</div>}
+        {activeTab === 'settings' && (
+          <Suspense fallback={<LoadingSpinner message="Loading settings..." />}>
+            <SettingsModule />
+          </Suspense>
+        )}
       </main>
     </div>
   )

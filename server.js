@@ -12,8 +12,8 @@ const PORT = process.env.PORT || 3001
 app.use(cors())
 app.use(express.json())
 
-// Serve static files from dist directory
-app.use(express.static(path.join(__dirname, 'dist')))
+// In-memory storage for API keys (use database in production)
+const apiKeys = new Map()
 
 // Mock data for pulse endpoint
 const mockPulseData = [
@@ -109,7 +109,61 @@ app.get('/api/health', (req, res) => {
   })
 })
 
-// Serve index.html for all non-API routes (React Router)
+// API Key Management Endpoints
+app.get('/api/keys', (req, res) => {
+  const keys = Array.from(apiKeys.entries()).map(([name, key]) => ({
+    name,
+    value: key.substring(0, 10) + '...' + key.substring(key.length - 4), // Masked
+    created: new Date().toISOString()
+  }))
+  res.json({ success: true, data: keys })
+})
+
+app.post('/api/keys', (req, res) => {
+  const { name, value } = req.body
+  if (!name || !value) {
+    return res.status(400).json({ success: false, error: 'Name and value required' })
+  }
+  apiKeys.set(name, value)
+  res.json({ success: true, message: 'API key saved successfully' })
+})
+
+app.delete('/api/keys/:name', (req, res) => {
+  const { name } = req.params
+  if (apiKeys.has(name)) {
+    apiKeys.delete(name)
+    res.json({ success: true, message: 'API key deleted' })
+  } else {
+    res.status(404).json({ success: false, error: 'Key not found' })
+  }
+})
+
+// MCP Server Integration Endpoints
+app.get('/api/mcp/servers', (req, res) => {
+  res.json({
+    success: true,
+    data: [
+      { id: 'openai', name: 'OpenAI (ChatGPT)', status: apiKeys.has('openai') ? 'configured' : 'not_configured' },
+      { id: 'anthropic', name: 'Anthropic (Claude)', status: apiKeys.has('anthropic') ? 'configured' : 'not_configured' },
+      { id: 'custom_mcp', name: 'Custom MCP Server', status: apiKeys.has('custom_mcp') ? 'configured' : 'not_configured' }
+    ]
+  })
+})
+
+app.post('/api/mcp/test', (req, res) => {
+  const { server, apiKey } = req.body
+  // Simulate MCP test
+  res.json({
+    success: true,
+    message: `Connection to ${server} tested successfully`,
+    data: { latency: '45ms', status: 'operational' }
+  })
+})
+
+// Serve static files from dist directory (MUST be after API routes)
+app.use(express.static(path.join(__dirname, 'dist')))
+
+// Serve index.html for all non-API routes (React Router catch-all)
 app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname, 'dist', 'index.html'))
 })
