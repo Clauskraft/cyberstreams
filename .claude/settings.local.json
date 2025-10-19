@@ -73,7 +73,12 @@
       "Bash(npm install)",
       "Bash(railway status:*)",
       "Bash(gh repo view:*)",
-      "mcp__playwright__browser_wait_for"
+      "mcp__playwright__browser_wait_for",
+      "Bash(env)",
+      "Bash(gh workflow:*)",
+      "Bash(gh run list:*)",
+      "Bash(gh run view:*)",
+      "Bash(rm:*)"
     ],
     "deny": [],
     "ask": []
