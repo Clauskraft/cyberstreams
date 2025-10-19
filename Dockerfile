@@ -31,8 +31,9 @@ RUN npm ci --only=production
 # Copy built frontend from builder stage
 COPY --from=builder /app/dist ./dist
 
-# Copy server.js
+# Copy server.js and lib directory
 COPY server.js .
+COPY lib ./lib
 
 # Copy public assets if any (optional)
 RUN mkdir -p ./public || true
