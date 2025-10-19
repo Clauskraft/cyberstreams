@@ -4,7 +4,14 @@
 
 > ### ✅ New: Automatic GitHub deployment
 > Pushes to `master`/`main` now trigger `.github/workflows/railway-deploy.yml`.
-> Add a `RAILWAY_TOKEN` secret (and optional `RAILWAY_PROJECT_ID`, `RAILWAY_SERVICE_ID`, `RAILWAY_ENVIRONMENT`) in your repository settings so the workflow can deploy without manual steps.
+> Provide the following repository secrets so GitHub Actions can authenticate and target the right service every time:
+>
+> - `RAILWAY_TOKEN` – **Required.** Create a project token in Railway → Settings → API.
+> - `RAILWAY_PROJECT_ID` – **Required.** Copy from Railway project settings ("Project ID").
+> - `RAILWAY_SERVICE_ID` – **Required.** Copy from the service settings ("Service ID").
+> - `RAILWAY_ENVIRONMENT` – Optional. Set if you use multiple environments and want deployments to pin to one.
+>
+> Without these secrets the workflow skips deployment.
 
 
 ---
