@@ -1,6 +1,6 @@
 # Cyberstreams - Dark Web Threat Intelligence Platform
 
-![Version](https://img.shields.io/badge/version-1.1.0-blue)
+![Version](https://img.shields.io/badge/version-1.3.0-blue)
 ![License](https://img.shields.io/badge/license-MIT-green)
 ![React](https://img.shields.io/badge/React-18.2.0-61dafb)
 ![TypeScript](https://img.shields.io/badge/TypeScript-5.0.2-3178c6)
@@ -275,4 +275,99 @@ Contributions are welcome! Please feel free to submit a Pull Request.
 
 ---
 
-**Status**: ✅ Production Ready | 🚀 Deployed on Cloudflare Pages | 📦 Version 1.1.0
+**Status**: ✅ Production Ready | 🚀 Deployed on Cloudflare Pages | 📦 Version 1.3.0
+
+## 🆕 Recent Updates (v1.2.0 - 2025-10-19)
+
+### ✨ New Admin Features
+
+#### Intel Control Panel
+- Real-time scraper monitoring and status dashboard
+- System performance metrics (uptime, success rate, response time)
+- Resource usage tracking (CPU, memory, pending approvals)
+- Control actions (Start/Stop Scraper, Force Refresh, Emergency Bypass)
+- Recent activity timeline with status indicators
+
+#### Vector Database Management
+- Advanced vector database table with 45K+ vectors
+- Multi-column filtering (Source, Category, Tags)
+- Powerful search across all vector attributes
+- Sortable columns with visual indicators
+- Statistics dashboard (Total Vectors, Storage, Performance, Last Indexed)
+- Administrative actions (Rebuild Index, Test Search, Clear Database)
+
+#### Link Validation System
+- Single URL testing with detailed metrics
+- Bulk link validation (up to 50 URLs simultaneously)
+- Response time measurement
+- SSL/HTTPS verification
+- HTTP status code tracking
+- Content-type detection
+- Redirect following with final destination tracking
+- Error handling with descriptive messages
+
+### 🔧 Backend Enhancements
+
+#### Intel Scraper API
+Complete RESTful API for intelligence scraper management:
+- `POST /api/intel-scraper/start` - Start intelligence scraper
+- `POST /api/intel-scraper/stop` - Stop scraper safely
+- `GET /api/intel-scraper/status` - Get current scraper status
+- `POST /api/intel-scraper/emergency-bypass` - Enable compliance bypass (1-hour limit)
+- `GET /api/intel-scraper/approvals` - Get pending source approvals
+- `POST /api/intel-scraper/approvals/:id` - Process approval decision
+- `GET /api/intel-scraper/candidates` - Get discovered source candidates
+- `POST /api/intel-scraper/discover` - Run source discovery scan
+
+#### Link Validation API
+- `POST /api/validate-link` - Validate single URL with full metrics
+- `POST /api/validate-links-bulk` - Batch validate up to 50 URLs
+
+### 📊 Component Improvements
+- Enhanced Admin Panel with 8 specialized tabs
+- Improved navigation and visual hierarchy
+- Real-time status updates and live monitoring
+- Professional error handling across all new features
+- Responsive design for all new components
+
+### 🎯 Quality Assurance
+- TypeScript type safety across all new components
+- Full build verification (1265 modules, 3.1s build time)
+- Browser testing with Playwright
+- API endpoint verification
+- Component integration testing
+
+---
+
+
+## 🆕 Recent Updates (v1.3.0 - 2025-10-19)
+
+### 🎯 SignalStream Intelligence Module
+Replaces Dagens Puls with advanced AI-powered intelligence aggregation:
+
+#### Core Features
+- **In-Memory Vector Store**: Real-time semantic search with custom embedding
+- **Evidence Scoring**: Multi-dimensional ranking (Vector + BM25 + Freshness + Domain Authority)
+- **Focus Lanes**: Categorized intelligence streams for targeted analysis
+- **Session Tracing**: Interactive drill-down tracking for investigation workflows
+- **Multi-Language Support**: Danish and English content generation
+
+#### Intelligence Generation
+- **Configurable Sources**: RSS, Atom, Web, API ingestion
+- **Image Handling**: Generate, fetch, or hybrid mode with licensing
+- **Citation Requirements**: Trust labels and verification for all sources
+- **Article Synthesis**: AI-powered summaries with key points, analysis, and implications
+
+#### User Experience
+- **Interactive UI**: Expandable cards with drill-down capabilities
+- **Real-Time Updates**: Live intelligence feed with freshness indicators
+- **Filter & Search**: Category-based filtering with text search
+- **Evidence Transparency**: Full source attribution and confidence scores
+
+### 📦 Build Improvements
+- **Optimized Bundle**: SignalStream module at 25.30 KB (7.25 KB gzipped)
+- **Total Modules**: 1265 compiled successfully
+- **Build Time**: 2.85s average
+
+---
+

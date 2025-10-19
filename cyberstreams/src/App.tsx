@@ -4,7 +4,7 @@ import { Shield, Activity, Radio, FileText, Network, Settings, Bot } from 'lucid
 const HomeContent = lazy(() => import('@modules/HomeContent'))
 const ThreatsModule = lazy(() => import('@modules/ThreatsModule'))
 const ActivityModule = lazy(() => import('@modules/ActivityModule'))
-const DagensPuls = lazy(() => import('@modules/DagensPuls'))
+const SignalStream = lazy(() => import('@modules/SignalStream'))
 const ConsolidatedIntelligence = lazy(() => import('@modules/ConsolidatedIntelligence'))
 const CyberstreamsAgent = lazy(() => import('@modules/CyberstreamsAgent'))
 const AdminPage = lazy(() => import('./pages/Admin'))
@@ -51,7 +51,7 @@ function App() {
               { id: 'dashboard', label: 'Dashboard', icon: Shield },
               { id: 'agent', label: 'Agent', icon: Bot },
               { id: 'threats', label: 'Threats', icon: Activity },
-              { id: 'pulse', label: 'Dagens Puls', icon: Radio },
+              { id: 'pulse', label: 'SignalStream', icon: Radio },
               { id: 'activity', label: 'Activity', icon: FileText },
               { id: 'intel', label: 'Consolidated Intel', icon: Network },
               { id: 'admin', label: 'Admin', icon: Settings },
@@ -74,17 +74,34 @@ function App() {
       </div>
 
       {/* Main Content */}
-      <main className="container mx-auto px-4 py-8">
+      <main className="container mx-auto px-4 py-8 pb-20">
         <Suspense fallback={<LoadingSpinner />}>
           {activeTab === 'dashboard' && <HomeContent />}
           {activeTab === 'agent' && <CyberstreamsAgent />}
           {activeTab === 'threats' && <ThreatsModule />}
-          {activeTab === 'pulse' && <DagensPuls />}
+          {activeTab === 'pulse' && <SignalStream />}
           {activeTab === 'activity' && <ActivityModule />}
           {activeTab === 'intel' && <ConsolidatedIntelligence />}
           {activeTab === 'admin' && <AdminPage />}
         </Suspense>
       </main>
+
+      {/* Footer - Version Info */}
+      <footer className="fixed bottom-4 right-4 z-40">
+        <div className="bg-gray-900/80 backdrop-blur-md border border-gray-700 rounded-lg px-4 py-2 shadow-lg">
+          <div className="flex items-center space-x-3 text-xs">
+            <div className="flex items-center space-x-2">
+              <div className="w-2 h-2 bg-cyber-blue rounded-full animate-pulse" />
+              <span className="text-gray-400">Version</span>
+              <span className="font-mono text-cyber-blue font-semibold">1.3.0</span>
+            </div>
+            <div className="w-px h-4 bg-gray-700" />
+            <div className="text-gray-500">
+              Released: <span className="text-gray-400">2025-10-19</span>
+            </div>
+          </div>
+        </div>
+      </footer>
     </div>
   )
 }

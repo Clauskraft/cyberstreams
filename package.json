@@ -1,6 +1,6 @@
 {
   "name": "cyberstreams",
-  "version": "1.0.0",
+  "version": "1.4.0",
   "description": "Advanced Dark Web Threat Intelligence Platform",
   "type": "module",
   "scripts": {
