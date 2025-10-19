@@ -23,8 +23,8 @@ export interface IntelRetrievalState {
 }
 
 export interface IntelRetrievalApi extends IntelRetrievalState {
-  composeIntel: (query: string) => Promise<IntelSearchResult | null>
-  expandScope: (query: string) => Promise<IntelSearchResult | null>
+  composeIntel: (query?: string) => Promise<IntelSearchResult | null>
+  expandScope: (query?: string) => Promise<IntelSearchResult | null>
   drillDown: (id: string) => Promise<IntelResultItem | null>
   seedDefaultIntel: () => Promise<void>
   resetError: () => void

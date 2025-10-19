@@ -11,7 +11,7 @@ import {
 export abstract class BaseHttpVectorStoreAdapter implements VectorStoreAdapter {
   public readonly config: VectorStoreConfig
 
-  protected constructor(config: VectorStoreConfig) {
+  constructor(config: VectorStoreConfig) {
     this.config = config
   }
 
@@ -21,7 +21,7 @@ export abstract class BaseHttpVectorStoreAdapter implements VectorStoreAdapter {
 
   async healthCheck(): Promise<boolean> {
     try {
-      const response = await this.fetchJson(`${this.config.url}/health`, {
+      const response = await this.fetchJson<{ status?: string; result?: string }>(`${this.config.url}/health`, {
         method: 'GET',
         headers: this.buildHeaders(),
       })
