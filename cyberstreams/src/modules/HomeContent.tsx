@@ -1,4 +1,4 @@
-import DagensPuls from './DagensPuls'
+import SignalStream from './SignalStream'
 import { TrendingUp, AlertTriangle, Shield, Globe } from 'lucide-react'
 
 const HomeContent = () => {
@@ -30,8 +30,8 @@ const HomeContent = () => {
         ))}
       </div>
 
-      {/* Dagens Puls - Main Threat Feed */}
-      <DagensPuls />
+      {/* SignalStream - Differentiated intelligence lane */}
+      <SignalStream />
 
       {/* Additional Dashboard Widgets */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">

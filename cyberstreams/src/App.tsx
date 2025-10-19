@@ -4,7 +4,7 @@ import { Shield, Activity, Radio, FileText, Network, Settings, Bot } from 'lucid
 const HomeContent = lazy(() => import('@modules/HomeContent'))
 const ThreatsModule = lazy(() => import('@modules/ThreatsModule'))
 const ActivityModule = lazy(() => import('@modules/ActivityModule'))
-const DagensPuls = lazy(() => import('@modules/DagensPuls'))
+const SignalStream = lazy(() => import('@modules/SignalStream'))
 const ConsolidatedIntelligence = lazy(() => import('@modules/ConsolidatedIntelligence'))
 const CyberstreamsAgent = lazy(() => import('@modules/CyberstreamsAgent'))
 const AdminPage = lazy(() => import('./pages/Admin'))
@@ -51,7 +51,7 @@ function App() {
               { id: 'dashboard', label: 'Dashboard', icon: Shield },
               { id: 'agent', label: 'Agent', icon: Bot },
               { id: 'threats', label: 'Threats', icon: Activity },
-              { id: 'pulse', label: 'Dagens Puls', icon: Radio },
+              { id: 'pulse', label: 'SignalStream', icon: Radio },
               { id: 'activity', label: 'Activity', icon: FileText },
               { id: 'intel', label: 'Consolidated Intel', icon: Network },
               { id: 'admin', label: 'Admin', icon: Settings },
@@ -79,7 +79,7 @@ function App() {
           {activeTab === 'dashboard' && <HomeContent />}
           {activeTab === 'agent' && <CyberstreamsAgent />}
           {activeTab === 'threats' && <ThreatsModule />}
-          {activeTab === 'pulse' && <DagensPuls />}
+          {activeTab === 'pulse' && <SignalStream />}
           {activeTab === 'activity' && <ActivityModule />}
           {activeTab === 'intel' && <ConsolidatedIntelligence />}
           {activeTab === 'admin' && <AdminPage />}
