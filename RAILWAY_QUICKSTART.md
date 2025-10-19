@@ -2,6 +2,18 @@
 
 🚀 **Get your Cyberstreams app live on Railway in 5 minutes**
 
+> ### ✅ New: Automatic GitHub deployment
+> Pushes to `master`/`main` now trigger `.github/workflows/railway-deploy.yml`.
+> Provide the following repository secrets so GitHub Actions can authenticate and target the right service every time:
+>
+> - `RAILWAY_TOKEN` – **Required.** Create a project token in Railway → Settings → API.
+> - `RAILWAY_PROJECT_ID` – **Required.** Copy from Railway project settings ("Project ID").
+> - `RAILWAY_SERVICE_ID` – **Required.** Copy from the service settings ("Service ID").
+> - `RAILWAY_ENVIRONMENT` – Optional. Set if you use multiple environments and want deployments to pin to one.
+>
+> Without these secrets the workflow skips deployment.
+
+
 ---
 
 ## Step 1: Push to GitHub

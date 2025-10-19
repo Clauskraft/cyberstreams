@@ -12,6 +12,7 @@ import {
   getAuthorizedSources,
   saveAuthorizedSources
 } from './lib/authorizedSourceRepository.js'
+import { closePool } from './lib/postgres.js'
 
 // Fallback sources used until the PostgreSQL repository is populated
 const FALLBACK_AUTHORIZED_SOURCES = [
@@ -58,7 +59,19 @@ const FALLBACK_AUTHORIZED_SOURCES = [
 ]
 
 const app = express()
-const PORT = process.env.PORT || 3001
+const PORT = Number(process.env.PORT || 3001)
+const ALLOWED_MISP_OBSERVABLE_TYPES = [
+  'ip-src',
+  'ip-dst',
+  'domain',
+  'hostname',
+  'url',
+  'md5',
+  'sha1',
+  'sha256',
+  'email-src',
+  'email-dst'
+]
 
 const mispClient = createMispClient()
 const openCtiClient = createOpenCtiClient()
@@ -240,24 +253,47 @@ app.post('/api/cti/misp/observables', async (req, res) => {
     return res.status(503).json({ success: false, error: 'MISP integration is not configured' })
   }
 
-  const { value, type, comment, tags = [] } = req.body || {}
+  const { value, type, comment, tags } = req.body || {}
 
-  if (!value || !type) {
+  if (typeof value !== 'string' || typeof type !== 'string') {
+    return res.status(400).json({ success: false, error: 'value and type must be strings' })
+  }
+
+  const trimmedValue = value.trim()
+  const normalizedType = type.trim().toLowerCase()
+
+  if (!trimmedValue || !normalizedType) {
     return res.status(400).json({ success: false, error: 'value and type are required fields' })
   }
+
+  if (!ALLOWED_MISP_OBSERVABLE_TYPES.includes(normalizedType)) {
+    return res.status(400).json({ success: false, error: 'Invalid observable type' })
+  }
+
+  if (comment != null && typeof comment !== 'string') {
+    return res.status(400).json({ success: false, error: 'comment must be a string when provided' })
+  }
+
+  const sanitizedTags = Array.isArray(tags)
+    ? tags
+        .map((tag) => (typeof tag === 'string' ? tag.trim() : ''))
+        .filter((tag) => Boolean(tag))
+    : []
+
+  const sanitizedComment = typeof comment === 'string' ? comment.trim() : undefined
 
   try {
     const response = await mispClient.pushObservable({
       uuid: randomUUID(),
-      value,
-      type,
-      comment,
-      tags
+      value: trimmedValue,
+      type: normalizedType,
+      comment: sanitizedComment,
+      tags: sanitizedTags
     })
 
     res.status(201).json({ success: true, data: response })
   } catch (error) {
-    logger.error({ err: error, value, type }, 'Failed to create observable in MISP')
+    logger.error({ err: error, value: trimmedValue, type: normalizedType }, 'Failed to create observable in MISP')
     res.status(502).json({ success: false, error: 'Failed to create observable in MISP' })
   }
 })
@@ -325,7 +361,7 @@ class DailyPulseGenerator {
       return authorizedSources.find((source) => {
         const domain = typeof source.domain === 'string' ? source.domain.toLowerCase() : ''
         const name = typeof source.name === 'string' ? source.name.toLowerCase() : ''
-        return normalized.includes(domain) || normalized.includes(name)
+        return (domain && normalized.includes(domain)) || (name && normalized.includes(name))
       })
     }
 
@@ -364,7 +400,9 @@ class DailyPulseGenerator {
         description: `Observable of type ${observable.type} oprettet ${observable.createdAt}`,
         source: matchedSource?.name || 'OpenCTI',
         sourceDomain: matchedSource?.domain || 'opencti.internal',
-        url: `${process.env.OPENCTI_API_URL?.replace(/\/$/, '') || ''}/dashboard/id/${observable.id}`,
+        url: process.env.OPENCTI_PUBLIC_URL
+          ? `${process.env.OPENCTI_PUBLIC_URL.replace(/\/$/, '')}/dashboard/id/${observable.id}`
+          : null,
         timestamp,
         category: 'observable',
         severity: 'medium',
@@ -874,6 +912,40 @@ app.get('*', (req, res) => {
   res.sendFile('index.html', { root: 'dist' })
 })
 
-app.listen(PORT, () => {
+const server = app.listen(PORT, () => {
   logger.info(`Cyberstreams API server running at http://localhost:${PORT}`)
+})
+
+let shuttingDown = false
+async function shutdown(signal) {
+  if (shuttingDown) {
+    return
+  }
+  shuttingDown = true
+
+  logger.info({ signal }, 'Received shutdown signal, closing server')
+
+  server.close(async (closeError) => {
+    if (closeError) {
+      logger.error({ err: closeError }, 'Error while closing HTTP server')
+    }
+
+    try {
+      await closePool()
+      logger.info('PostgreSQL connection pool closed')
+    } catch (error) {
+      logger.error({ err: error }, 'Failed to close PostgreSQL connection pool gracefully')
+    } finally {
+      process.exit(closeError ? 1 : 0)
+    }
+  })
+}
+
+['SIGINT', 'SIGTERM'].forEach((signal) => {
+  process.on(signal, () => {
+    shutdown(signal).catch((error) => {
+      logger.error({ err: error }, 'Unexpected error during shutdown')
+      process.exit(1)
+    })
+  })
 })
