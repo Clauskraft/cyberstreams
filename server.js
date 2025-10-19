@@ -1,5 +1,12 @@
+import 'dotenv/config'
 import express from 'express'
 import cors from 'cors'
+import rateLimit from 'express-rate-limit'
+import jwt from 'jsonwebtoken'
+import { summarizationService } from './services/summarization.js'
+import { startIngestionScheduler, MispClient, OpenCTIClient } from './ingestion/index.js'
+import { QdrantClient, createEmbedding } from './lib/vectorClient.js'
+import { logger } from './lib/logger.js'
 
 // Import our source validation (note: will need to be converted to JS or use babel)
 // For now, inline the validation logic
@@ -48,9 +55,79 @@ const AUTHORIZED_SOURCES = [
 
 const app = express()
 const PORT = process.env.PORT || 3001
+const JWT_SECRET = process.env.JWT_SECRET || 'development-secret'
+
+const mispClient = new MispClient({
+  baseUrl: process.env.MISP_URL,
+  apiKey: process.env.MISP_KEY
+})
+
+const openCtiClient = new OpenCTIClient({
+  baseUrl: process.env.OPENCTI_URL,
+  apiToken: process.env.OPENCTI_TOKEN
+})
+
+const vectorSearchClient = new QdrantClient({
+  baseUrl: process.env.QDRANT_URL,
+  apiKey: process.env.QDRANT_API_KEY,
+  collection: process.env.QDRANT_COLLECTION || 'cyberstreams_summaries'
+})
+
+if (process.env.DATABASE_URL) {
+  startIngestionScheduler({
+    dbConnectionString: process.env.DATABASE_URL,
+    misp: {
+      baseUrl: process.env.MISP_URL,
+      apiKey: process.env.MISP_KEY
+    },
+    opencti: {
+      baseUrl: process.env.OPENCTI_URL,
+      apiToken: process.env.OPENCTI_TOKEN
+    }
+  }).catch((error) => {
+    logger.error({ err: error }, 'Failed to start ingestion scheduler')
+  })
+} else {
+  logger.warn('DATABASE_URL is not configured, ingestion scheduler not started')
+}
+
+const apiLimiter = rateLimit({
+  windowMs: 60 * 1000,
+  max: 120,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: 'Rate limit exceeded'
+})
 
 app.use(cors())
-app.use(express.json())
+app.use(express.json({ limit: '2mb' }))
+app.use('/api', apiLimiter)
+
+function authenticate(req, res, next) {
+  const header = req.headers.authorization
+  if (!header) {
+    return res.status(401).json({ success: false, error: 'Missing Authorization header' })
+  }
+
+  const token = header.replace('Bearer ', '')
+  try {
+    const payload = jwt.verify(token, JWT_SECRET)
+    req.user = payload
+    return next()
+  } catch (error) {
+    return res.status(401).json({ success: false, error: 'Invalid or expired token' })
+  }
+}
+
+app.post('/api/auth/token', (req, res) => {
+  const { username } = req.body || {}
+  if (!username) {
+    return res.status(400).json({ success: false, error: 'username is required' })
+  }
+
+  const token = jwt.sign({ sub: username }, JWT_SECRET, { expiresIn: '1h' })
+  res.json({ success: true, token })
+})
 
 // Mock data for pulse endpoint
 const mockPulseData = [
@@ -101,6 +178,68 @@ const mockPulseData = [
   },
 ]
 
+class ThreatDataService {
+  constructor({ mispClient, openCtiClient, vectorClient }) {
+    this.mispClient = mispClient
+    this.openCtiClient = openCtiClient
+    this.vectorClient = vectorClient
+  }
+
+  async getThreats() {
+    const attributes = await this.mispClient.fetchRecent(25)
+    return attributes.map((attribute) => ({
+      id: attribute.id,
+      type: attribute.type,
+      value: attribute.value,
+      comment: attribute.comment,
+      timestamp: attribute.timestamp,
+      to_ids: attribute.to_ids,
+      category: attribute.category,
+      event_id: attribute.event_id
+    }))
+  }
+
+  async getPredictions() {
+    const predictions = await this.openCtiClient.fetchPredictedThreats(15)
+    return predictions.map((item) => ({
+      id: item.id,
+      description: item.description,
+      created: item.created,
+      modified: item.modified,
+      confidence: item.confidence,
+      source: item.createdBy?.name,
+      labels: item.objectLabel?.edges?.map((edge) => edge.node.value) || []
+    }))
+  }
+
+  async semanticSearch(query) {
+    if (!query) {
+      return []
+    }
+    try {
+      const embedding = await createEmbedding(query)
+      if (!embedding.length) {
+        return []
+      }
+      const results = await this.vectorClient.search(embedding, 10)
+      return results.result?.map((entry) => ({
+        id: entry.id,
+        score: entry.score,
+        payload: entry.payload
+      })) || []
+    } catch (error) {
+      logger.error({ err: error }, 'Vector search failed')
+      return []
+    }
+  }
+}
+
+const threatDataService = new ThreatDataService({
+  mispClient,
+  openCtiClient,
+  vectorClient: vectorSearchClient
+})
+
 // API Routes
 app.get('/api/pulse', (req, res) => {
   res.json({
@@ -142,8 +281,49 @@ app.get('/api/health', (req, res) => {
   res.json({
     status: 'operational',
     timestamp: new Date().toISOString(),
-    version: '1.0.0',
+    version: '1.0.0'
   })
+})
+
+app.post('/api/summary', authenticate, async (req, res) => {
+  try {
+    const record = await summarizationService.summarize(req.body)
+    res.json({ success: true, data: record })
+  } catch (error) {
+    logger.error({ err: error }, 'Failed to generate summary')
+    res.status(500).json({ success: false, error: error.message })
+  }
+})
+
+app.get('/api/cti/threats/recent', authenticate, async (req, res) => {
+  try {
+    const data = await threatDataService.getThreats()
+    res.json({ success: true, data })
+  } catch (error) {
+    logger.error({ err: error }, 'Failed to fetch recent threats')
+    res.status(500).json({ success: false, error: 'Unable to fetch recent threats' })
+  }
+})
+
+app.get('/api/cti/predictions', authenticate, async (req, res) => {
+  try {
+    const data = await threatDataService.getPredictions()
+    res.json({ success: true, data })
+  } catch (error) {
+    logger.error({ err: error }, 'Failed to fetch predictions')
+    res.status(500).json({ success: false, error: 'Unable to fetch predictions' })
+  }
+})
+
+app.get('/api/cti/search', authenticate, async (req, res) => {
+  try {
+    const { q } = req.query
+    const data = await threatDataService.semanticSearch(q)
+    res.json({ success: true, data })
+  } catch (error) {
+    logger.error({ err: error }, 'Semantic search failed')
+    res.status(500).json({ success: false, error: 'Semantic search failed' })
+  }
 })
 
 // DAGENS PULS API - HØJTROVÆRDIGE KILDER
@@ -185,7 +365,7 @@ class DailyPulseGenerator {
         nextUpdate: this.getNextUpdateTime()
       }
     } catch (error) {
-      console.error('DailyPulse generation failed:', error)
+      logger.error({ err: error }, 'DailyPulse generation failed')
       return {
         success: false,
         error: error.message,
@@ -497,7 +677,7 @@ app.get('/api/daily-pulse', async (req, res) => {
     const pulseData = await pulseGenerator.getDailyPulse()
     res.json(pulseData)
   } catch (error) {
-    console.error('Daily Pulse API error:', error)
+    logger.error({ err: error }, 'Daily Pulse API error')
     res.status(500).json({
       success: false,
       error: 'Failed to generate daily pulse',
@@ -765,5 +945,5 @@ app.get('*', (req, res) => {
 })
 
 app.listen(PORT, () => {
-  console.log(`Cyberstreams API server running at http://localhost:${PORT}`)
+  logger.info(`Cyberstreams API server running at http://localhost:${PORT}`)
 })

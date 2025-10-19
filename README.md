@@ -46,6 +46,13 @@ Advanced threat intelligence platform for monitoring and analyzing dark web acti
 - Source correlation and tracking
 - Interactive threat exploration
 
+### 🧠 Intelligence Services (NEW)
+- Hourly ingestion pipeline consolidating RSS, HTML, API and dark-web feeds
+- Automated STIX 2.1 normalization with distribution to MISP and OpenCTI
+- GPT-powered summarisation API with CVE enrichment and [Unverified] tagging
+- Semantic search powered by Qdrant/Weaviate vector embeddings
+- JWT-protected API layer with rate limiting
+
 ### 🔍 Consolidated Intelligence (NEW)
 - Multi-source intelligence aggregation
 - 30+ European CERT/CSIRT sources
@@ -135,6 +142,18 @@ npm run build
 
 # Preview production build
 npm run preview
+```
+
+### Backend & Intelligence Services
+```bash
+# Configure environment
+cp .env.example .env
+
+# Start API with hourly ingestion scheduler
+npm run server
+
+# (Optional) Seed authorized sources into PostgreSQL
+npx ts-node scripts/migrate-authorized-sources.ts
 ```
 
 ## 📁 Project Structure

@@ -17,7 +17,11 @@ export default defineConfig({
   test: {
     environment: 'node',
     setupFiles: ['./vitest.setup.ts'],
-    include: ['cyberstreams/src/**/*.test.ts', 'cyberstreams/src/**/*.test.tsx'],
+    include: [
+      'cyberstreams/src/**/*.test.ts',
+      'cyberstreams/src/**/*.test.tsx',
+      'ingestion/**/*.test.ts'
+    ],
     globals: true,
     coverage: {
       reporter: ['text', 'json-summary'],
