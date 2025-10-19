@@ -21,6 +21,7 @@ const vectorClient = createVectorClient()
 
 const VECTOR_COLLECTION = 'cyberstreams-intel'
 const VECTOR_SIZE = 4
+const SHOULD_SEED_SOURCES = process.env.AUTO_SEED_SOURCES !== 'false'
 
 interface NormalisedItem {
   id: string
@@ -160,7 +161,9 @@ async function run() {
   const runId = randomUUID()
   await ensureSourcesTable()
   await ensureIngestionTables()
-  await saveAuthorizedSources(AUTHORIZED_SOURCES)
+  if (SHOULD_SEED_SOURCES) {
+    await saveAuthorizedSources(AUTHORIZED_SOURCES)
+  }
 
   const authorizedSources = await getAuthorizedSources()
   logger.info({ sources: authorizedSources.length }, 'Starting ingestion pipeline')
