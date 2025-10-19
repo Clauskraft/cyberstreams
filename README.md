@@ -1,6 +1,6 @@
 # Cyberstreams - Dark Web Threat Intelligence Platform
 
-![Version](https://img.shields.io/badge/version-1.2.0-blue)
+![Version](https://img.shields.io/badge/version-1.3.0-blue)
 ![License](https://img.shields.io/badge/license-MIT-green)
 ![React](https://img.shields.io/badge/React-18.2.0-61dafb)
 ![TypeScript](https://img.shields.io/badge/TypeScript-5.0.2-3178c6)
@@ -275,7 +275,7 @@ Contributions are welcome! Please feel free to submit a Pull Request.
 
 ---
 
-**Status**: ✅ Production Ready | 🚀 Deployed on Cloudflare Pages | 📦 Version 1.2.0
+**Status**: ✅ Production Ready | 🚀 Deployed on Cloudflare Pages | 📦 Version 1.3.0
 
 ## 🆕 Recent Updates (v1.2.0 - 2025-10-19)
 
@@ -336,6 +336,38 @@ Complete RESTful API for intelligence scraper management:
 - Browser testing with Playwright
 - API endpoint verification
 - Component integration testing
+
+---
+
+
+## 🆕 Recent Updates (v1.3.0 - 2025-10-19)
+
+### 🎯 SignalStream Intelligence Module
+Replaces Dagens Puls with advanced AI-powered intelligence aggregation:
+
+#### Core Features
+- **In-Memory Vector Store**: Real-time semantic search with custom embedding
+- **Evidence Scoring**: Multi-dimensional ranking (Vector + BM25 + Freshness + Domain Authority)
+- **Focus Lanes**: Categorized intelligence streams for targeted analysis
+- **Session Tracing**: Interactive drill-down tracking for investigation workflows
+- **Multi-Language Support**: Danish and English content generation
+
+#### Intelligence Generation
+- **Configurable Sources**: RSS, Atom, Web, API ingestion
+- **Image Handling**: Generate, fetch, or hybrid mode with licensing
+- **Citation Requirements**: Trust labels and verification for all sources
+- **Article Synthesis**: AI-powered summaries with key points, analysis, and implications
+
+#### User Experience
+- **Interactive UI**: Expandable cards with drill-down capabilities
+- **Real-Time Updates**: Live intelligence feed with freshness indicators
+- **Filter & Search**: Category-based filtering with text search
+- **Evidence Transparency**: Full source attribution and confidence scores
+
+### 📦 Build Improvements
+- **Optimized Bundle**: SignalStream module at 25.30 KB (7.25 KB gzipped)
+- **Total Modules**: 1265 compiled successfully
+- **Build Time**: 2.85s average
 
 ---
 

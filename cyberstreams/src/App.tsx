@@ -93,7 +93,7 @@ function App() {
             <div className="flex items-center space-x-2">
               <div className="w-2 h-2 bg-cyber-blue rounded-full animate-pulse" />
               <span className="text-gray-400">Version</span>
-              <span className="font-mono text-cyber-blue font-semibold">1.2.0</span>
+              <span className="font-mono text-cyber-blue font-semibold">1.3.0</span>
             </div>
             <div className="w-px h-4 bg-gray-700" />
             <div className="text-gray-500">
