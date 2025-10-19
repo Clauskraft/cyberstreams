@@ -70,7 +70,10 @@
       "Bash(git checkout:*)",
       "Bash(git pull:*)",
       "Bash(npm test:*)",
-      "Bash(npm install)"
+      "Bash(npm install)",
+      "Bash(railway status:*)",
+      "Bash(gh repo view:*)",
+      "mcp__playwright__browser_wait_for"
     ],
     "deny": [],
     "ask": []

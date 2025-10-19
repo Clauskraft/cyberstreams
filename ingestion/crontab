@@ -1,0 +1,2 @@
+# Run the ingestion pipeline at the top of every hour
+0 * * * * cd /app && npm run ingest >> /var/log/cyberstreams/ingestion.log 2>&1

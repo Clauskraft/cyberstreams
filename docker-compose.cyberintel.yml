@@ -1,0 +1,318 @@
+version: '3.9'
+
+networks:
+  cyber-intel:
+    driver: bridge
+
+volumes:
+  misp-db:
+  misp-redis:
+  opencti-elasticsearch:
+  opencti-minio:
+  opencti-redis:
+  opencti-rabbitmq:
+  qdrant-storage:
+  postgres-data:
+  traefik-certificates:
+
+services:
+  traefik:
+    image: traefik:v3.0
+    command:
+      - --providers.docker=true
+      - --providers.docker.exposedbydefault=false
+      - --entrypoints.web.address=:80
+      - --entrypoints.websecure.address=:443
+      - --certificatesresolvers.letsencrypt.acme.tlschallenge=true
+      - --certificatesresolvers.letsencrypt.acme.email=${TRAEFIK_EMAIL}
+      - --certificatesresolvers.letsencrypt.acme.storage=/letsencrypt/acme.json
+      - --log.level=INFO
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - traefik-certificates:/letsencrypt
+    networks:
+      - cyber-intel
+
+  misp-mariadb:
+    image: mariadb:10.11
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: misp
+      MYSQL_USER: misp
+      MYSQL_PASSWORD: ${MISP_DB_PASSWORD}
+    volumes:
+      - misp-db:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - cyber-intel
+
+  misp-redis:
+    image: redis:7-alpine
+    command: ["redis-server", "--appendonly", "yes"]
+    volumes:
+      - misp-redis:/data
+    networks:
+      - cyber-intel
+
+  misp-web:
+    image: ghcr.io/misp/misp-docker:core-latest
+    depends_on:
+      misp-mariadb:
+        condition: service_healthy
+      misp-redis:
+        condition: service_started
+    environment:
+      MISP_BASEURL: https://${TRAEFIK_DOMAIN}
+      MYSQL_HOST: misp-mariadb
+      MYSQL_PASSWORD: ${MISP_DB_PASSWORD}
+      MYSQL_DATABASE: misp
+      MYSQL_USER: misp
+      REDIS_FQDN: misp-redis
+      MISP_LIVE: "1"
+    labels:
+      traefik.enable: "true"
+      traefik.http.routers.misp.rule: Host(`${TRAEFIK_DOMAIN}`)
+      traefik.http.routers.misp.entrypoints: websecure
+      traefik.http.routers.misp.tls: "true"
+      traefik.http.routers.misp.tls.certresolver: letsencrypt
+      traefik.http.services.misp.loadbalancer.server.port: "80"
+    networks:
+      - cyber-intel
+
+  misp-workers:
+    image: ghcr.io/misp/misp-docker:workers-latest
+    depends_on:
+      - misp-web
+    environment:
+      REDIS_FQDN: misp-redis
+      MYSQL_HOST: misp-mariadb
+      MYSQL_PASSWORD: ${MISP_DB_PASSWORD}
+      MYSQL_DATABASE: misp
+      MYSQL_USER: misp
+    networks:
+      - cyber-intel
+
+  opencti:
+    image: opencti/platform:6.2.6
+    depends_on:
+      - redis-opencti
+      - elasticsearch
+      - minio
+      - rabbitmq
+    environment:
+      APP__PORT: 8080
+      APP__ADMIN__EMAIL: ${OPENCTI_ADMIN_EMAIL}
+      APP__ADMIN__PASSWORD: ${OPENCTI_ADMIN_PASSWORD}
+      APP__ADMIN__TOKEN: ${OPENCTI_TOKEN}
+      APP__GRAPHQL__URL: http://opencti:8080
+      MINIO__ENDPOINT: minio
+      MINIO__PORT: 9000
+      MINIO__ACCESS_KEY: opencti
+      MINIO__SECRET_KEY: opencti_secret
+      RABBITMQ__HOSTNAME: rabbitmq
+      REDIS__HOSTNAME: redis-opencti
+      ELASTICSEARCH__URL: http://elasticsearch:9200
+    labels:
+      traefik.enable: "true"
+      traefik.http.routers.opencti.rule: Host(`opencti.${TRAEFIK_DOMAIN}`)
+      traefik.http.routers.opencti.entrypoints: websecure
+      traefik.http.routers.opencti.tls: "true"
+      traefik.http.routers.opencti.tls.certresolver: letsencrypt
+      traefik.http.services.opencti.loadbalancer.server.port: "8080"
+    networks:
+      - cyber-intel
+
+  opencti-worker:
+    image: opencti/worker:6.2.6
+    depends_on:
+      - opencti
+    environment:
+      OPENCTI_URL: http://opencti:8080
+      OPENCTI_TOKEN: ${OPENCTI_TOKEN}
+      REDIS__HOSTNAME: redis-opencti
+      WORKER_LOG_LEVEL: info
+    networks:
+      - cyber-intel
+
+  opencti-connector-misp-import:
+    image: opencti/connector-misp:6.2.6
+    depends_on:
+      - opencti
+      - misp-web
+    environment:
+      OPENCTI_URL: http://opencti:8080
+      OPENCTI_TOKEN: ${OPENCTI_TOKEN}
+      CONNECTOR_NAME: MISP Import
+      CONNECTOR_SCOPE: misp
+      CONNECTOR_CONFIDENCE_LEVEL: 75
+      CONNECTOR_AUTO: "true"
+      CONNECTOR_LOG_LEVEL: info
+      MISP_URL: https://${TRAEFIK_DOMAIN}
+      MISP_KEY: ${MISP_API_KEY}
+      MISP_SSL_VERIFY: ${MISP_VERIFY_TLS}
+      MISP_IMPORT_FROM_DATE: 2024-01-01
+      MISP_REPORT_TAG: opencti:imported
+      MISP_CREATE_REPORTS: "true"
+      MISP_CREATE_INDICATORS: "true"
+      MISP_CREATE_OBSERVABLES: "true"
+      MISP_CREATE_OBSERVABLES_INDICATORS: "true"
+      MISP_INTERVAL: 300
+    networks:
+      - cyber-intel
+
+  opencti-connector-misp-export:
+    image: opencti/connector-export-file-stix:6.2.6
+    depends_on:
+      - opencti
+    environment:
+      OPENCTI_URL: http://opencti:8080
+      OPENCTI_TOKEN: ${OPENCTI_TOKEN}
+      CONNECTOR_ID: 6b30f55c-2d91-4bf4-93c3-000000000001
+      CONNECTOR_NAME: MISP Export
+      CONNECTOR_SCOPE: application/json,application/zip
+      CONNECTOR_LOG_LEVEL: info
+      CONNECTOR_AUTO: "true"
+      CONNECTOR_CONFIDENCE_LEVEL: 75
+      CONNECTOR_ONLY_CONTEXTUAL: "false"
+      EXPORTED_FILE_TYPE: stix2bundle
+      MISP_URL: https://${TRAEFIK_DOMAIN}
+      MISP_KEY: ${MISP_API_KEY}
+      MISP_SSL_VERIFY: ${MISP_VERIFY_TLS}
+      MISP_TAG: opencti:exported
+      MISP_INTERVAL: 600
+    networks:
+      - cyber-intel
+
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.12.2
+    environment:
+      - discovery.type=single-node
+      - xpack.security.enabled=false
+    volumes:
+      - opencti-elasticsearch:/usr/share/elasticsearch/data
+    networks:
+      - cyber-intel
+
+  minio:
+    image: minio/minio:RELEASE.2024-02-24T17-11-14Z
+    command: server /data
+    environment:
+      MINIO_ROOT_USER: opencti
+      MINIO_ROOT_PASSWORD: opencti_secret
+    volumes:
+      - opencti-minio:/data
+    networks:
+      - cyber-intel
+
+  rabbitmq:
+    image: rabbitmq:3.12-management
+    environment:
+      RABBITMQ_DEFAULT_USER: guest
+      RABBITMQ_DEFAULT_PASS: guest
+    volumes:
+      - opencti-rabbitmq:/var/lib/rabbitmq
+    networks:
+      - cyber-intel
+
+  redis-opencti:
+    image: redis:7-alpine
+    command: ["redis-server", "--save", "60", "1"]
+    volumes:
+      - opencti-redis:/data
+    networks:
+      - cyber-intel
+
+  qdrant:
+    image: qdrant/qdrant:v1.8.3
+    environment:
+      QDRANT__SERVICE__GRPC_PORT: 6334
+    volumes:
+      - qdrant-storage:/qdrant/storage
+    labels:
+      traefik.enable: "true"
+      traefik.http.routers.qdrant.rule: Host(`vector.${TRAEFIK_DOMAIN}`)
+      traefik.http.routers.qdrant.entrypoints: websecure
+      traefik.http.routers.qdrant.tls: "true"
+      traefik.http.routers.qdrant.tls.certresolver: letsencrypt
+      traefik.http.services.qdrant.loadbalancer.server.port: "6333"
+    networks:
+      - cyber-intel
+
+  postgres:
+    image: postgres:15
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    networks:
+      - cyber-intel
+
+  ingestion:
+    build:
+      context: .
+      dockerfile: ingestion/Dockerfile
+    depends_on:
+      - postgres
+      - misp-web
+      - opencti
+      - qdrant
+    environment:
+      NODE_ENV: production
+      POSTGRES_HOST: postgres
+      POSTGRES_PORT: 5432
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      MISP_BASE_URL: https://${TRAEFIK_DOMAIN}
+      MISP_API_KEY: ${MISP_API_KEY}
+      MISP_VERIFY_TLS: ${MISP_VERIFY_TLS}
+      OPENCTI_API_URL: http://opencti:8080
+      OPENCTI_TOKEN: ${OPENCTI_TOKEN}
+      VECTOR_DB_URL: http://qdrant:6333
+      VECTOR_DB_API_KEY: ${VECTOR_DB_API_KEY}
+      INGESTION_LOG_LEVEL: ${INGESTION_LOG_LEVEL:-info}
+    networks:
+      - cyber-intel
+
+  cyberstreams-app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    depends_on:
+      - postgres
+      - qdrant
+      - misp-web
+      - opencti
+    environment:
+      NODE_ENV: production
+      PORT: 3000
+      POSTGRES_HOST: postgres
+      POSTGRES_PORT: 5432
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      MISP_BASE_URL: https://${TRAEFIK_DOMAIN}
+      MISP_API_KEY: ${MISP_API_KEY}
+      MISP_VERIFY_TLS: ${MISP_VERIFY_TLS}
+      OPENCTI_API_URL: http://opencti:8080
+      OPENCTI_TOKEN: ${OPENCTI_TOKEN}
+      VECTOR_DB_URL: http://qdrant:6333
+      VECTOR_DB_API_KEY: ${VECTOR_DB_API_KEY}
+    labels:
+      traefik.enable: "true"
+      traefik.http.routers.cyberstreams.rule: Host(`app.${TRAEFIK_DOMAIN}`)
+      traefik.http.routers.cyberstreams.entrypoints: websecure
+      traefik.http.routers.cyberstreams.tls: "true"
+      traefik.http.routers.cyberstreams.tls.certresolver: letsencrypt
+      traefik.http.services.cyberstreams.loadbalancer.server.port: "3000"
+    networks:
+      - cyber-intel

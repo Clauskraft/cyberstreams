@@ -1,16 +1,20 @@
 import 'dotenv/config'
 import express from 'express'
 import cors from 'cors'
-import rateLimit from 'express-rate-limit'
-import jwt from 'jsonwebtoken'
-import { summarizationService } from './services/summarization.js'
-import { startIngestionScheduler, MispClient, OpenCTIClient } from './ingestion/index.js'
-import { QdrantClient, createEmbedding } from './lib/vectorClient.js'
-import { logger } from './lib/logger.js'
+import { randomUUID } from 'crypto'
 
-// Import our source validation (note: will need to be converted to JS or use babel)
-// For now, inline the validation logic
-const AUTHORIZED_SOURCES = [
+import logger from './lib/logger.js'
+import createMispClient from './lib/mispClient.js'
+import createOpenCtiClient from './lib/openCtiClient.js'
+import createVectorClient from './lib/vectorClient.js'
+import {
+  ensureSourcesTable,
+  getAuthorizedSources,
+  saveAuthorizedSources
+} from './lib/authorizedSourceRepository.js'
+
+// Fallback sources used until the PostgreSQL repository is populated
+const FALLBACK_AUTHORIZED_SOURCES = [
   {
     id: 'cfcs_dk',
     name: 'Center for Cybersikkerhed (CFCS)',
@@ -55,79 +59,46 @@ const AUTHORIZED_SOURCES = [
 
 const app = express()
 const PORT = process.env.PORT || 3001
-const JWT_SECRET = process.env.JWT_SECRET || 'development-secret'
 
-const mispClient = new MispClient({
-  baseUrl: process.env.MISP_URL,
-  apiKey: process.env.MISP_KEY
-})
+const mispClient = createMispClient()
+const openCtiClient = createOpenCtiClient()
+const vectorClient = createVectorClient()
 
-const openCtiClient = new OpenCTIClient({
-  baseUrl: process.env.OPENCTI_URL,
-  apiToken: process.env.OPENCTI_TOKEN
-})
+let cachedSources = null
+let cachedSourcesLoadedAt = 0
+const CACHE_TTL_MS = 5 * 60 * 1000
 
-const vectorSearchClient = new QdrantClient({
-  baseUrl: process.env.QDRANT_URL,
-  apiKey: process.env.QDRANT_API_KEY,
-  collection: process.env.QDRANT_COLLECTION || 'cyberstreams_summaries'
-})
+async function loadAuthorizedSources() {
+  const now = Date.now()
+  if (cachedSources && now - cachedSourcesLoadedAt < CACHE_TTL_MS) {
+    return cachedSources
+  }
 
-if (process.env.DATABASE_URL) {
-  startIngestionScheduler({
-    dbConnectionString: process.env.DATABASE_URL,
-    misp: {
-      baseUrl: process.env.MISP_URL,
-      apiKey: process.env.MISP_KEY
-    },
-    opencti: {
-      baseUrl: process.env.OPENCTI_URL,
-      apiToken: process.env.OPENCTI_TOKEN
+  try {
+    await ensureSourcesTable()
+    const sources = await getAuthorizedSources()
+
+    if (!sources.length && process.env.AUTO_SEED_SOURCES !== 'false') {
+      await saveAuthorizedSources(FALLBACK_AUTHORIZED_SOURCES)
+      cachedSources = FALLBACK_AUTHORIZED_SOURCES
+    } else if (!sources.length) {
+      cachedSources = FALLBACK_AUTHORIZED_SOURCES
+    } else {
+      cachedSources = sources
     }
-  }).catch((error) => {
-    logger.error({ err: error }, 'Failed to start ingestion scheduler')
-  })
-} else {
-  logger.warn('DATABASE_URL is not configured, ingestion scheduler not started')
-}
 
-const apiLimiter = rateLimit({
-  windowMs: 60 * 1000,
-  max: 120,
-  standardHeaders: true,
-  legacyHeaders: false,
-  message: 'Rate limit exceeded'
-})
+    cachedSourcesLoadedAt = now
+    return cachedSources
+  } catch (error) {
+    logger.error({ err: error }, 'Failed to load authorized sources from PostgreSQL, using fallback list')
+    cachedSources = FALLBACK_AUTHORIZED_SOURCES
+    cachedSourcesLoadedAt = now
+    return cachedSources
+  }
+}
 
 app.use(cors())
-app.use(express.json({ limit: '2mb' }))
-app.use('/api', apiLimiter)
-
-function authenticate(req, res, next) {
-  const header = req.headers.authorization
-  if (!header) {
-    return res.status(401).json({ success: false, error: 'Missing Authorization header' })
-  }
-
-  const token = header.replace('Bearer ', '')
-  try {
-    const payload = jwt.verify(token, JWT_SECRET)
-    req.user = payload
-    return next()
-  } catch (error) {
-    return res.status(401).json({ success: false, error: 'Invalid or expired token' })
-  }
-}
-
-app.post('/api/auth/token', (req, res) => {
-  const { username } = req.body || {}
-  if (!username) {
-    return res.status(400).json({ success: false, error: 'username is required' })
-  }
-
-  const token = jwt.sign({ sub: username }, JWT_SECRET, { expiresIn: '1h' })
-  res.json({ success: true, token })
-})
+app.use(express.json())
 
 // Mock data for pulse endpoint
 const mockPulseData = [
@@ -178,68 +149,6 @@ const mockPulseData = [
   },
 ]
 
-class ThreatDataService {
-  constructor({ mispClient, openCtiClient, vectorClient }) {
-    this.mispClient = mispClient
-    this.openCtiClient = openCtiClient
-    this.vectorClient = vectorClient
-  }
-
-  async getThreats() {
-    const attributes = await this.mispClient.fetchRecent(25)
-    return attributes.map((attribute) => ({
-      id: attribute.id,
-      type: attribute.type,
-      value: attribute.value,
-      comment: attribute.comment,
-      timestamp: attribute.timestamp,
-      to_ids: attribute.to_ids,
-      category: attribute.category,
-      event_id: attribute.event_id
-    }))
-  }
-
-  async getPredictions() {
-    const predictions = await this.openCtiClient.fetchPredictedThreats(15)
-    return predictions.map((item) => ({
-      id: item.id,
-      description: item.description,
-      created: item.created,
-      modified: item.modified,
-      confidence: item.confidence,
-      source: item.createdBy?.name,
-      labels: item.objectLabel?.edges?.map((edge) => edge.node.value) || []
-    }))
-  }
-
-  async semanticSearch(query) {
-    if (!query) {
-      return []
-    }
-    try {
-      const embedding = await createEmbedding(query)
-      if (!embedding.length) {
-        return []
-      }
-      const results = await this.vectorClient.search(embedding, 10)
-      return results.result?.map((entry) => ({
-        id: entry.id,
-        score: entry.score,
-        payload: entry.payload
-      })) || []
-    } catch (error) {
-      logger.error({ err: error }, 'Vector search failed')
-      return []
-    }
-  }
-}
-
-const threatDataService = new ThreatDataService({
-  mispClient,
-  openCtiClient,
-  vectorClient: vectorSearchClient
-})
-
 // API Routes
 app.get('/api/pulse', (req, res) => {
   res.json({
@@ -281,48 +190,75 @@ app.get('/api/health', (req, res) => {
   res.json({
     status: 'operational',
     timestamp: new Date().toISOString(),
-    version: '1.0.0'
+    version: '1.0.0',
   })
 })
 
-app.post('/api/summary', authenticate, async (req, res) => {
+app.get('/api/config/sources', async (req, res) => {
   try {
-    const record = await summarizationService.summarize(req.body)
-    res.json({ success: true, data: record })
+    const sources = await loadAuthorizedSources()
+    res.json({ success: true, count: sources.length, data: sources })
   } catch (error) {
-    logger.error({ err: error }, 'Failed to generate summary')
-    res.status(500).json({ success: false, error: error.message })
+    logger.error({ err: error }, 'Failed to load authorized sources via API')
+    res.status(500).json({ success: false, error: 'Unable to load authorized sources' })
   }
 })
 
-app.get('/api/cti/threats/recent', authenticate, async (req, res) => {
+app.get('/api/cti/misp/events', async (req, res) => {
+  if (!mispClient.isConfigured) {
+    return res.status(503).json({ success: false, error: 'MISP integration is not configured' })
+  }
+
   try {
-    const data = await threatDataService.getThreats()
-    res.json({ success: true, data })
+    const events = await mispClient.listEvents({ limit: Number(req.query.limit) || 25 })
+    res.json({ success: true, count: events.length, data: events })
   } catch (error) {
-    logger.error({ err: error }, 'Failed to fetch recent threats')
-    res.status(500).json({ success: false, error: 'Unable to fetch recent threats' })
+    logger.error({ err: error }, 'Failed to fetch events from MISP via API')
+    res.status(502).json({ success: false, error: 'Failed to reach MISP API' })
   }
 })
 
-app.get('/api/cti/predictions', authenticate, async (req, res) => {
+app.get('/api/cti/opencti/observables', async (req, res) => {
+  if (!openCtiClient.isConfigured) {
+    return res.status(503).json({ success: false, error: 'OpenCTI integration is not configured' })
+  }
+
   try {
-    const data = await threatDataService.getPredictions()
-    res.json({ success: true, data })
+    const observables = await openCtiClient.listObservables({
+      search: req.query.search,
+      first: Number(req.query.first) || 25
+    })
+    res.json({ success: true, count: observables.length, data: observables })
   } catch (error) {
-    logger.error({ err: error }, 'Failed to fetch predictions')
-    res.status(500).json({ success: false, error: 'Unable to fetch predictions' })
+    logger.error({ err: error }, 'Failed to fetch observables from OpenCTI via API')
+    res.status(502).json({ success: false, error: 'Failed to reach OpenCTI API' })
   }
 })
 
-app.get('/api/cti/search', authenticate, async (req, res) => {
+app.post('/api/cti/misp/observables', async (req, res) => {
+  if (!mispClient.isConfigured) {
+    return res.status(503).json({ success: false, error: 'MISP integration is not configured' })
+  }
+
+  const { value, type, comment, tags = [] } = req.body || {}
+
+  if (!value || !type) {
+    return res.status(400).json({ success: false, error: 'value and type are required fields' })
+  }
+
   try {
-    const { q } = req.query
-    const data = await threatDataService.semanticSearch(q)
-    res.json({ success: true, data })
+    const response = await mispClient.pushObservable({
+      uuid: randomUUID(),
+      value,
+      type,
+      comment,
+      tags
+    })
+
+    res.status(201).json({ success: true, data: response })
   } catch (error) {
-    logger.error({ err: error }, 'Semantic search failed')
-    res.status(500).json({ success: false, error: 'Semantic search failed' })
+    logger.error({ err: error, value, type }, 'Failed to create observable in MISP')
+    res.status(502).json({ success: false, error: 'Failed to create observable in MISP' })
   }
 })
 
@@ -335,14 +271,16 @@ class DailyPulseGenerator {
   // Hovedfunktion til at generere daglig puls
   async getDailyPulse() {
     try {
+      const authorizedSources = await loadAuthorizedSources()
+
       // 1. Hent data fra autoriserede kilder
-      const rawDocuments = await this.fetchFromAuthorizedSources()
-      
+      const rawDocuments = await this.fetchFromAuthorizedSources(authorizedSources)
+
       // 2. Filtrer og valider kilder
-      const validatedDocuments = this.validateAndFilterSources(rawDocuments)
+      const validatedDocuments = this.validateAndFilterSources(rawDocuments, authorizedSources)
       
       // 3. Score og prioriter dokumenter
-      const scoredDocuments = this.scoreDocuments(validatedDocuments)
+      const scoredDocuments = this.scoreDocuments(validatedDocuments, authorizedSources)
       
       // 4. Udvælg top 5-7 dokumenter
       const selectedDocuments = this.selectTopDocuments(scoredDocuments, 7)
@@ -357,7 +295,7 @@ class DailyPulseGenerator {
         success: true,
         timestamp: new Date().toISOString(),
         timezone: this.timezone,
-        totalSources: AUTHORIZED_SOURCES.length,
+        totalSources: authorizedSources.length,
         validDocuments: validatedDocuments.length,
         selectedItems: enrichedPulseItems.length,
         data: enrichedPulseItems,
@@ -374,90 +312,82 @@ class DailyPulseGenerator {
     }
   }
 
-  // Hent data fra autoriserede kilder (simuleret)
-  async fetchFromAuthorizedSources() {
-    // I rigtig implementation ville dette hente fra RSS feeds, APIs, og vector database
-    const mockDocuments = [
-      {
-        id: 'doc_1',
-        title: 'Kritisk sårbarhed i Microsoft Exchange Server',
-        description: 'Microsoft har udgivet en emergency patch til Exchange Server efter opdagelse af en zero-day sårbarhed der aktivt udnyttes.',
-        content: 'CVE-2024-1234 er en kritisk remote code execution sårbarhed i Microsoft Exchange Server 2019 og 2022. Sårbarheden har en CVSS score på 9.8 og er aktivt udnyttet i the wild.',
-        source: 'Microsoft Security Response Center',
-        sourceDomain: 'msrc.microsoft.com',
-        url: 'https://msrc.microsoft.com/update-guide/vulnerability/CVE-2024-1234',
-        timestamp: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
-        category: 'vulnerability',
-        severity: 'critical',
-        cves: ['CVE-2024-1234'],
-        cvssScore: 9.8,
-        affectedProducts: ['Exchange Server 2019', 'Exchange Server 2022'],
-        verified: true
-      },
-      {
-        id: 'doc_2', 
-        title: 'ENISA udgiver ny guide til AI cybersikkerhed',
-        description: 'ENISA har publiceret en omfattende guide til sikring af AI-systemer mod cybertrusler i EU.',
-        source: 'ENISA',
-        sourceDomain: 'enisa.europa.eu',
-        url: 'https://enisa.europa.eu/publications/ai-cybersecurity-guidelines-2024',
-        timestamp: new Date(Date.now() - 4 * 60 * 60 * 1000).toISOString(),
-        category: 'guidance',
-        severity: 'medium',
-        verified: true
-      },
-      {
-        id: 'doc_3',
-        title: 'Ny ransomware-kampagne retter mod danske kommuner', 
-        description: 'CFCS advarer om målrettet ransomware-kampagne der udnytter VPN-sårbarheder i danske kommuner.',
-        source: 'Center for Cybersikkerhed (CFCS)',
-        sourceDomain: 'cfcs.dk',
-        url: 'https://cfcs.dk/da/nyheder/ransomware-kommuner-2024',
-        timestamp: new Date(Date.now() - 6 * 60 * 60 * 1000).toISOString(),
-        category: 'incident',
+  // Hent data fra autoriserede kilder via MISP, OpenCTI og fallback feeds
+  async fetchFromAuthorizedSources(authorizedSources) {
+    const [mispEvents, openCtiObservables] = await Promise.all([
+      mispClient.listEvents({ limit: 40 }),
+      openCtiClient.listObservables({ first: 40 })
+    ])
+
+    const mapAuthorizedSource = (domainOrName) => {
+      if (!domainOrName) return null
+      const normalized = domainOrName.toLowerCase()
+      return authorizedSources.find((source) => {
+        const domain = typeof source.domain === 'string' ? source.domain.toLowerCase() : ''
+        const name = typeof source.name === 'string' ? source.name.toLowerCase() : ''
+        return normalized.includes(domain) || normalized.includes(name)
+      })
+    }
+
+    const normalizedMisp = mispEvents.map((event) => {
+      const firstAttribute = event.attributes?.[0]
+      const summary = event.attributes
+        ?.slice(0, 5)
+        .map((attr) => `${attr.type}: ${attr.value}`)
+        .join('\n')
+
+      const matchedSource = mapAuthorizedSource(event?.tags?.[0]?.name)
+
+      const timestampMs = event.timestamp ? Number(event.timestamp) * 1000 : Date.now()
+
+      return {
+        id: event.id,
+        title: event.title || 'MISP Event',
+        description: summary || 'MISP event without detailed attributes',
+        source: matchedSource?.name || 'MISP',
+        sourceDomain: matchedSource?.domain || 'misp.internal',
+        url: firstAttribute?.value || mispClient.baseUrl,
+        timestamp: new Date(timestampMs).toISOString(),
+        category: firstAttribute?.category || 'indicator',
         severity: 'high',
-        affectedSectors: ['government', 'municipal'],
-        geography: ['Denmark'],
-        verified: true
-      },
-      {
-        id: 'doc_4',
-        title: 'CISA udgiver Emergency Directive for kritisk infrastruktur',
-        description: 'CISA har udstedt en binding sikkerhedsdirektiv efter opdagelse af aktive angreb mod energisektoren.',
-        source: 'CISA',
-        sourceDomain: 'cisa.gov',
-        url: 'https://cisa.gov/emergency-directive-24-01',
-        timestamp: new Date(Date.now() - 8 * 60 * 60 * 1000).toISOString(),
-        category: 'directive',
-        severity: 'critical',
-        affectedSectors: ['energy', 'critical_infrastructure'],
-        geography: ['United States'],
-        verified: true
-      },
-      {
-        id: 'doc_5',
-        title: 'NVD opdaterer CVSS score for kritiske sårbarheder',
-        description: 'National Vulnerability Database har opdateret severitetsscores for flere høj-profil sårbarheder.',
-        source: 'National Vulnerability Database',
-        sourceDomain: 'nvd.nist.gov', 
-        url: 'https://nvd.nist.gov/vuln/detail/CVE-2024-5678',
-        timestamp: new Date(Date.now() - 12 * 60 * 60 * 1000).toISOString(),
-        category: 'update',
-        severity: 'high',
-        cves: ['CVE-2024-5678', 'CVE-2024-5679'],
+        tags: event.tags?.map((tag) => tag.name) || [],
         verified: true
       }
-    ]
+    })
 
-    return mockDocuments
+    const normalizedOpenCti = openCtiObservables.map((observable) => {
+      const matchedSource = mapAuthorizedSource(observable.creators?.[0])
+      const timestamp = observable.updatedAt || observable.createdAt || new Date().toISOString()
+      return {
+        id: observable.id,
+        title: `Observable: ${observable.value}`,
+        description: `Observable of type ${observable.type} oprettet ${observable.createdAt}`,
+        source: matchedSource?.name || 'OpenCTI',
+        sourceDomain: matchedSource?.domain || 'opencti.internal',
+        url: `${process.env.OPENCTI_API_URL?.replace(/\/$/, '') || ''}/dashboard/id/${observable.id}`,
+        timestamp,
+        category: 'observable',
+        severity: 'medium',
+        verified: true
+      }
+    })
+
+    const combined = [...normalizedMisp, ...normalizedOpenCti]
+
+    if (!combined.length) {
+      logger.warn('Falling back to mock documents because no CTI data was returned')
+      return this.getFallbackData().data
+    }
+
+    return combined
   }
 
   // Validerer og filtrerer kilder for troværdighed
-  validateAndFilterSources(documents) {
+  validateAndFilterSources(documents, authorizedSources) {
     return documents.filter(doc => {
       // 1. Skal være fra autoriseret kilde
-      const isAuthorized = AUTHORIZED_SOURCES.some(source => 
-        doc.sourceDomain.includes(source.domain) || 
+      const isAuthorized = authorizedSources.some(source =>
+        doc.sourceDomain.includes(source.domain) ||
         doc.source.toLowerCase().includes(source.name.toLowerCase())
       )
       
@@ -483,12 +413,12 @@ class DailyPulseGenerator {
   }
 
   // Scorer dokumenter baseret på troværdighed og relevans
-  scoreDocuments(documents) {
+  scoreDocuments(documents, authorizedSources) {
     return documents.map(doc => {
       let score = 0
 
       // Kilde-score (0-40 points)
-      const source = AUTHORIZED_SOURCES.find(s => 
+      const source = authorizedSources.find(s =>
         doc.sourceDomain.includes(s.domain)
       )
       if (source) {
