@@ -1,8 +1,10 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo, useCallback } from 'react'
 import { Card } from '@components/Card'
 import { Text } from '@components/Text'
 import { Button } from '@components/Button'
 import IntelControlPanel from '@components/IntelControlPanel'
+import { VectorDBTable, VectorItem } from '@components/VectorDBTable'
+import { useIntelRetrieval } from '@/hooks/useIntelRetrieval'
 import { 
   Settings, Database, Search, Globe, Key, Shield, 
   Play, Pause, RefreshCw, Trash2, Plus,
@@ -62,6 +64,57 @@ export default function Admin() {
     searchPerformance: '~120ms avg',
     storageUsed: '2.3 GB'
   })
+
+  const {
+    results: vectorResults,
+    detail: vectorDetail,
+    loading: vectorLoading,
+    error: vectorError,
+    lastQuery,
+    composeIntel,
+    expandScope,
+    drillDown,
+    seedDefaultIntel,
+    resetError,
+  } = useIntelRetrieval({ namespace: 'intel-admin' })
+
+  const [selectedVectorId, setSelectedVectorId] = useState<string | null>(null)
+
+  const vectorData = useMemo<VectorItem[]>(() =>
+    vectorResults.map(result => {
+      const metadata = result.metadata ?? {}
+      const textFromMetadata = typeof metadata.text === 'string' ? metadata.text : undefined
+      const titleFromMetadata = typeof metadata.title === 'string' ? metadata.title : undefined
+      const sourceFromMetadata = typeof metadata.source === 'string' ? metadata.source : undefined
+      const timestampFromMetadata = typeof metadata.timestamp === 'string' ? metadata.timestamp : undefined
+      const typeFromMetadata = typeof metadata.type === 'string' ? metadata.type : undefined
+      const explanationFromMetadata = typeof metadata.why === 'string' ? metadata.why : undefined
+      const tagsFromMetadata = Array.isArray(metadata.tags)
+        ? (metadata.tags as unknown[]).filter((tag): tag is string => typeof tag === 'string')
+        : undefined
+
+      return {
+        id: result.id,
+        content: result.text ?? textFromMetadata ?? titleFromMetadata ?? '—',
+        source: result.source ?? sourceFromMetadata,
+        timestamp: result.timestamp ?? timestampFromMetadata,
+        category: typeFromMetadata,
+        tags: result.tags ?? tagsFromMetadata,
+        metadata,
+        metrics: result.metrics,
+        explanation: result.explanation ?? explanationFromMetadata,
+      }
+    }),
+    [vectorResults],
+  )
+
+  const handleSelectVector = useCallback(
+    async (item: VectorItem) => {
+      setSelectedVectorId(item.id)
+      await drillDown(item.id)
+    },
+    [drillDown],
+  )
 
   // New keyword form
   const [newKeyword, setNewKeyword] = useState({ keyword: '', category: '', priority: 'medium' as const })
@@ -147,6 +200,27 @@ export default function Admin() {
       suggestedKeywords: ['breach', 'credentials', 'exploits']
     }
   ])
+
+  useEffect(() => {
+    if (activeTab === 'database') {
+      seedDefaultIntel()
+        .then(() => {
+          if (vectorResults.length === 0) {
+            return composeIntel()
+          }
+          return undefined
+        })
+        .catch(error => {
+          console.error('Failed to load vector intelligence', error)
+        })
+    }
+  }, [activeTab, composeIntel, seedDefaultIntel, vectorResults.length])
+
+  useEffect(() => {
+    if (vectorData.length && !selectedVectorId) {
+      setSelectedVectorId(vectorData[0].id)
+    }
+  }, [vectorData, selectedVectorId])
 
   useEffect(() => {
     // Load mock data med dark-web kilder og politiske keywords
@@ -887,7 +961,53 @@ export default function Admin() {
 
         {activeTab === 'database' && (
           <>
-            {/* Vector Database Stats */}
+            <Card>
+              <Text variant="title">Intelligence Retrieval Controls</Text>
+              <p className="text-sm text-gray-400 mt-1">
+                Seed, søg og udvid scope direkte mod den konfigurerede vector database. Brug knapperne til at hente
+                aktuelle scorer og forklaringer på hvorfor resultaterne vises.
+              </p>
+              <div className="flex flex-wrap gap-3 mt-4">
+                <Button disabled={vectorLoading} onClick={() => composeIntel()}>
+                  <Bot className="w-4 h-4 mr-2" />
+                  Compose Intel Brief
+                </Button>
+                <Button disabled={vectorLoading || vectorData.length === 0} onClick={() => expandScope()}>
+                  <Globe className="w-4 h-4 mr-2" />
+                  Expand Scope
+                </Button>
+                <Button
+                  disabled={vectorLoading || !selectedVectorId}
+                  onClick={() => selectedVectorId && drillDown(selectedVectorId)}
+                >
+                  <Search className="w-4 h-4 mr-2" />
+                  Drill-down Selection
+                </Button>
+                <Button
+                  disabled={vectorLoading}
+                  onClick={() => seedDefaultIntel()}
+                  className="bg-gray-700 hover:bg-gray-600"
+                >
+                  <RefreshCw className="w-4 h-4 mr-2" />
+                  Re-seed Namespaces
+                </Button>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6">
+                <div className="bg-gray-800 p-3 rounded border border-gray-700">
+                  <div className="text-xs text-gray-400">Last Query</div>
+                  <div className="text-sm text-white break-words">{lastQuery}</div>
+                </div>
+                <div className="bg-gray-800 p-3 rounded border border-gray-700">
+                  <div className="text-xs text-gray-400">Selected Document</div>
+                  <div className="text-sm text-white">{selectedVectorId ?? 'Ingen valgt'}</div>
+                </div>
+                <div className="bg-gray-800 p-3 rounded border border-gray-700">
+                  <div className="text-xs text-gray-400">Vector Store Health</div>
+                  <div className="text-sm text-white">{vectorLoading ? 'Kontrollerer...' : 'Operativ (forventer 200)'}</div>
+                </div>
+              </div>
+            </Card>
+
             <Card>
               <Text variant="title">Vector Database Statistics</Text>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-4">
@@ -908,21 +1028,61 @@ export default function Admin() {
                   <div className="text-sm font-medium">{vectorDBStats.lastIndexed}</div>
                 </div>
               </div>
-              <div className="flex gap-2 mt-4">
-                <Button>
-                  <RefreshCw className="w-4 h-4 mr-2" />
-                  Rebuild Index
-                </Button>
-                <Button>
-                  <Search className="w-4 h-4 mr-2" />
-                  Test Search
-                </Button>
-                <Button variant="danger">
-                  <Trash2 className="w-4 h-4 mr-2" />
-                  Clear Database
-                </Button>
+            </Card>
+
+            <Card>
+              <Text variant="title">Vector Matches</Text>
+              <p className="text-sm text-gray-400 mt-1">
+                Resultaterne kommer direkte fra den eksterne vector database og viser både similarity score og hybrid
+                BM25 forklaringer.
+              </p>
+              <div className="mt-4">
+                <VectorDBTable
+                  data={vectorData}
+                  loading={vectorLoading}
+                  error={vectorError}
+                  selectedId={selectedVectorId}
+                  onSelectItem={handleSelectVector}
+                  onClearError={resetError}
+                />
               </div>
             </Card>
+
+            {vectorDetail && (
+              <Card>
+                <Text variant="title">Why surfaced?</Text>
+                <div className="mt-4 space-y-2">
+                  <div className="text-lg font-semibold text-white">
+                    {vectorDetail.title ?? vectorDetail.text ?? 'Ukendt dokument'}
+                  </div>
+                  <div className="text-sm text-gray-300 whitespace-pre-wrap">
+                    {vectorDetail.explanation ?? 'Ingen forklaring modtaget fra vector database.'}
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-3 text-sm text-gray-400">
+                    <div>
+                      <span className="block text-xs uppercase tracking-wide text-gray-500">Score</span>
+                      <span className="text-white">{vectorDetail.metrics.score.toFixed(3)}</span>
+                    </div>
+                    {typeof vectorDetail.metrics.vectorDistance === 'number' && (
+                      <div>
+                        <span className="block text-xs uppercase tracking-wide text-gray-500">Vector distance</span>
+                        <span className="text-white">{vectorDetail.metrics.vectorDistance.toFixed(3)}</span>
+                      </div>
+                    )}
+                    {typeof vectorDetail.metrics.bm25 === 'number' && (
+                      <div>
+                        <span className="block text-xs uppercase tracking-wide text-gray-500">BM25</span>
+                        <span className="text-white">{vectorDetail.metrics.bm25.toFixed(3)}</span>
+                      </div>
+                    )}
+                  </div>
+                  <div className="text-xs text-gray-500">
+                    Kilde: {vectorDetail.source ?? 'Ukendt'} • Tidspunkt:{' '}
+                    {vectorDetail.timestamp ? new Date(vectorDetail.timestamp).toLocaleString() : 'Ukendt'}
+                  </div>
+                </div>
+              </Card>
+            )}
           </>
         )}
 

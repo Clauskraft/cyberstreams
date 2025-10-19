@@ -23,7 +23,8 @@
       "@theme/*": ["./src/theme/*"],
       "@tokens/*": ["./src/tokens/*"],
       "@data/*": ["./src/data/*"]
-    }
+    },
+    "types": ["vite/client", "vitest"]
   },
   "include": ["src"],
   "references": [{ "path": "./tsconfig.node.json" }]
