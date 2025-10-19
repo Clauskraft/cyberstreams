@@ -1,9 +1,20 @@
+import 'dotenv/config'
 import express from 'express'
 import cors from 'cors'
+import { randomUUID } from 'crypto'
 
-// Import our source validation (note: will need to be converted to JS or use babel)
-// For now, inline the validation logic
-const AUTHORIZED_SOURCES = [
+import logger from './lib/logger.js'
+import createMispClient from './lib/mispClient.js'
+import createOpenCtiClient from './lib/openCtiClient.js'
+import createVectorClient from './lib/vectorClient.js'
+import {
+  ensureSourcesTable,
+  getAuthorizedSources,
+  saveAuthorizedSources
+} from './lib/authorizedSourceRepository.js'
+
+// Fallback sources used until the PostgreSQL repository is populated
+const FALLBACK_AUTHORIZED_SOURCES = [
   {
     id: 'cfcs_dk',
     name: 'Center for Cybersikkerhed (CFCS)',
@@ -48,6 +59,43 @@ const AUTHORIZED_SOURCES = [
 
 const app = express()
 const PORT = process.env.PORT || 3001
+
+const mispClient = createMispClient()
+const openCtiClient = createOpenCtiClient()
+const vectorClient = createVectorClient()
+
+let cachedSources = null
+let cachedSourcesLoadedAt = 0
+const CACHE_TTL_MS = 5 * 60 * 1000
+
+async function loadAuthorizedSources() {
+  const now = Date.now()
+  if (cachedSources && now - cachedSourcesLoadedAt < CACHE_TTL_MS) {
+    return cachedSources
+  }
+
+  try {
+    await ensureSourcesTable()
+    const sources = await getAuthorizedSources()
+
+    if (!sources.length && process.env.AUTO_SEED_SOURCES !== 'false') {
+      await saveAuthorizedSources(FALLBACK_AUTHORIZED_SOURCES)
+      cachedSources = FALLBACK_AUTHORIZED_SOURCES
+    } else if (!sources.length) {
+      cachedSources = FALLBACK_AUTHORIZED_SOURCES
+    } else {
+      cachedSources = sources
+    }
+
+    cachedSourcesLoadedAt = now
+    return cachedSources
+  } catch (error) {
+    logger.error({ err: error }, 'Failed to load authorized sources from PostgreSQL, using fallback list')
+    cachedSources = FALLBACK_AUTHORIZED_SOURCES
+    cachedSourcesLoadedAt = now
+    return cachedSources
+  }
+}
 
 app.use(cors())
 app.use(express.json())
@@ -146,6 +194,74 @@ app.get('/api/health', (req, res) => {
   })
 })
 
+app.get('/api/config/sources', async (req, res) => {
+  try {
+    const sources = await loadAuthorizedSources()
+    res.json({ success: true, count: sources.length, data: sources })
+  } catch (error) {
+    logger.error({ err: error }, 'Failed to load authorized sources via API')
+    res.status(500).json({ success: false, error: 'Unable to load authorized sources' })
+  }
+})
+
+app.get('/api/cti/misp/events', async (req, res) => {
+  if (!mispClient.isConfigured) {
+    return res.status(503).json({ success: false, error: 'MISP integration is not configured' })
+  }
+
+  try {
+    const events = await mispClient.listEvents({ limit: Number(req.query.limit) || 25 })
+    res.json({ success: true, count: events.length, data: events })
+  } catch (error) {
+    logger.error({ err: error }, 'Failed to fetch events from MISP via API')
+    res.status(502).json({ success: false, error: 'Failed to reach MISP API' })
+  }
+})
+
+app.get('/api/cti/opencti/observables', async (req, res) => {
+  if (!openCtiClient.isConfigured) {
+    return res.status(503).json({ success: false, error: 'OpenCTI integration is not configured' })
+  }
+
+  try {
+    const observables = await openCtiClient.listObservables({
+      search: req.query.search,
+      first: Number(req.query.first) || 25
+    })
+    res.json({ success: true, count: observables.length, data: observables })
+  } catch (error) {
+    logger.error({ err: error }, 'Failed to fetch observables from OpenCTI via API')
+    res.status(502).json({ success: false, error: 'Failed to reach OpenCTI API' })
+  }
+})
+
+app.post('/api/cti/misp/observables', async (req, res) => {
+  if (!mispClient.isConfigured) {
+    return res.status(503).json({ success: false, error: 'MISP integration is not configured' })
+  }
+
+  const { value, type, comment, tags = [] } = req.body || {}
+
+  if (!value || !type) {
+    return res.status(400).json({ success: false, error: 'value and type are required fields' })
+  }
+
+  try {
+    const response = await mispClient.pushObservable({
+      uuid: randomUUID(),
+      value,
+      type,
+      comment,
+      tags
+    })
+
+    res.status(201).json({ success: true, data: response })
+  } catch (error) {
+    logger.error({ err: error, value, type }, 'Failed to create observable in MISP')
+    res.status(502).json({ success: false, error: 'Failed to create observable in MISP' })
+  }
+})
+
 // DAGENS PULS API - HØJTROVÆRDIGE KILDER
 class DailyPulseGenerator {
   constructor() {
@@ -155,14 +271,16 @@ class DailyPulseGenerator {
   // Hovedfunktion til at generere daglig puls
   async getDailyPulse() {
     try {
+      const authorizedSources = await loadAuthorizedSources()
+
       // 1. Hent data fra autoriserede kilder
-      const rawDocuments = await this.fetchFromAuthorizedSources()
-      
+      const rawDocuments = await this.fetchFromAuthorizedSources(authorizedSources)
+
       // 2. Filtrer og valider kilder
-      const validatedDocuments = this.validateAndFilterSources(rawDocuments)
+      const validatedDocuments = this.validateAndFilterSources(rawDocuments, authorizedSources)
       
       // 3. Score og prioriter dokumenter
-      const scoredDocuments = this.scoreDocuments(validatedDocuments)
+      const scoredDocuments = this.scoreDocuments(validatedDocuments, authorizedSources)
       
       // 4. Udvælg top 5-7 dokumenter
       const selectedDocuments = this.selectTopDocuments(scoredDocuments, 7)
@@ -177,7 +295,7 @@ class DailyPulseGenerator {
         success: true,
         timestamp: new Date().toISOString(),
         timezone: this.timezone,
-        totalSources: AUTHORIZED_SOURCES.length,
+        totalSources: authorizedSources.length,
         validDocuments: validatedDocuments.length,
         selectedItems: enrichedPulseItems.length,
         data: enrichedPulseItems,
@@ -185,7 +303,7 @@ class DailyPulseGenerator {
         nextUpdate: this.getNextUpdateTime()
       }
     } catch (error) {
-      console.error('DailyPulse generation failed:', error)
+      logger.error({ err: error }, 'DailyPulse generation failed')
       return {
         success: false,
         error: error.message,
@@ -194,90 +312,82 @@ class DailyPulseGenerator {
     }
   }
 
-  // Hent data fra autoriserede kilder (simuleret)
-  async fetchFromAuthorizedSources() {
-    // I rigtig implementation ville dette hente fra RSS feeds, APIs, og vector database
-    const mockDocuments = [
-      {
-        id: 'doc_1',
-        title: 'Kritisk sårbarhed i Microsoft Exchange Server',
-        description: 'Microsoft har udgivet en emergency patch til Exchange Server efter opdagelse af en zero-day sårbarhed der aktivt udnyttes.',
-        content: 'CVE-2024-1234 er en kritisk remote code execution sårbarhed i Microsoft Exchange Server 2019 og 2022. Sårbarheden har en CVSS score på 9.8 og er aktivt udnyttet i the wild.',
-        source: 'Microsoft Security Response Center',
-        sourceDomain: 'msrc.microsoft.com',
-        url: 'https://msrc.microsoft.com/update-guide/vulnerability/CVE-2024-1234',
-        timestamp: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
-        category: 'vulnerability',
-        severity: 'critical',
-        cves: ['CVE-2024-1234'],
-        cvssScore: 9.8,
-        affectedProducts: ['Exchange Server 2019', 'Exchange Server 2022'],
-        verified: true
-      },
-      {
-        id: 'doc_2', 
-        title: 'ENISA udgiver ny guide til AI cybersikkerhed',
-        description: 'ENISA har publiceret en omfattende guide til sikring af AI-systemer mod cybertrusler i EU.',
-        source: 'ENISA',
-        sourceDomain: 'enisa.europa.eu',
-        url: 'https://enisa.europa.eu/publications/ai-cybersecurity-guidelines-2024',
-        timestamp: new Date(Date.now() - 4 * 60 * 60 * 1000).toISOString(),
-        category: 'guidance',
-        severity: 'medium',
-        verified: true
-      },
-      {
-        id: 'doc_3',
-        title: 'Ny ransomware-kampagne retter mod danske kommuner', 
-        description: 'CFCS advarer om målrettet ransomware-kampagne der udnytter VPN-sårbarheder i danske kommuner.',
-        source: 'Center for Cybersikkerhed (CFCS)',
-        sourceDomain: 'cfcs.dk',
-        url: 'https://cfcs.dk/da/nyheder/ransomware-kommuner-2024',
-        timestamp: new Date(Date.now() - 6 * 60 * 60 * 1000).toISOString(),
-        category: 'incident',
+  // Hent data fra autoriserede kilder via MISP, OpenCTI og fallback feeds
+  async fetchFromAuthorizedSources(authorizedSources) {
+    const [mispEvents, openCtiObservables] = await Promise.all([
+      mispClient.listEvents({ limit: 40 }),
+      openCtiClient.listObservables({ first: 40 })
+    ])
+
+    const mapAuthorizedSource = (domainOrName) => {
+      if (!domainOrName) return null
+      const normalized = domainOrName.toLowerCase()
+      return authorizedSources.find((source) => {
+        const domain = typeof source.domain === 'string' ? source.domain.toLowerCase() : ''
+        const name = typeof source.name === 'string' ? source.name.toLowerCase() : ''
+        return normalized.includes(domain) || normalized.includes(name)
+      })
+    }
+
+    const normalizedMisp = mispEvents.map((event) => {
+      const firstAttribute = event.attributes?.[0]
+      const summary = event.attributes
+        ?.slice(0, 5)
+        .map((attr) => `${attr.type}: ${attr.value}`)
+        .join('\n')
+
+      const matchedSource = mapAuthorizedSource(event?.tags?.[0]?.name)
+
+      const timestampMs = event.timestamp ? Number(event.timestamp) * 1000 : Date.now()
+
+      return {
+        id: event.id,
+        title: event.title || 'MISP Event',
+        description: summary || 'MISP event without detailed attributes',
+        source: matchedSource?.name || 'MISP',
+        sourceDomain: matchedSource?.domain || 'misp.internal',
+        url: firstAttribute?.value || mispClient.baseUrl,
+        timestamp: new Date(timestampMs).toISOString(),
+        category: firstAttribute?.category || 'indicator',
         severity: 'high',
-        affectedSectors: ['government', 'municipal'],
-        geography: ['Denmark'],
-        verified: true
-      },
-      {
-        id: 'doc_4',
-        title: 'CISA udgiver Emergency Directive for kritisk infrastruktur',
-        description: 'CISA har udstedt en binding sikkerhedsdirektiv efter opdagelse af aktive angreb mod energisektoren.',
-        source: 'CISA',
-        sourceDomain: 'cisa.gov',
-        url: 'https://cisa.gov/emergency-directive-24-01',
-        timestamp: new Date(Date.now() - 8 * 60 * 60 * 1000).toISOString(),
-        category: 'directive',
-        severity: 'critical',
-        affectedSectors: ['energy', 'critical_infrastructure'],
-        geography: ['United States'],
-        verified: true
-      },
-      {
-        id: 'doc_5',
-        title: 'NVD opdaterer CVSS score for kritiske sårbarheder',
-        description: 'National Vulnerability Database har opdateret severitetsscores for flere høj-profil sårbarheder.',
-        source: 'National Vulnerability Database',
-        sourceDomain: 'nvd.nist.gov', 
-        url: 'https://nvd.nist.gov/vuln/detail/CVE-2024-5678',
-        timestamp: new Date(Date.now() - 12 * 60 * 60 * 1000).toISOString(),
-        category: 'update',
-        severity: 'high',
-        cves: ['CVE-2024-5678', 'CVE-2024-5679'],
+        tags: event.tags?.map((tag) => tag.name) || [],
         verified: true
       }
-    ]
+    })
 
-    return mockDocuments
+    const normalizedOpenCti = openCtiObservables.map((observable) => {
+      const matchedSource = mapAuthorizedSource(observable.creators?.[0])
+      const timestamp = observable.updatedAt || observable.createdAt || new Date().toISOString()
+      return {
+        id: observable.id,
+        title: `Observable: ${observable.value}`,
+        description: `Observable of type ${observable.type} oprettet ${observable.createdAt}`,
+        source: matchedSource?.name || 'OpenCTI',
+        sourceDomain: matchedSource?.domain || 'opencti.internal',
+        url: `${process.env.OPENCTI_API_URL?.replace(/\/$/, '') || ''}/dashboard/id/${observable.id}`,
+        timestamp,
+        category: 'observable',
+        severity: 'medium',
+        verified: true
+      }
+    })
+
+    const combined = [...normalizedMisp, ...normalizedOpenCti]
+
+    if (!combined.length) {
+      logger.warn('Falling back to mock documents because no CTI data was returned')
+      return this.getFallbackData().data
+    }
+
+    return combined
   }
 
   // Validerer og filtrerer kilder for troværdighed
-  validateAndFilterSources(documents) {
+  validateAndFilterSources(documents, authorizedSources) {
     return documents.filter(doc => {
       // 1. Skal være fra autoriseret kilde
-      const isAuthorized = AUTHORIZED_SOURCES.some(source => 
-        doc.sourceDomain.includes(source.domain) || 
+      const isAuthorized = authorizedSources.some(source =>
+        doc.sourceDomain.includes(source.domain) ||
         doc.source.toLowerCase().includes(source.name.toLowerCase())
       )
       
@@ -303,12 +413,12 @@ class DailyPulseGenerator {
   }
 
   // Scorer dokumenter baseret på troværdighed og relevans
-  scoreDocuments(documents) {
+  scoreDocuments(documents, authorizedSources) {
     return documents.map(doc => {
       let score = 0
 
       // Kilde-score (0-40 points)
-      const source = AUTHORIZED_SOURCES.find(s => 
+      const source = authorizedSources.find(s =>
         doc.sourceDomain.includes(s.domain)
       )
       if (source) {
@@ -497,7 +607,7 @@ app.get('/api/daily-pulse', async (req, res) => {
     const pulseData = await pulseGenerator.getDailyPulse()
     res.json(pulseData)
   } catch (error) {
-    console.error('Daily Pulse API error:', error)
+    logger.error({ err: error }, 'Daily Pulse API error')
     res.status(500).json({
       success: false,
       error: 'Failed to generate daily pulse',
@@ -765,5 +875,5 @@ app.get('*', (req, res) => {
 })
 
 app.listen(PORT, () => {
-  console.log(`Cyberstreams API server running at http://localhost:${PORT}`)
+  logger.info(`Cyberstreams API server running at http://localhost:${PORT}`)
 })
