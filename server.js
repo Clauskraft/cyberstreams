@@ -756,6 +756,14 @@ app.post('/api/intel-scraper/discover', async (req, res) => {
   }
 })
 
+// Serve static files from React app
+app.use(express.static('dist'))
+
+// Catch-all route - send all non-API requests to React app
+app.get('*', (req, res) => {
+  res.sendFile('index.html', { root: 'dist' })
+})
+
 app.listen(PORT, () => {
   console.log(`Cyberstreams API server running at http://localhost:${PORT}`)
 })
