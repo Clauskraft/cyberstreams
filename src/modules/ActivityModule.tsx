@@ -222,10 +222,25 @@ const ActivityModule = () => {
       }
     ]
 
-    setTimeout(() => {
-      setActivities(mockActivities)
-      setLoading(false)
-    }, 600)
+    const fetchActivity = async () => {
+      try {
+        setLoading(true)
+        const response = await fetch('/api/activity')
+        const data = await response.json()
+        
+        if (data.success) {
+          setActivities(data.data)
+        } else {
+          console.error('Failed to fetch activity data:', data.error)
+        }
+      } catch (error) {
+        console.error('Error fetching activity data:', error)
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchActivity()
   }, [])
 
   const getSeverityColor = (severity: string) => {

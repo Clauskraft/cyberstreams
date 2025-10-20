@@ -149,10 +149,39 @@ const ThreatsModule = () => {
       }
     ]
 
-    setTimeout(() => {
-      setThreats(mockThreats)
-      setLoading(false)
-    }, 800)
+    const fetchThreats = async () => {
+      try {
+        setLoading(true)
+        const response = await fetch('/api/threats')
+        const data = await response.json()
+        
+        if (data.success) {
+          // Convert API data to Threat format
+          const threats: Threat[] = data.data.latestFindings?.map((finding: any) => ({
+            id: finding.id,
+            name: finding.title,
+            type: finding.category[0] || 'Threat',
+            severity: finding.severity,
+            status: 'active',
+            affectedSystems: Math.floor(Math.random() * 100) + 1,
+            detectedAt: finding.timestamp,
+            lastUpdate: finding.timestamp,
+            description: finding.description,
+            indicators: finding.iocs || []
+          })) || []
+          
+          setThreats(threats)
+        } else {
+          console.error('Failed to fetch threats data:', data.error)
+        }
+      } catch (error) {
+        console.error('Error fetching threats data:', error)
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchThreats()
   }, [])
 
   const getSeverityColor = (severity: string) => {

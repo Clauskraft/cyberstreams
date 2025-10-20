@@ -405,6 +405,25 @@ const SignalStream = () => {
 
   const activeArticle = articles.find((article) => article.id === activeArticleId) ?? null
 
+  // Fetch real data from API
+  useEffect(() => {
+    const fetchSignalStreamData = async () => {
+      try {
+        const response = await fetch('/api/signal-stream')
+        const data = await response.json()
+        
+        if (data.success && data.data.length > 0) {
+          setArticles(data.data)
+          setActiveArticleId(data.data[0]?.id ?? '')
+        }
+      } catch (error) {
+        console.error('Error fetching signal stream data:', error)
+      }
+    }
+
+    fetchSignalStreamData()
+  }, [])
+
   const pushTraceEvent = (event: Omit<TraceEvent, 'id' | 'timestamp'> & { timestamp?: string }) => {
     setSessionTrace((previous) => ({
       ...previous,

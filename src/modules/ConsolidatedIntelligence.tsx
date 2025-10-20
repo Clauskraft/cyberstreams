@@ -210,10 +210,25 @@ const ConsolidatedIntelligence = () => {
       }
     ]
 
-    setTimeout(() => {
-      setFindings(mockFindings)
-      setLoading(false)
-    }, 800)
+    const fetchIntelligence = async () => {
+      try {
+        setLoading(true)
+        const response = await fetch('/api/intel')
+        const data = await response.json()
+        
+        if (data.success) {
+          setFindings(data.data)
+        } else {
+          console.error('Failed to fetch intelligence data:', data.error)
+        }
+      } catch (error) {
+        console.error('Error fetching intelligence data:', error)
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchIntelligence()
   }, [])
 
   const getSeverityColor = (severity: string) => {
