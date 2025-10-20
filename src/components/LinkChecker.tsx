@@ -11,6 +11,8 @@ interface LinkResult {
   responseTime?: number
   hasSSL: boolean
   error?: string
+  contentType?: string
+  redirectsTo?: string
 }
 
 /**

@@ -201,15 +201,7 @@ app.get('/ready', (req, res) => {
   })
 })
 
-// 404 handler for API routes
-app.use('/api/*', (req, res) => {
-  res.status(404).json({
-    success: false,
-    error: 'API endpoint not found',
-    correlationId: req.correlationId,
-    timestamp: new Date().toISOString()
-  })
-})
+// This 404 handler will be added at the end after all API routes are defined
 
 // Error handling middleware
 app.use((err, req, res, next) => {
@@ -428,7 +420,17 @@ app.get('/api/vector-status', (req, res) => {
   })
 })
 
-// Serve React app for all other routes
+// 404 handler for API routes (after all API endpoints are defined)
+app.use('/api/*', (req, res) => {
+  res.status(404).json({
+    success: false,
+    error: 'API endpoint not found',
+    correlationId: req.correlationId,
+    timestamp: new Date().toISOString()
+  })
+})
+
+// Serve React app for all other routes (must be last)
 app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname, 'dist', 'index.html'))
 })

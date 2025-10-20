@@ -119,7 +119,7 @@ function mapFindingFromApi(item: any): AgentFinding {
     link: item.url || undefined,
     audience: buildAudience(category, severity),
     tags,
-    sourceType: item.origin === 'opencti' ? 'technical' : 'osint'
+    sourceType: item.origin === 'opencti' ? 'vendor' : 'government'
   }
 }
 
@@ -279,7 +279,7 @@ const CyberstreamsAgent = () => {
       }
     ]
 
-    const loadData = async () => {
+    const loadScraperData = async () => {
       try {
         const response = await fetch('/api/intel-scraper/status')
         if (!response.ok) {
@@ -335,7 +335,7 @@ const CyberstreamsAgent = () => {
       }
     }
 
-    loadData()
+    loadScraperData()
   }, [])
 
   useEffect(() => {

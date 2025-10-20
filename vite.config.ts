@@ -6,12 +6,12 @@ export default defineConfig({
   plugins: [react()],
   resolve: {
     alias: {
-      '@': path.resolve(__dirname, './cyberstreams/src'),
-      '@modules': path.resolve(__dirname, './cyberstreams/src/modules'),
-      '@components': path.resolve(__dirname, './cyberstreams/src/components'),
-      '@theme': path.resolve(__dirname, './cyberstreams/src/theme'),
-      '@tokens': path.resolve(__dirname, './cyberstreams/src/tokens'),
-      '@data': path.resolve(__dirname, './cyberstreams/src/data'),
+      '@': path.resolve(__dirname, './src'),
+      '@modules': path.resolve(__dirname, './src/modules'),
+      '@components': path.resolve(__dirname, './src/components'),
+      '@theme': path.resolve(__dirname, './src/theme'),
+      '@tokens': path.resolve(__dirname, './src/tokens'),
+      '@data': path.resolve(__dirname, './src/data'),
     },
   },
   build: {
