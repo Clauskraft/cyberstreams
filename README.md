@@ -302,3 +302,4 @@ For support og spørgsmål:
 - Initial release med basic monitoring
 - Simple scraper funktionalitet
 - Basic threat intelligence feeds
+# Railway v2.0.0 deployment test
