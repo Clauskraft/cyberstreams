@@ -1,47 +1,13 @@
 import SignalStream from './SignalStream'
 import { TrendingUp, AlertTriangle, Shield, Globe } from 'lucide-react'
-import { useState, useEffect } from 'react'
 
 const HomeContent = () => {
-  const [stats, setStats] = useState([
-    { label: 'Active Threats', value: '0', change: '+0%', icon: AlertTriangle, color: 'red' },
-    { label: 'Monitored Sources', value: '0', change: '+0%', icon: Globe, color: 'blue' },
-    { label: 'Protected Systems', value: '0', change: '+0%', icon: Shield, color: 'green' },
-    { label: 'Trend Score', value: '0', change: '+0%', icon: TrendingUp, color: 'purple' },
-  ])
-
-  // Fetch real data from API
-  useEffect(() => {
-    const fetchStats = async () => {
-      try {
-        const [pulseResponse, statsResponse] = await Promise.all([
-          fetch('/api/pulse'),
-          fetch('/api/stats')
-        ])
-        
-        const pulseData = await pulseResponse.json()
-        const statsData = await statsResponse.json()
-        
-        if (pulseData.success && statsData.success) {
-          const threats = pulseData.data?.length || 0
-          const sources = statsData.data?.sources || 0
-          const results = statsData.data?.results || 0
-          const keywords = statsData.data?.keywords || 0
-          
-          setStats([
-            { label: 'Active Threats', value: threats.toString(), change: '+12%', icon: AlertTriangle, color: 'red' },
-            { label: 'Monitored Sources', value: sources.toString(), change: '+5%', icon: Globe, color: 'blue' },
-            { label: 'Protected Systems', value: `${results}`, change: '+8%', icon: Shield, color: 'green' },
-            { label: 'Trend Score', value: keywords.toString(), change: '+2%', icon: TrendingUp, color: 'purple' },
-          ])
-        }
-      } catch (error) {
-        console.error('Error fetching stats:', error)
-      }
-    }
-
-    fetchStats()
-  }, [])
+  const stats = [
+    { label: 'Active Threats', value: '156', change: '+12%', icon: AlertTriangle, color: 'red' },
+    { label: 'Monitored Sources', value: '89', change: '+5%', icon: Globe, color: 'blue' },
+    { label: 'Protected Systems', value: '2.4K', change: '+8%', icon: Shield, color: 'green' },
+    { label: 'Trend Score', value: '94', change: '+2%', icon: TrendingUp, color: 'purple' },
+  ]
 
   return (
     <div className="space-y-8">
@@ -54,11 +20,11 @@ const HomeContent = () => {
           >
             <div className="flex items-center justify-between mb-4">
               <stat.icon className={`w-8 h-8 text-${stat.color}-500`} />
-              <span className={`text-xs font-bold px-2 py-1 rounded-full bg-${stat.color}-500/20 text-${stat.color}-300 border border-${stat.color}-500/30`}>
+              <span className={`text-xs font-medium px-2 py-1 rounded-full bg-${stat.color}-500/10 text-${stat.color}-400`}>
                 {stat.change}
               </span>
             </div>
-            <p className="text-3xl font-bold mb-1 text-white">{stat.value}</p>
+            <p className="text-3xl font-bold mb-1">{stat.value}</p>
             <p className="text-sm text-gray-400">{stat.label}</p>
           </div>
         ))}
