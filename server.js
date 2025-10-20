@@ -17,6 +17,9 @@ const __dirname = path.dirname(__filename)
 
 const app = express()
 
+// Trust proxy for Railway deployment
+app.set('trust proxy', 1)
+
 // Security middleware
 app.use(helmet({
   contentSecurityPolicy: {
@@ -407,6 +410,280 @@ app.get('/api/health', (req, res) => {
     timestamp: new Date().toISOString(),
     version: '2.0.0'
   })
+})
+
+// Core API endpoints
+app.get('/api/pulse', checkDatabase, async (req, res) => {
+  try {
+    if (!pool) {
+      return res.json({ success: true, data: [] })
+    }
+    const result = await pool.query('SELECT * FROM monitoring_results ORDER BY timestamp DESC LIMIT 10')
+    res.json({
+      success: true,
+      data: result.rows,
+      correlationId: req.correlationId,
+      timestamp: new Date().toISOString()
+    })
+  } catch (error) {
+    console.error('Error fetching pulse data:', error)
+    res.status(500).json({
+      success: false,
+      error: 'Failed to fetch pulse data',
+      correlationId: req.correlationId,
+      timestamp: new Date().toISOString()
+    })
+  }
+})
+
+app.get('/api/daily-pulse', checkDatabase, async (req, res) => {
+  try {
+    if (!pool) {
+      return res.json({ success: true, data: [] })
+    }
+    const result = await pool.query(`
+      SELECT * FROM monitoring_results 
+      WHERE DATE(timestamp) = CURRENT_DATE 
+      ORDER BY timestamp DESC
+    `)
+    res.json({
+      success: true,
+      data: result.rows,
+      correlationId: req.correlationId,
+      timestamp: new Date().toISOString()
+    })
+  } catch (error) {
+    console.error('Error fetching daily pulse:', error)
+    res.status(500).json({
+      success: false,
+      error: 'Failed to fetch daily pulse',
+      correlationId: req.correlationId,
+      timestamp: new Date().toISOString()
+    })
+  }
+})
+
+app.get('/api/stats', checkDatabase, async (req, res) => {
+  try {
+    if (!pool) {
+      return res.json({
+        success: true,
+        data: {
+          keywords: 0,
+          sources: 0,
+          results: 0
+        }
+      })
+    }
+    const [keywordCount, sourceCount, resultCount] = await Promise.all([
+      pool.query('SELECT COUNT(*) as count FROM keywords'),
+      pool.query('SELECT COUNT(*) as count FROM monitoring_sources'),
+      pool.query('SELECT COUNT(*) as count FROM monitoring_results')
+    ])
+    
+    res.json({
+      success: true,
+      data: {
+        keywords: parseInt(keywordCount.rows[0].count),
+        sources: parseInt(sourceCount.rows[0].count),
+        results: parseInt(resultCount.rows[0].count)
+      },
+      correlationId: req.correlationId,
+      timestamp: new Date().toISOString()
+    })
+  } catch (error) {
+    console.error('Error fetching stats:', error)
+    res.status(500).json({
+      success: false,
+      error: 'Failed to fetch stats',
+      correlationId: req.correlationId,
+      timestamp: new Date().toISOString()
+    })
+  }
+})
+
+app.get('/api/intel-scraper/status', (req, res) => {
+  res.json({
+    success: true,
+    data: {
+      status: 'running',
+      lastRun: new Date().toISOString(),
+      nextRun: new Date(Date.now() + 3600000).toISOString()
+    },
+    correlationId: req.correlationId,
+    timestamp: new Date().toISOString()
+  })
+})
+
+app.get('/api/intel-scraper/approvals', checkDatabase, async (req, res) => {
+  try {
+    if (!pool) {
+      return res.json({ success: true, data: [] })
+    }
+    const result = await pool.query('SELECT * FROM monitoring_results WHERE relevance_score > 0.8 ORDER BY timestamp DESC')
+    res.json({
+      success: true,
+      data: result.rows,
+      correlationId: req.correlationId,
+      timestamp: new Date().toISOString()
+    })
+  } catch (error) {
+    console.error('Error fetching approvals:', error)
+    res.status(500).json({
+      success: false,
+      error: 'Failed to fetch approvals',
+      correlationId: req.correlationId,
+      timestamp: new Date().toISOString()
+    })
+  }
+})
+
+app.get('/api/intel-scraper/candidates', checkDatabase, async (req, res) => {
+  try {
+    if (!pool) {
+      return res.json({ success: true, data: [] })
+    }
+    const result = await pool.query('SELECT * FROM monitoring_results WHERE relevance_score BETWEEN 0.5 AND 0.8 ORDER BY timestamp DESC')
+    res.json({
+      success: true,
+      data: result.rows,
+      correlationId: req.correlationId,
+      timestamp: new Date().toISOString()
+    })
+  } catch (error) {
+    console.error('Error fetching candidates:', error)
+    res.status(500).json({
+      success: false,
+      error: 'Failed to fetch candidates',
+      correlationId: req.correlationId,
+      timestamp: new Date().toISOString()
+    })
+  }
+})
+
+app.get('/api/intel', checkDatabase, async (req, res) => {
+  try {
+    if (!pool) {
+      return res.json({ success: true, data: [] })
+    }
+    const result = await pool.query('SELECT * FROM monitoring_results ORDER BY timestamp DESC LIMIT 20')
+    res.json({
+      success: true,
+      data: result.rows,
+      correlationId: req.correlationId,
+      timestamp: new Date().toISOString()
+    })
+  } catch (error) {
+    console.error('Error fetching intel:', error)
+    res.status(500).json({
+      success: false,
+      error: 'Failed to fetch intel',
+      correlationId: req.correlationId,
+      timestamp: new Date().toISOString()
+    })
+  }
+})
+
+app.get('/api/activity', checkDatabase, async (req, res) => {
+  try {
+    if (!pool) {
+      return res.json({ success: true, data: [] })
+    }
+    const result = await pool.query(`
+      SELECT 
+        'monitoring_result' as type,
+        content as description,
+        timestamp as created_at
+      FROM monitoring_results
+      ORDER BY timestamp DESC
+      LIMIT 20
+    `)
+    res.json({
+      success: true,
+      data: result.rows,
+      correlationId: req.correlationId,
+      timestamp: new Date().toISOString()
+    })
+  } catch (error) {
+    console.error('Error fetching activity:', error)
+    res.status(500).json({
+      success: false,
+      error: 'Failed to fetch activity',
+      correlationId: req.correlationId,
+      timestamp: new Date().toISOString()
+    })
+  }
+})
+
+app.get('/api/signal-stream', checkDatabase, async (req, res) => {
+  try {
+    if (!pool) {
+      return res.json({ success: true, data: [] })
+    }
+    const result = await pool.query(`
+      SELECT 
+        content as title,
+        content as description,
+        url,
+        timestamp as published_at,
+        timestamp as created_at
+      FROM monitoring_results
+      WHERE timestamp >= NOW() - INTERVAL '24 hours'
+      ORDER BY timestamp DESC
+    `)
+    res.json({
+      success: true,
+      data: result.rows,
+      correlationId: req.correlationId,
+      timestamp: new Date().toISOString()
+    })
+  } catch (error) {
+    console.error('Error fetching signal stream:', error)
+    res.status(500).json({
+      success: false,
+      error: 'Failed to fetch signal stream',
+      correlationId: req.correlationId,
+      timestamp: new Date().toISOString()
+    })
+  }
+})
+
+app.get('/api/threats', checkDatabase, async (req, res) => {
+  try {
+    if (!pool) {
+      return res.json({ success: true, data: [] })
+    }
+    const result = await pool.query(`
+      SELECT 
+        content as indicator,
+        'threat' as type,
+        CASE 
+          WHEN relevance_score > 0.8 THEN 'high'
+          WHEN relevance_score > 0.6 THEN 'medium'
+          ELSE 'low'
+        END as severity,
+        url as source,
+        timestamp as created_at
+      FROM monitoring_results
+      WHERE relevance_score > 0.6
+      ORDER BY timestamp DESC
+      LIMIT 20
+    `)
+    res.json({
+      success: true,
+      data: result.rows,
+      correlationId: req.correlationId,
+      timestamp: new Date().toISOString()
+    })
+  } catch (error) {
+    console.error('Error fetching threats:', error)
+    res.status(500).json({
+      success: false,
+      error: 'Failed to fetch threats',
+      correlationId: req.correlationId,
+      timestamp: new Date().toISOString()
+    })
+  }
 })
 
 
