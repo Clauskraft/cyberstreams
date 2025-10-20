@@ -6,6 +6,15 @@ on:
       - master
       - main
   workflow_dispatch:
+    inputs:
+      pr_number:
+        description: "PR number to comment on (optional)"
+        required: false
+        type: string
+      environment:
+        description: "Railway environment (optional)"
+        required: false
+        type: string
 
 jobs:
   deploy:
@@ -33,7 +42,7 @@ jobs:
       - name: Deploy to Railway
         env:
           RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
-          RAILWAY_ENVIRONMENT: ${{ secrets.RAILWAY_ENVIRONMENT }}
+          RAILWAY_ENVIRONMENT: ${{ inputs.environment || secrets.RAILWAY_ENVIRONMENT }}
           RAILWAY_PROJECT_ID: ${{ secrets.RAILWAY_PROJECT_ID }}
           RAILWAY_SERVICE_ID: ${{ secrets.RAILWAY_SERVICE_ID }}
         run: |
@@ -66,3 +75,31 @@ jobs:
           fi
 
           railway up --ci --build --wait --no-confirm --service "$RAILWAY_SERVICE_ID"
+
+      - name: Post deploy comment to PR (optional)
+        if: ${{ inputs.pr_number != '' }}
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const prInput = '${{ inputs.pr_number }}';
+            const pr = parseInt(prInput);
+            if (!Number.isInteger(pr) || pr <= 0) {
+              core.warning(`Invalid pr_number input: "${prInput}"; skipping comment`);
+              return;
+            }
+            const projectUrl = `https://railway.app/project/${process.env.RAILWAY_PROJECT_ID}`;
+            const body = [
+              `✅ Railway deploy triggered and completed.`,
+              ``,
+              `Project Dashboard: ${projectUrl}`,
+              ``,
+              `Note: Find the latest live URL on the deployment details in Railway.`,
+            ].join('\n');
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: pr,
+              body,
+            });
+        env:
+          RAILWAY_PROJECT_ID: ${{ secrets.RAILWAY_PROJECT_ID }}
