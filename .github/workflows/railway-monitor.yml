@@ -18,6 +18,9 @@ jobs:
     name: Monitor Railway Deployment Status
     runs-on: ubuntu-latest
     if: github.event_name == 'workflow_run'
+    permissions:
+      contents: read
+      issues: write
     steps:
       - name: Check out repository
         uses: actions/checkout@v4
@@ -195,6 +198,9 @@ jobs:
     name: Scheduled Railway Health Check
     runs-on: ubuntu-latest
     if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+    permissions:
+      contents: read
+      issues: write
     steps:
       - name: Check out repository
         uses: actions/checkout@v4
