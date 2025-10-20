@@ -21,7 +21,7 @@ await client.connect()
 console.log('Connected to database')
 
 try {
-  // Try to ensure pgvector if available; ignore if extension is not present
+  // Ensure pgvector if used; ignore if extension isn't available
   try {
     await client.query('CREATE EXTENSION IF NOT EXISTS vector')
     console.log('pgvector extension ensured')
@@ -29,7 +29,7 @@ try {
     console.warn('pgvector not available or not needed; continuing')
   }
 
-  // Optional: apply schema.sql if present in scripts/migrations/schema.sql
+  // Optional schema apply
   const migrationsDir = path.resolve(__dirname, 'migrations')
   const schemaPath = path.join(migrationsDir, 'schema.sql')
   const sql = await readFile(schemaPath, 'utf8').catch((e) => {
