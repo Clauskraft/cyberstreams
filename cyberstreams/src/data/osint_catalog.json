@@ -1,0 +1,68 @@
+[
+  {
+    "source_id": "beacon-breach-intel",
+    "name": "Beacon Breach Intel",
+    "url": "https://beaconintel.example.org",
+    "category": "Credential Security",
+    "subcategory": "Breach Corpuses",
+    "license": "CC BY-NC 4.0",
+    "description": "Continuously updated breach corpus with hashed credential dumps for corporate monitoring",
+    "tags": [
+      "breach-data",
+      "credential",
+      "hash"
+    ],
+    "reliability": "Medium",
+    "sensitivity": "Confidential",
+    "playbook": [
+      "Execute hashed credential search via CLI runner",
+      "Generate alert if corporate domain identified",
+      "Record ticket in incident tracker and attach evidence"
+    ],
+    "last_synced_at": "2025-10-19T17:51:47+00:00"
+  },
+  {
+    "source_id": "darklight-marketplace-tracker",
+    "name": "Darklight Marketplace Tracker",
+    "url": "https://darklight.example.com",
+    "category": "Threat Intelligence",
+    "subcategory": "Dark Web Monitoring",
+    "license": "Proprietary (Read-Only)",
+    "description": "Passive monitoring of high-risk darknet markets with anomaly detection alerts",
+    "tags": [
+      "darknet",
+      "monitoring",
+      "anomaly-detection"
+    ],
+    "reliability": "High",
+    "sensitivity": "Restricted",
+    "playbook": [
+      "Validate analyst license acceptance",
+      "Review automated market anomaly summary",
+      "Export incident indicators to TIP via CSV"
+    ],
+    "last_synced_at": "2025-10-19T17:51:47+00:00"
+  },
+  {
+    "source_id": "surface-watch-feeds",
+    "name": "Surface Watch Feeds",
+    "url": "https://surfacewatch.example.net",
+    "category": "Brand Protection",
+    "subcategory": "Surface Web Scraping",
+    "license": "MIT",
+    "description": "Aggregated surface web mentions and typosquatted domains with ML-based prioritization",
+    "tags": [
+      "brand",
+      "surface-web",
+      "typosquat"
+    ],
+    "reliability": "Medium",
+    "sensitivity": "Public",
+    "playbook": [
+      "Run brand keyword search with \"surface\" filter",
+      "Validate matches with screenshot capture",
+      "Export prioritized list to stakeholders via JSON"
+    ],
+    "last_synced_at": "2025-10-19T17:51:47+00:00"
+  }
+]

@@ -1,5 +1,5 @@
 import { useState, lazy, Suspense } from 'react'
-import { Shield, Activity, Radio, FileText, Network, Settings, Bot } from 'lucide-react'
+import { Shield, Activity, Radio, FileText, Network, Settings, Bot, Search } from 'lucide-react'
 
 const HomeContent = lazy(() => import('@modules/HomeContent'))
 const ThreatsModule = lazy(() => import('@modules/ThreatsModule'))
@@ -7,6 +7,7 @@ const ActivityModule = lazy(() => import('@modules/ActivityModule'))
 const SignalStream = lazy(() => import('@modules/SignalStream'))
 const ConsolidatedIntelligence = lazy(() => import('@modules/ConsolidatedIntelligence'))
 const CyberstreamsAgent = lazy(() => import('@modules/CyberstreamsAgent'))
+const OsintLab = lazy(() => import('@modules/OsintLab'))
 const AdminPage = lazy(() => import('./pages/Admin'))
 
 const LoadingSpinner = () => (
@@ -54,6 +55,7 @@ function App() {
               { id: 'pulse', label: 'SignalStream', icon: Radio },
               { id: 'activity', label: 'Activity', icon: FileText },
               { id: 'intel', label: 'Consolidated Intel', icon: Network },
+              { id: 'osint', label: 'OsintLab', icon: Search },
               { id: 'admin', label: 'Admin', icon: Settings },
             ].map((tab) => (
               <button
@@ -82,6 +84,7 @@ function App() {
           {activeTab === 'pulse' && <SignalStream />}
           {activeTab === 'activity' && <ActivityModule />}
           {activeTab === 'intel' && <ConsolidatedIntelligence />}
+          {activeTab === 'osint' && <OsintLab />}
           {activeTab === 'admin' && <AdminPage />}
         </Suspense>
       </main>

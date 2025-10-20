@@ -61,6 +61,13 @@ Advanced threat intelligence platform for monitoring and analyzing dark web acti
 - Confidence scoring
 - Visual analytics and charts
 
+### 🧭 OsintLab (NEW)
+- Curated OSINT catalog hydrated from markdown with daily diff snapshots
+- Policy-aware CLI, web, and Docker runners with full audit trails
+- MCP tools (`osint.search`, `osint.info`, `osint.run`) for automation pipelines
+- React tab with license gating, playbooks, run history, and export options
+- PowerShell sync script and scheduled GitHub Action for continuous updates
+
 ### ⚙️ Admin Panel (NEW)
 - Keyword management (CRUD operations)
 - Source configuration
