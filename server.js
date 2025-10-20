@@ -5,6 +5,9 @@ import { Pool } from 'pg'
 import cors from 'cors'
 import { fileURLToPath } from 'url'
 import dotenv from 'dotenv'
+import helmet from 'helmet'
+import rateLimit from 'express-rate-limit'
+import { v4 as uuidv4 } from 'uuid'
 
 // Load environment variables
 dotenv.config()
@@ -13,20 +16,104 @@ const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
 
 const app = express()
-app.use(express.json())
-app.use(cors())
+
+// Security middleware
+app.use(helmet({
+  contentSecurityPolicy: {
+    directives: {
+      defaultSrc: ["'self'"],
+      scriptSrc: ["'self'", "'unsafe-inline'"],
+      styleSrc: ["'self'", "'unsafe-inline'"],
+      imgSrc: ["'self'", "data:", "https:"],
+      connectSrc: ["'self'"],
+      fontSrc: ["'self'"],
+      objectSrc: ["'none'"],
+      mediaSrc: ["'self'"],
+      frameSrc: ["'none'"],
+    },
+  },
+  hsts: {
+    maxAge: 31536000,
+    includeSubDomains: true,
+    preload: true
+  }
+}))
+
+// CORS with configurable origin
+app.use(cors({ 
+  origin: process.env.CORS_ORIGIN || '*',
+  credentials: true
+}))
+
+// Rate limiting
+app.use(rateLimit({
+  windowMs: parseInt(process.env.RATE_LIMIT_WINDOW_MS || '900000', 10), // 15 minutes
+  max: parseInt(process.env.RATE_LIMIT_MAX_REQUESTS || '100', 10),
+  message: {
+    success: false,
+    error: 'Too many requests, please try again later.',
+    timestamp: new Date().toISOString()
+  },
+  standardHeaders: true,
+  legacyHeaders: false,
+}))
+
+// Request processing middleware
+app.use(express.json({ limit: '10mb' }))
+app.use(express.urlencoded({ extended: true, limit: '10mb' }))
+
+// Correlation ID middleware
+app.use((req, res, next) => {
+  const correlationId = req.headers['x-correlation-id'] || uuidv4()
+  req.correlationId = correlationId
+  res.set('X-Correlation-ID', correlationId)
+  next()
+})
+
+// Request logging middleware
+app.use((req, res, next) => {
+  const startTime = Date.now()
+  console.log(`[${new Date().toISOString()}] ${req.method} ${req.path} - ${req.correlationId || 'no-id'}`)
+  
+  const originalEnd = res.end
+  res.end = function(chunk, encoding) {
+    const duration = Date.now() - startTime
+    console.log(`[${new Date().toISOString()}] ${req.method} ${req.path} - ${res.statusCode} - ${duration}ms - ${req.correlationId || 'no-id'}`)
+    originalEnd.call(this, chunk, encoding)
+  }
+  
+  next()
+})
 
 // Database connection
-const pool = new Pool({
-  connectionString: process.env.DATABASE_URL || 'postgresql://localhost/cyberstreams',
-  ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false
-})
+let pool = null
+if (process.env.DATABASE_URL) {
+  pool = new Pool({
+    connectionString: process.env.DATABASE_URL,
+    ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false
+      })
+  } else {
+  console.log('No DATABASE_URL found - running in mock mode for local development')
+}
 
 // Vector database configuration
 const VECTOR_DB_URL = process.env.VECTOR_DB_URL || process.env.DATABASE_URL || 'postgresql://localhost/cyberstreams'
 
+// Helper function to check database availability
+function checkDatabase(req, res, next) {
+  if (!pool) {
+    return res.status(503).json({ success: false, error: 'Database not available' })
+  }
+  next()
+}
+
 // Initialize database tables
 async function initDB() {
+  if (!pool) {
+    console.log('Skipping database initialization - no database connection available')
+    return
+  }
+  
   try {
     // Enable pgvector extension
     await pool.query('CREATE EXTENSION IF NOT EXISTS vector')
@@ -106,6 +193,53 @@ async function initDB() {
   }
 }
 
+// Ready endpoint for deployment readiness checks
+app.get('/ready', (req, res) => {
+  res.json({
+    ready: true,
+    timestamp: new Date().toISOString()
+  })
+})
+
+// 404 handler for API routes
+app.use('/api/*', (req, res) => {
+  res.status(404).json({
+    success: false,
+    error: 'API endpoint not found',
+    correlationId: req.correlationId,
+    timestamp: new Date().toISOString()
+  })
+})
+
+// Error handling middleware
+app.use((err, req, res, next) => {
+  console.error(`[${new Date().toISOString()}] Error - ${req.correlationId || 'no-id'}:`, err)
+  
+  let statusCode = 500
+  let message = 'Internal Server Error'
+  
+  if (err.name === 'ValidationError') {
+    statusCode = 400
+    message = 'Validation Error'
+  } else if (err.name === 'UnauthorizedError') {
+    statusCode = 401
+    message = 'Unauthorized'
+  } else if (err.name === 'ForbiddenError') {
+    statusCode = 403
+    message = 'Forbidden'
+  } else if (err.name === 'NotFoundError') {
+    statusCode = 404
+    message = 'Not Found'
+  }
+  
+  res.status(statusCode).json({
+    success: false,
+    error: message,
+    correlationId: req.correlationId,
+    timestamp: new Date().toISOString()
+  })
+})
+
 // Serve static files
 app.use(express.static(path.join(__dirname, 'dist')))
 
@@ -113,6 +247,10 @@ app.use(express.static(path.join(__dirname, 'dist')))
 
 // Keywords Management
 app.get('/api/admin/keywords', async (req, res) => {
+  if (!pool) {
+    return res.json({ success: true, data: [] })
+  }
+
   try {
     const result = await pool.query('SELECT * FROM keywords ORDER BY created_at DESC')
     res.json({ success: true, data: result.rows })
@@ -123,6 +261,10 @@ app.get('/api/admin/keywords', async (req, res) => {
 })
 
 app.post('/api/admin/keywords', async (req, res) => {
+  if (!pool) {
+    return res.status(503).json({ success: false, error: 'Database not available' })
+  }
+
   try {
     const { keyword, category, priority } = req.body
     const result = await pool.query(
@@ -233,8 +375,8 @@ app.post('/api/admin/run-rag-analysis', async (req, res) => {
   try {
     // This would integrate with OpenAI API for RAG analysis
     // For now, return a mock response
-    res.json({ 
-      success: true, 
+    res.json({
+      success: true,
       data: { 
         analysis: 'RAG analysis completed successfully',
         timestamp: new Date().toISOString()
@@ -252,8 +394,8 @@ app.post('/api/search', async (req, res) => {
     const { query } = req.body
     // This would implement semantic search using pgvector
     // For now, return a mock response
-    res.json({ 
-      success: true, 
+    res.json({
+      success: true,
       data: { 
         results: [],
         query: query,
@@ -268,12 +410,13 @@ app.post('/api/search', async (req, res) => {
 
 // Health check
 app.get('/api/health', (req, res) => {
-  res.json({ 
+    res.json({
     status: 'operational', 
     timestamp: new Date().toISOString(),
     version: '2.0.0'
   })
 })
+
 
 // Vector database status
 app.get('/api/vector-status', (req, res) => {
