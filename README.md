@@ -35,9 +35,9 @@ Advanced threat intelligence platform for monitoring and analyzing dark web acti
 - Comprehensive stats dashboard
 
 ### 📡 Dagens Puls (Daily Feed)
-- Real-time threat intelligence feed
-- Curated security news and updates
-- Severity-based color coding
+- No data by default in production
+- Displays standardized "Ingen data" empty-state
+- Integrate real sources before enabling
 
 ### 🤖 Cyberstreams Agent (NEW)
 - AI-powered threat analysis
@@ -217,7 +217,7 @@ tar -czf ../../cyberstreams-deploy.zip .
    - Deploy
 
 ### Environment Variables
-No environment variables required for basic deployment. All data is currently mock data.
+No environment variables required for basic deployment. Mock/demo data removed; modules render a shared `NoData` state until wired to real sources.
 
 ## 📝 Version History
 
