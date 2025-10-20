@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react'
-import { Key, Server, Plus, Trash2, CheckCircle, XCircle, AlertTriangle } from 'lucide-react'
+import { Key, Server, Plus, Trash2, CheckCircle, XCircle, AlertTriangle, FileText, Copy } from 'lucide-react'
 import { Badge } from '@components/ui/Badge'
 import { LoadingSpinner } from '@components/ui/LoadingSpinner'
+import masterPromptClaude from '../../masterprompt_claude.txt?raw'
 
 interface ApiKey {
   name: string
@@ -25,6 +26,8 @@ export const SettingsModule: React.FC = () => {
   const [loading, setLoading] = useState(true)
   const [newKey, setNewKey] = useState({ name: '', value: '' })
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null)
+
+  const masterPromptText = masterPromptClaude.trim()
 
   useEffect(() => {
     const initialize = async () => {
@@ -138,6 +141,16 @@ export const SettingsModule: React.FC = () => {
   const showMessage = (type: 'success' | 'error', text: string) => {
     setMessage({ type, text })
     setTimeout(() => setMessage(null), 5000)
+  }
+
+  const copyMasterPrompt = async () => {
+    try {
+      await navigator.clipboard.writeText(masterPromptText)
+      showMessage('success', 'Masterprompt kopieret til udklipsholderen')
+    } catch (error) {
+      console.error('Failed to copy master prompt:', error)
+      showMessage('error', 'Kunne ikke kopiere masterprompt')
+    }
   }
 
   if (loading) {
@@ -295,6 +308,36 @@ export const SettingsModule: React.FC = () => {
             </div>
           </div>
         </div>
+      </div>
+
+      {/* Master Prompts */}
+      <div className="bg-gradient-to-br from-gray-900 to-gray-800 rounded-xl p-6 border border-gray-700">
+        <div className="flex items-center space-x-3 mb-4">
+          <FileText className="w-6 h-6 text-cyber-blue" />
+          <div>
+            <h2 className="text-2xl font-bold">Master Prompts</h2>
+            <p className="text-sm text-gray-400">Direkte hentet fra masterprompt_claude.txt i repositoryet</p>
+          </div>
+        </div>
+        <div className="relative">
+          <textarea
+            value={masterPromptText}
+            readOnly
+            rows={12}
+            className="w-full bg-gray-900 border border-gray-700 rounded-lg p-4 text-sm text-gray-200 font-mono leading-relaxed"
+          />
+          <button
+            onClick={copyMasterPrompt}
+            type="button"
+            className="absolute top-3 right-3 inline-flex items-center gap-2 px-3 py-1.5 text-xs rounded-lg bg-gray-800 border border-gray-700 hover:border-cyber-blue text-gray-300 hover:text-white transition"
+          >
+            <Copy className="w-4 h-4" />
+            Kopiér
+          </button>
+        </div>
+        <p className="mt-3 text-xs text-gray-500">
+          Opdater masterprompten i filen for at ændre baseline-instruktionerne for agenten. Ændringer vises her efter næste deploy.
+        </p>
       </div>
     </div>
   )

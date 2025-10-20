@@ -8,6 +8,11 @@ import dotenv from 'dotenv'
 import helmet from 'helmet'
 import rateLimit from 'express-rate-limit'
 import { v4 as uuidv4 } from 'uuid'
+import IntelScraperService from './lib/intelScraperService.js'
+import createMispClient from './lib/mispClient.js'
+import createOpenCtiClient from './lib/openCtiClient.js'
+import { getAuthorizedSources } from './lib/authorizedSourceRepository.js'
+import logger from './lib/logger.js'
 
 // Load environment variables
 dotenv.config()
@@ -90,15 +95,53 @@ app.use((req, res, next) => {
 
 // Database connection
 let pool = null
-if (process.env.DATABASE_URL) {
-  console.log('DATABASE_URL found, connecting to database...')
-  pool = new Pool({
-    connectionString: process.env.DATABASE_URL,
-    ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false
+
+function buildDatabaseConfig() {
+  if (process.env.DATABASE_URL) {
+    return {
+      connectionString: process.env.DATABASE_URL,
+      ssl:
+        process.env.PGSSL === 'require' || process.env.NODE_ENV === 'production'
+          ? { rejectUnauthorized: process.env.PGSSLMODE === 'verify-full' }
+          : false,
+    }
+  }
+
+  const host = process.env.POSTGRES_HOST
+  const database = process.env.POSTGRES_DB
+  const user = process.env.POSTGRES_USER
+  const password = process.env.POSTGRES_PASSWORD
+
+  if (host && database && user && password) {
+    return {
+      host,
+      port: parseInt(process.env.POSTGRES_PORT || '5432', 10),
+      database,
+      user,
+      password,
+      ssl:
+        process.env.PGSSL === 'require' || process.env.POSTGRES_SSL === 'true'
+          ? { rejectUnauthorized: process.env.PGSSLMODE === 'verify-full' }
+          : false,
+    }
+  }
+
+  return null
+}
+
+const databaseConfig = buildDatabaseConfig()
+
+if (databaseConfig) {
+  console.log('Database configuration detected, initializing connection pool...')
+  pool = new Pool(databaseConfig)
+  pool.on('error', (error) => {
+    console.error('Unexpected database error:', error)
   })
   console.log('Database pool created successfully')
 } else {
-  console.log('No DATABASE_URL found - running in mock mode for local development')
+  console.warn(
+    'No database configuration found. Set DATABASE_URL or explicit Postgres connection environment variables.'
+  )
 }
 
 // Vector database configuration
@@ -107,16 +150,153 @@ const VECTOR_DB_URL = process.env.VECTOR_DB_URL || process.env.DATABASE_URL || '
 // Helper function to check database availability
 function checkDatabase(req, res, next) {
   if (!pool) {
-    return res.status(503).json({ success: false, error: 'Database not available' })
+    return res.status(503).json({ success: false, error: 'Database not configured' })
   }
   next()
+}
+
+const INTEL_SCRAPER_INTERVAL_MS = parseInt(
+  process.env.INTEL_SCRAPER_INTERVAL_MS || String(15 * 60 * 1000),
+  10
+)
+
+async function loadAuthorizedSources() {
+  try {
+    return await getAuthorizedSources()
+  } catch (error) {
+    logger.error({ err: error }, 'Failed to load authorized sources for Intel Scraper')
+    return []
+  }
+}
+
+async function persistMonitoringResults(documents = []) {
+  if (!Array.isArray(documents) || documents.length === 0) {
+    return
+  }
+
+  if (!pool) {
+    throw new Error('Database not configured for Intel Scraper persistence')
+  }
+
+  const client = await pool.connect()
+  try {
+    await client.query('BEGIN')
+
+    for (const doc of documents) {
+      const externalId = doc.id || doc.url || uuidv4()
+      const title = doc.title || 'Intel Finding'
+      const content = doc.description || doc.summary || null
+      const url = doc.url || null
+      const rawSeverity = typeof doc.severity === 'string' ? doc.severity.toLowerCase() : ''
+      const severity = ['low', 'medium', 'high', 'critical'].includes(rawSeverity) ? rawSeverity : 'medium'
+      const category = Array.isArray(doc.category)
+        ? doc.category[0] || null
+        : doc.category || null
+      const keywords = Array.isArray(doc.tags) ? doc.tags : []
+      const timestamp = doc.timestamp ? new Date(doc.timestamp) : new Date()
+      const relevanceScore = typeof doc.confidence === 'number'
+        ? Math.max(0, Math.min(doc.confidence / 100, 1))
+        : null
+
+      const metadata = {
+        source: doc.source || null,
+        sourceDomain: doc.sourceDomain || null,
+        origin: doc.origin || null,
+        iocs: Array.isArray(doc.iocs) ? doc.iocs : [],
+        cves: Array.isArray(doc.cves) ? doc.cves : [],
+        verified: doc.verified ?? true,
+        evidence: doc.evidence || null
+      }
+
+      await client.query(
+        `INSERT INTO monitoring_results (
+            external_id,
+            source_id,
+            title,
+            content,
+            url,
+            severity,
+            category,
+            keywords,
+            metadata,
+            timestamp,
+            relevance_score
+          )
+          VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
+          ON CONFLICT (external_id) DO UPDATE SET
+            source_id = EXCLUDED.source_id,
+            title = EXCLUDED.title,
+            content = EXCLUDED.content,
+            url = EXCLUDED.url,
+            severity = EXCLUDED.severity,
+            category = EXCLUDED.category,
+            keywords = EXCLUDED.keywords,
+            metadata = EXCLUDED.metadata,
+            timestamp = EXCLUDED.timestamp,
+            relevance_score = EXCLUDED.relevance_score,
+            updated_at = CURRENT_TIMESTAMP`,
+        [
+          externalId,
+          null,
+          title,
+          content,
+          url,
+          severity,
+          category,
+          keywords,
+          metadata,
+          timestamp,
+          relevanceScore
+        ]
+      )
+    }
+
+    await client.query('COMMIT')
+    logger.info({ count: documents.length }, 'Intel Scraper findings persisted')
+  } catch (error) {
+    await client.query('ROLLBACK')
+    logger.error({ err: error }, 'Failed to persist Intel Scraper findings')
+    throw error
+  } finally {
+    client.release()
+  }
+}
+
+const mispClient = createMispClient()
+const openCtiClient = createOpenCtiClient()
+
+const intelScraper = new IntelScraperService({
+  mispClient,
+  openCtiClient,
+  loadAuthorizedSources,
+  pollIntervalMs: INTEL_SCRAPER_INTERVAL_MS,
+  persistFindings: persistMonitoringResults
+})
+
+let intelScraperReady = Promise.resolve()
+
+async function bootstrapIntelScraper() {
+  await intelScraper.init()
+  logger.info('Intel Scraper initialized')
+
+  if (process.env.INTEL_SCRAPER_AUTO_START === 'true') {
+    try {
+      await intelScraper.start()
+      logger.info('Intel Scraper auto-started via INTEL_SCRAPER_AUTO_START flag')
+    } catch (error) {
+      logger.error({ err: error }, 'Failed to auto-start Intel Scraper')
+    }
+  }
 }
 
 // Initialize database tables
 async function initDB() {
   if (!pool) {
-    console.log('Skipping database initialization - no database connection available')
-    console.log('DATABASE_URL:', process.env.DATABASE_URL ? 'SET' : 'NOT SET')
+    const message = 'Database connection is not configured. Initialization aborted.'
+    console.error(message)
+    if (process.env.NODE_ENV === 'production') {
+      throw new Error(message)
+    }
     return
   }
   
@@ -153,14 +333,26 @@ async function initDB() {
     await pool.query(`
       CREATE TABLE IF NOT EXISTS monitoring_results (
         id SERIAL PRIMARY KEY,
-        keyword_id INTEGER REFERENCES keywords(id),
+        external_id TEXT UNIQUE NOT NULL,
         source_id INTEGER REFERENCES monitoring_sources(id),
+        title TEXT NOT NULL,
         content TEXT,
-        relevance_score FLOAT,
         url TEXT,
-        timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        severity VARCHAR(20) DEFAULT 'medium' CHECK (severity IN ('low', 'medium', 'high', 'critical')),
+        category VARCHAR(100),
+        keywords TEXT[] DEFAULT ARRAY[]::TEXT[],
+        metadata JSONB DEFAULT '{}'::JSONB,
+        timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        relevance_score FLOAT CHECK (relevance_score BETWEEN 0 AND 1),
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       )
     `)
+
+    await pool.query('CREATE INDEX IF NOT EXISTS idx_monitoring_results_timestamp ON monitoring_results (timestamp)')
+    await pool.query('CREATE INDEX IF NOT EXISTS idx_monitoring_results_relevance ON monitoring_results (relevance_score)')
+    await pool.query('CREATE INDEX IF NOT EXISTS idx_monitoring_results_category ON monitoring_results (category)')
+    await pool.query('CREATE INDEX IF NOT EXISTS idx_monitoring_results_severity ON monitoring_results (severity)')
     
     await pool.query(`
       CREATE TABLE IF NOT EXISTS rag_config (
@@ -198,6 +390,9 @@ async function initDB() {
     console.log('Database initialized successfully')
   } catch (error) {
     console.error('Database initialization error:', error)
+    if (process.env.NODE_ENV === 'production') {
+      throw error
+    }
   }
 }
 
@@ -245,7 +440,7 @@ app.use((err, req, res, next) => {
 // Keywords Management
 app.get('/api/admin/keywords', async (req, res) => {
   if (!pool) {
-    return res.json({ success: true, data: [] })
+    return res.status(503).json({ success: false, error: 'Database not configured' })
   }
 
   try {
@@ -259,7 +454,7 @@ app.get('/api/admin/keywords', async (req, res) => {
 
 app.post('/api/admin/keywords', async (req, res) => {
   if (!pool) {
-    return res.status(503).json({ success: false, error: 'Database not available' })
+    return res.status(503).json({ success: false, error: 'Database not configured' })
   }
 
   try {
@@ -385,17 +580,71 @@ app.post('/api/admin/run-rag-analysis', async (req, res) => {
   }
 })
 
+function mapRowToSearchResult(row) {
+  const summary = row.content
+    ? `${row.content.slice(0, 220)}${row.content.length > 220 ? '…' : ''}`
+    : 'Ingen beskrivelse tilgængelig.'
+
+  const metadata = row.metadata && typeof row.metadata === 'object' ? row.metadata : {}
+
+  return {
+    id: row.id ? String(row.id) : `search-${uuidv4()}`,
+    title: row.title || metadata.title || 'Monitoring Resultat',
+    summary,
+    url: row.url || metadata.url || null,
+    severity: row.severity || metadata.severity || 'medium',
+    category: row.category || metadata.category || 'intel',
+    source: metadata.source || metadata.source_name || 'monitoring_results',
+    timestamp: row.timestamp ? new Date(row.timestamp).toISOString() : new Date().toISOString(),
+    score: typeof row.relevance_score === 'number'
+      ? Number(row.relevance_score.toFixed(2))
+      : metadata.score || null,
+    keywords: Array.isArray(row.keywords) ? row.keywords : []
+  }
+}
+
 // Search endpoint
 app.post('/api/search', async (req, res) => {
+  const startedAt = Date.now()
+
   try {
-    const { query } = req.body
-    // This would implement semantic search using pgvector
-    // For now, return a mock response
+    if (!pool) {
+      return res.status(503).json({ success: false, error: 'Database not configured' })
+    }
+
+    const { query, limit = 8 } = req.body || {}
+    const trimmedQuery = typeof query === 'string' ? query.trim() : ''
+
+    if (!trimmedQuery) {
+      return res.status(400).json({ success: false, error: 'Query parameter is required' })
+    }
+
+    const normalizedLimit = Math.min(Math.max(parseInt(limit, 10) || 5, 1), 25)
+
+    const searchTerm = `%${trimmedQuery}%`
+    const dbResults = await pool.query(
+      `SELECT id, title, content, url, severity, category, keywords, relevance_score, metadata, timestamp
+         FROM monitoring_results
+         WHERE title ILIKE $1
+            OR content ILIKE $1
+            OR url ILIKE $1
+            OR EXISTS (
+              SELECT 1 FROM unnest(COALESCE(keywords, ARRAY[]::text[])) keyword(term)
+              WHERE keyword ILIKE $1
+            )
+         ORDER BY timestamp DESC
+         LIMIT $2`,
+      [searchTerm, normalizedLimit]
+    )
+
+    const results = dbResults.rows.map(mapRowToSearchResult)
+
     res.json({
       success: true,
-      data: { 
-        results: [],
-        query: query,
+      data: {
+        query: trimmedQuery,
+        results,
+        tookMs: Date.now() - startedAt,
         timestamp: new Date().toISOString()
       }
     })
@@ -611,59 +860,305 @@ app.get('/api/stats', checkDatabase, async (req, res) => {
   }
 })
 
-app.get('/api/intel-scraper/status', (req, res) => {
-  res.json({
-    success: true,
-    data: {
-      status: 'running',
-      lastRun: new Date().toISOString(),
-      nextRun: new Date(Date.now() + 3600000).toISOString()
-    },
-    correlationId: req.correlationId,
-    timestamp: new Date().toISOString()
-  })
-})
-
-app.get('/api/intel-scraper/approvals', checkDatabase, async (req, res) => {
+app.get('/api/intel-scraper/status', async (req, res) => {
   try {
-    if (!pool) {
-      return res.json({ success: true, data: [] })
-    }
-    const result = await pool.query('SELECT * FROM monitoring_results WHERE relevance_score > 0.8 ORDER BY timestamp DESC')
+    await intelScraperReady
+    const status = intelScraper.getStatus()
     res.json({
       success: true,
-      data: result.rows,
+      data: status,
       correlationId: req.correlationId,
       timestamp: new Date().toISOString()
     })
   } catch (error) {
-    console.error('Error fetching approvals:', error)
+    logger.error({ err: error }, 'Failed to fetch Intel Scraper status')
     res.status(500).json({
       success: false,
-      error: 'Failed to fetch approvals',
+      error: error.message,
       correlationId: req.correlationId,
       timestamp: new Date().toISOString()
     })
   }
 })
 
-app.get('/api/intel-scraper/candidates', checkDatabase, async (req, res) => {
+app.post('/api/intel-scraper/start', async (req, res) => {
   try {
     if (!pool) {
-      return res.json({ success: true, data: [] })
+      return res.status(503).json({
+        success: false,
+        error: 'Database not configured',
+        correlationId: req.correlationId,
+        timestamp: new Date().toISOString()
+      })
     }
-    const result = await pool.query('SELECT * FROM monitoring_results WHERE relevance_score BETWEEN 0.5 AND 0.8 ORDER BY timestamp DESC')
+
+    await intelScraperReady
+    const status = await intelScraper.start()
     res.json({
       success: true,
-      data: result.rows,
+      data: status,
       correlationId: req.correlationId,
       timestamp: new Date().toISOString()
     })
   } catch (error) {
-    console.error('Error fetching candidates:', error)
+    logger.error({ err: error }, 'Failed to start Intel Scraper')
     res.status(500).json({
       success: false,
-      error: 'Failed to fetch candidates',
+      error: error.message,
+      correlationId: req.correlationId,
+      timestamp: new Date().toISOString()
+    })
+  }
+})
+
+app.post('/api/intel-scraper/stop', async (req, res) => {
+  try {
+    await intelScraperReady
+    const status = await intelScraper.stop()
+    res.json({
+      success: true,
+      data: status,
+      correlationId: req.correlationId,
+      timestamp: new Date().toISOString()
+    })
+  } catch (error) {
+    logger.error({ err: error }, 'Failed to stop Intel Scraper')
+    res.status(500).json({
+      success: false,
+      error: error.message,
+      correlationId: req.correlationId,
+      timestamp: new Date().toISOString()
+    })
+  }
+})
+
+app.post('/api/intel-scraper/run', async (req, res) => {
+  try {
+    if (!pool) {
+      return res.status(503).json({
+        success: false,
+        error: 'Database not configured',
+        correlationId: req.correlationId,
+        timestamp: new Date().toISOString()
+      })
+    }
+
+    await intelScraperReady
+    const status = await intelScraper.runNow('manual-run')
+    res.json({
+      success: true,
+      data: status,
+      correlationId: req.correlationId,
+      timestamp: new Date().toISOString()
+    })
+  } catch (error) {
+    logger.error({ err: error }, 'Failed to run Intel Scraper manually')
+    res.status(500).json({
+      success: false,
+      error: error.message,
+      correlationId: req.correlationId,
+      timestamp: new Date().toISOString()
+    })
+  }
+})
+
+app.post('/api/intel-scraper/emergency-bypass', async (req, res) => {
+  const { action = 'enable', reason, durationMs } = req.body || {}
+
+  try {
+    await intelScraperReady
+
+    if (action === 'disable') {
+      const status = intelScraper.disableEmergencyBypass(
+        reason || 'Emergency bypass disabled by operator'
+      )
+      return res.json({
+        success: true,
+        data: status,
+        correlationId: req.correlationId,
+        timestamp: new Date().toISOString()
+      })
+    }
+
+    if (!reason || typeof reason !== 'string') {
+      return res.status(400).json({
+        success: false,
+        error: 'Reason is required to enable emergency bypass',
+        correlationId: req.correlationId,
+        timestamp: new Date().toISOString()
+      })
+    }
+
+    const parsedDuration = Number.isFinite(durationMs)
+      ? Math.max(5 * 60 * 1000, Number(durationMs))
+      : 60 * 60 * 1000
+
+    const status = await intelScraper.enableEmergencyBypass({
+      reason,
+      durationMs: parsedDuration
+    })
+
+    res.json({
+      success: true,
+      data: status,
+      correlationId: req.correlationId,
+      timestamp: new Date().toISOString()
+    })
+  } catch (error) {
+    logger.error({ err: error }, 'Failed to update Intel Scraper emergency bypass state')
+    res.status(500).json({
+      success: false,
+      error: error.message,
+      correlationId: req.correlationId,
+      timestamp: new Date().toISOString()
+    })
+  }
+})
+
+app.get('/api/intel-scraper/approvals', async (req, res) => {
+  try {
+    await intelScraperReady
+    const approvals = intelScraper.getPendingApprovals()
+    res.json({
+      success: true,
+      data: approvals,
+      correlationId: req.correlationId,
+      timestamp: new Date().toISOString()
+    })
+  } catch (error) {
+    logger.error({ err: error }, 'Failed to fetch Intel Scraper approvals')
+    res.status(500).json({
+      success: false,
+      error: error.message,
+      correlationId: req.correlationId,
+      timestamp: new Date().toISOString()
+    })
+  }
+})
+
+app.post('/api/intel-scraper/approvals/:id/resolve', async (req, res) => {
+  const { decision, reason } = req.body || {}
+
+  if (!['approve', 'reject'].includes(decision)) {
+    return res.status(400).json({
+      success: false,
+      error: 'Decision must be "approve" or "reject"',
+      correlationId: req.correlationId,
+      timestamp: new Date().toISOString()
+    })
+  }
+
+  try {
+    await intelScraperReady
+    const result = await intelScraper.resolveApproval(req.params.id, decision, reason)
+    res.json({
+      success: true,
+      data: result,
+      correlationId: req.correlationId,
+      timestamp: new Date().toISOString()
+    })
+  } catch (error) {
+    logger.error({ err: error }, 'Failed to resolve Intel Scraper approval')
+    res.status(500).json({
+      success: false,
+      error: error.message,
+      correlationId: req.correlationId,
+      timestamp: new Date().toISOString()
+    })
+  }
+})
+
+app.get('/api/intel-scraper/candidates', async (req, res) => {
+  try {
+    await intelScraperReady
+    const candidates = intelScraper.getCandidates()
+    res.json({
+      success: true,
+      data: candidates,
+      correlationId: req.correlationId,
+      timestamp: new Date().toISOString()
+    })
+  } catch (error) {
+    logger.error({ err: error }, 'Failed to fetch Intel Scraper candidates')
+    res.status(500).json({
+      success: false,
+      error: error.message,
+      correlationId: req.correlationId,
+      timestamp: new Date().toISOString()
+    })
+  }
+})
+
+app.post('/api/intel-scraper/candidates/discover', async (req, res) => {
+  const { urls = [], keywords = [] } = req.body || {}
+
+  if (!Array.isArray(urls) || !Array.isArray(keywords)) {
+    return res.status(400).json({
+      success: false,
+      error: 'urls and keywords must be arrays',
+      correlationId: req.correlationId,
+      timestamp: new Date().toISOString()
+    })
+  }
+
+  try {
+    await intelScraperReady
+    const candidates = await intelScraper.discover({ urls, keywords })
+    res.json({
+      success: true,
+      data: candidates,
+      correlationId: req.correlationId,
+      timestamp: new Date().toISOString()
+    })
+  } catch (error) {
+    logger.error({ err: error }, 'Failed to run Intel Scraper discovery')
+    res.status(500).json({
+      success: false,
+      error: error.message,
+      correlationId: req.correlationId,
+      timestamp: new Date().toISOString()
+    })
+  }
+})
+
+app.post('/api/intel-scraper/candidates/:id/accept', async (req, res) => {
+  const { autoApprove = false } = req.body || {}
+
+  try {
+    await intelScraperReady
+    const status = await intelScraper.acceptCandidate(req.params.id, { autoApprove })
+    res.json({
+      success: true,
+      data: status,
+      correlationId: req.correlationId,
+      timestamp: new Date().toISOString()
+    })
+  } catch (error) {
+    logger.error({ err: error }, 'Failed to accept Intel Scraper candidate')
+    res.status(500).json({
+      success: false,
+      error: error.message,
+      correlationId: req.correlationId,
+      timestamp: new Date().toISOString()
+    })
+  }
+})
+
+app.post('/api/intel-scraper/candidates/:id/dismiss', async (req, res) => {
+  try {
+    await intelScraperReady
+    const status = intelScraper.dismissCandidate(req.params.id)
+    res.json({
+      success: true,
+      data: status,
+      correlationId: req.correlationId,
+      timestamp: new Date().toISOString()
+    })
+  } catch (error) {
+    logger.error({ err: error }, 'Failed to dismiss Intel Scraper candidate')
+    res.status(500).json({
+      success: false,
+      error: error.message,
       correlationId: req.correlationId,
       timestamp: new Date().toISOString()
     })
@@ -818,6 +1313,8 @@ const PORT = process.env.PORT || 3000
 async function startServer() {
   try {
     await initDB()
+    intelScraperReady = bootstrapIntelScraper()
+    await intelScraperReady
     app.listen(PORT, () => {
       console.log(`Cyberstreams v2.0.0 server running on port ${PORT}`)
     })

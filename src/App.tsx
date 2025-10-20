@@ -1,5 +1,5 @@
 import { useState, lazy, Suspense } from 'react'
-import { Shield, Activity, Radio, FileText, Network, Settings, Bot, Database } from 'lucide-react'
+import { Shield, Activity, Radio, FileText, Network, Settings, Bot, Database, Search, SlidersHorizontal } from 'lucide-react'
 
 const HomeContent = lazy(() => import('@modules/HomeContent'))
 const ThreatsModule = lazy(() => import('@modules/ThreatsModule'))
@@ -7,8 +7,10 @@ const ActivityModule = lazy(() => import('@modules/ActivityModule'))
 const SignalStream = lazy(() => import('@modules/SignalStream'))
 const ConsolidatedIntelligence = lazy(() => import('@modules/ConsolidatedIntelligence'))
 const CyberstreamsAgent = lazy(() => import('@modules/CyberstreamsAgent'))
+const SearchAgentModule = lazy(() => import('@modules/SearchAgentModule'))
 const AdminPage = lazy(() => import('./pages/Admin'))
 const AdminV2Page = lazy(() => import('@modules/AdminV2Page'))
+const SettingsModule = lazy(() => import('@modules/SettingsModule'))
 
 const LoadingSpinner = () => (
   <div className="flex items-center justify-center py-20">
@@ -51,12 +53,14 @@ function App() {
             {[
               { id: 'dashboard', label: 'Dashboard', icon: Shield },
               { id: 'agent', label: 'Agent', icon: Bot },
+              { id: 'search', label: 'Search Agent', icon: Search },
               { id: 'threats', label: 'Threats', icon: Activity },
               { id: 'pulse', label: 'SignalStream', icon: Radio },
               { id: 'activity', label: 'Activity', icon: FileText },
               { id: 'intel', label: 'Consolidated Intel', icon: Network },
               { id: 'admin', label: 'Admin', icon: Settings },
               { id: 'admin-v2', label: 'Admin v2', icon: Database },
+              { id: 'settings', label: 'Settings', icon: SlidersHorizontal }
             ].map((tab) => (
               <button
                 key={tab.id}
@@ -80,12 +84,14 @@ function App() {
         <Suspense fallback={<LoadingSpinner />}>
           {activeTab === 'dashboard' && <HomeContent />}
           {activeTab === 'agent' && <CyberstreamsAgent />}
+          {activeTab === 'search' && <SearchAgentModule />}
           {activeTab === 'threats' && <ThreatsModule />}
           {activeTab === 'pulse' && <SignalStream />}
           {activeTab === 'activity' && <ActivityModule />}
           {activeTab === 'intel' && <ConsolidatedIntelligence />}
           {activeTab === 'admin' && <AdminPage />}
           {activeTab === 'admin-v2' && <AdminV2Page />}
+          {activeTab === 'settings' && <SettingsModule />}
         </Suspense>
       </main>
     </div>
