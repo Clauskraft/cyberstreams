@@ -235,9 +235,6 @@ app.use((err, req, res, next) => {
   })
 })
 
-// Serve static files
-app.use(express.static(path.join(__dirname, 'dist')))
-
 // API Routes
 
 // Keywords Management
@@ -412,12 +409,128 @@ app.get('/api/health', (req, res) => {
   })
 })
 
+// Migration endpoint
+app.post('/api/migrate', async (req, res) => {
+  try {
+    console.log('Starting database migration...')
+    
+    // Create pgvector extension
+    await pool.query('CREATE EXTENSION IF NOT EXISTS vector')
+    console.log('✓ Vector extension created')
+    
+    // Keywords table
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS keywords (
+        id SERIAL PRIMARY KEY,
+        keyword VARCHAR(255) NOT NULL,
+        category VARCHAR(100),
+        priority INTEGER DEFAULT 1 CHECK (priority BETWEEN 1 AND 3),
+        active BOOLEAN DEFAULT true,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        UNIQUE(keyword)
+      )
+    `)
+    console.log('✓ Keywords table created')
+    
+    // Monitoring sources table
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS monitoring_sources (
+        id SERIAL PRIMARY KEY,
+        source_type VARCHAR(50) NOT NULL CHECK (source_type IN ('web', 'social', 'documents', 'darkweb')),
+        url TEXT NOT NULL,
+        scan_frequency INTEGER DEFAULT 3600,
+        last_scanned TIMESTAMP,
+        active BOOLEAN DEFAULT true,
+        auth_config JSONB,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      )
+    `)
+    console.log('✓ Monitoring sources table created')
+    
+    // Monitoring results table
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS monitoring_results (
+        id SERIAL PRIMARY KEY,
+        source_id INTEGER REFERENCES monitoring_sources(id),
+        title TEXT NOT NULL,
+        content TEXT,
+        url TEXT,
+        severity VARCHAR(20) DEFAULT 'medium' CHECK (severity IN ('low', 'medium', 'high', 'critical')),
+        category VARCHAR(100),
+        keywords TEXT[],
+        metadata JSONB,
+        timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      )
+    `)
+    console.log('✓ Monitoring results table created')
+    
+    // Insert sample data
+    await pool.query(`
+      INSERT INTO keywords (keyword, category, priority) 
+      VALUES 
+        ('ransomware', 'malware', 3),
+        ('APT', 'threat-actor', 3),
+        ('zero-day', 'vulnerability', 3),
+        ('data breach', 'incident', 2),
+        ('CVE-2024', 'vulnerability', 2),
+        ('LockBit', 'ransomware', 3),
+        ('Lazarus', 'threat-actor', 3),
+        ('phishing', 'attack-vector', 2),
+        ('supply chain', 'attack-vector', 2),
+        ('critical infrastructure', 'target', 3)
+      ON CONFLICT (keyword) DO NOTHING
+    `)
+    console.log('✓ Sample keywords inserted')
+    
+    // Insert sample sources
+    await pool.query(`
+      INSERT INTO monitoring_sources (source_type, url, scan_frequency) 
+      VALUES 
+        ('web', 'https://krebsonsecurity.com/feed/', 3600),
+        ('web', 'https://www.darkreading.com/rss.xml', 3600),
+        ('web', 'https://threatpost.com/feed/', 7200),
+        ('web', 'https://www.bleepingcomputer.com/feed/', 3600),
+        ('web', 'https://www.cisa.gov/uscert/ncas/current-activity.xml', 1800)
+      ON CONFLICT DO NOTHING
+    `)
+    console.log('✓ Sample sources inserted')
+    
+    // Insert sample monitoring results
+    await pool.query(`
+      INSERT INTO monitoring_results (title, content, url, severity, category, keywords, metadata) 
+      VALUES 
+        ('New Ransomware Campaign Targets Healthcare', 'A new ransomware campaign has been identified targeting healthcare organizations...', 'https://example.com/ransomware-healthcare', 'high', 'malware', ARRAY['ransomware', 'healthcare'], '{"source": "krebsonsecurity", "tags": ["healthcare", "ransomware"]}'),
+        ('APT Group Exploits Zero-Day Vulnerability', 'Advanced Persistent Threat group has been exploiting a zero-day vulnerability...', 'https://example.com/apt-zero-day', 'critical', 'vulnerability', ARRAY['APT', 'zero-day'], '{"source": "darkreading", "tags": ["APT", "zero-day"]}'),
+        ('Data Breach Affects 1M Users', 'A major data breach has been reported affecting over 1 million users...', 'https://example.com/data-breach', 'high', 'incident', ARRAY['data breach'], '{"source": "threatpost", "tags": ["data-breach"]}')
+      ON CONFLICT DO NOTHING
+    `)
+    console.log('✓ Sample monitoring results inserted')
+    
+    console.log('✅ Database migration completed successfully!')
+    
+    res.json({
+      success: true,
+      message: 'Database migration completed successfully',
+      timestamp: new Date().toISOString()
+    })
+    
+  } catch (error) {
+    console.error('❌ Migration failed:', error)
+    res.status(500).json({
+      success: false,
+      error: 'Migration failed',
+      message: error.message,
+      timestamp: new Date().toISOString()
+    })
+  }
+})
+
 // Core API endpoints
 app.get('/api/pulse', checkDatabase, async (req, res) => {
   try {
-    if (!pool) {
-      return res.json({ success: true, data: [] })
-    }
     const result = await pool.query('SELECT * FROM monitoring_results ORDER BY timestamp DESC LIMIT 10')
     res.json({
       success: true,
@@ -438,9 +551,6 @@ app.get('/api/pulse', checkDatabase, async (req, res) => {
 
 app.get('/api/daily-pulse', checkDatabase, async (req, res) => {
   try {
-    if (!pool) {
-      return res.json({ success: true, data: [] })
-    }
     const result = await pool.query(`
       SELECT * FROM monitoring_results 
       WHERE DATE(timestamp) = CURRENT_DATE 
@@ -465,16 +575,6 @@ app.get('/api/daily-pulse', checkDatabase, async (req, res) => {
 
 app.get('/api/stats', checkDatabase, async (req, res) => {
   try {
-    if (!pool) {
-      return res.json({
-        success: true,
-        data: {
-          keywords: 0,
-          sources: 0,
-          results: 0
-        }
-      })
-    }
     const [keywordCount, sourceCount, resultCount] = await Promise.all([
       pool.query('SELECT COUNT(*) as count FROM keywords'),
       pool.query('SELECT COUNT(*) as count FROM monitoring_sources'),
@@ -563,9 +663,6 @@ app.get('/api/intel-scraper/candidates', checkDatabase, async (req, res) => {
 
 app.get('/api/intel', checkDatabase, async (req, res) => {
   try {
-    if (!pool) {
-      return res.json({ success: true, data: [] })
-    }
     const result = await pool.query('SELECT * FROM monitoring_results ORDER BY timestamp DESC LIMIT 20')
     res.json({
       success: true,
@@ -586,9 +683,6 @@ app.get('/api/intel', checkDatabase, async (req, res) => {
 
 app.get('/api/activity', checkDatabase, async (req, res) => {
   try {
-    if (!pool) {
-      return res.json({ success: true, data: [] })
-    }
     const result = await pool.query(`
       SELECT 
         'monitoring_result' as type,
@@ -617,9 +711,6 @@ app.get('/api/activity', checkDatabase, async (req, res) => {
 
 app.get('/api/signal-stream', checkDatabase, async (req, res) => {
   try {
-    if (!pool) {
-      return res.json({ success: true, data: [] })
-    }
     const result = await pool.query(`
       SELECT 
         content as title,
@@ -650,9 +741,6 @@ app.get('/api/signal-stream', checkDatabase, async (req, res) => {
 
 app.get('/api/threats', checkDatabase, async (req, res) => {
   try {
-    if (!pool) {
-      return res.json({ success: true, data: [] })
-    }
     const result = await pool.query(`
       SELECT 
         content as indicator,
@@ -696,6 +784,9 @@ app.get('/api/vector-status', (req, res) => {
     message: hasVectorDb ? 'Vector database configured' : 'Vector database not configured. Set VECTOR_DB_URL or DATABASE_URL in environment.'
   })
 })
+
+// Serve static files from dist directory
+app.use(express.static(path.join(__dirname, 'dist')))
 
 // 404 handler for API routes (after all API endpoints are defined)
 app.use('/api/*', (req, res) => {
