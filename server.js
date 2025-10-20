@@ -391,6 +391,95 @@ app.get('/api/threats', (req, res) => {
   })
 })
 
+// Consolidated Intelligence endpoint
+app.get('/api/intel', async (req, res) => {
+  try {
+    const status = intelScraperService.getStatus()
+    const findings = status.latestFindings || []
+    
+    res.json({
+      success: true,
+      timestamp: new Date().toISOString(),
+      data: findings.map(finding => ({
+        id: finding.id,
+        timestamp: finding.timestamp,
+        title: finding.title,
+        description: finding.description,
+        source: finding.source,
+        sourceType: 'osint',
+        severity: finding.severity,
+        category: finding.category,
+        indicators: finding.iocs?.map(ioc => ({ type: 'IOC', value: ioc })) || [],
+        confidence: finding.confidence,
+        link: finding.url
+      }))
+    })
+  } catch (error) {
+    logger.error({ err: error }, 'Failed to load consolidated intelligence')
+    res.status(500).json({ success: false, error: 'Failed to load intelligence data' })
+  }
+})
+
+// Activity endpoint
+app.get('/api/activity', async (req, res) => {
+  try {
+    const status = intelScraperService.getStatus()
+    const activities = status.activity || []
+    
+    res.json({
+      success: true,
+      timestamp: new Date().toISOString(),
+      data: activities.map(activity => ({
+        id: activity.id,
+        timestamp: activity.timestamp,
+        type: 'system',
+        severity: activity.status === 'success' ? 'success' : 'error',
+        user: 'System',
+        action: activity.action,
+        details: activity.details
+      }))
+    })
+  } catch (error) {
+    logger.error({ err: error }, 'Failed to load activity data')
+    res.status(500).json({ success: false, error: 'Failed to load activity data' })
+  }
+})
+
+// Signal Stream endpoint
+app.get('/api/signal-stream', async (req, res) => {
+  try {
+    const status = intelScraperService.getStatus()
+    const findings = status.latestFindings || []
+    
+    res.json({
+      success: true,
+      timestamp: new Date().toISOString(),
+      data: findings.map(finding => ({
+        id: finding.id,
+        title: finding.title,
+        summary: finding.description,
+        source: finding.source,
+        timestamp: finding.timestamp,
+        category: finding.category[0] || 'threat',
+        severity: finding.severity,
+        tags: finding.tags || [],
+        confidence: finding.confidence,
+        url: finding.url,
+        verified: finding.verified,
+        focusLane: finding.category[0] || 'threat',
+        evidence: {
+          vectorScore: finding.confidence / 100,
+          bm25Score: finding.confidence / 100,
+          freshnessHours: Math.floor((Date.now() - new Date(finding.timestamp).getTime()) / (1000 * 60 * 60))
+        }
+      }))
+    })
+  } catch (error) {
+    logger.error({ err: error }, 'Failed to load signal stream data')
+    res.status(500).json({ success: false, error: 'Failed to load signal stream data' })
+  }
+})
+
 app.get('/api/stats', (req, res) => {
   res.json({
     success: true,
