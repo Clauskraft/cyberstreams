@@ -197,46 +197,10 @@ export default function Admin() {
   }, [fetchIntelScraperStatus])
 
   useEffect(() => {
-    // Load mock data med dark-web kilder og politiske keywords
-    setKeywords([
-      { id: '1', keyword: 'ransomware', category: 'malware', priority: 'high', active: true, lastHits: 45, created: '2024-01-15' },
-      { id: '2', keyword: 'APT28', category: 'actor', priority: 'high', active: true, lastHits: 12, created: '2024-01-16' },
-      { id: '3', keyword: 'phishing', category: 'attack', priority: 'medium', active: true, lastHits: 89, created: '2024-01-17' },
-      { id: '4', keyword: 'zero-day', category: 'vulnerability', priority: 'high', active: false, lastHits: 3, created: '2024-01-18' },
-      { id: '5', keyword: 'credential dump', category: 'data', priority: 'medium', active: true, lastHits: 67, created: '2024-01-19' },
-      // Politiske keywords
-      { id: '6', keyword: 'lovforslag', category: 'politics', priority: 'medium', active: true, lastHits: 23, created: '2024-01-20' },
-      { id: '7', keyword: 'cybersikkerhedslov', category: 'politics', priority: 'high', active: true, lastHits: 15, created: '2024-01-21' },
-      { id: '8', keyword: 'EU Digital Services Act', category: 'politics', priority: 'medium', active: true, lastHits: 8, created: '2024-01-22' },
-      { id: '9', keyword: 'kritisk infrastruktur', category: 'politics', priority: 'high', active: true, lastHits: 34, created: '2024-01-23' },
-      { id: '10', keyword: 'GDPR', category: 'politics', priority: 'medium', active: true, lastHits: 19, created: '2024-01-24' }
-    ])
-
-    setSources([
-      // Government & Legitimate Sources
-      { id: '1', name: 'CFCS.dk RSS', url: 'https://cfcs.dk/da/nyheder/rss', type: 'rss', active: true, lastScraped: '5 min ago', status: 'online' },
-      { id: '2', name: 'CERT-EU Advisories', url: 'https://cert.europa.eu/publications/rss', type: 'rss', active: true, lastScraped: '10 min ago', status: 'online' },
-      { id: '3', name: 'Folketinget IT-politik', url: 'https://ft.dk/search/rss?q=cybersikkerhed', type: 'rss', active: true, lastScraped: '15 min ago', status: 'online' },
-      { id: '4', name: 'ENISA Publications', url: 'https://enisa.europa.eu/news/rss', type: 'rss', active: true, lastScraped: '20 min ago', status: 'online' },
-      { id: '5', name: 'Version2 Sikkerhed', url: 'https://version2.dk/sikkerhed/rss', type: 'rss', active: true, lastScraped: '25 min ago', status: 'online' },
-      
-      // Dark Web Sources (Top 10 fra prompt)
-      { id: '6', name: 'BreachForums', url: 'http://breachforums.onion/data-trading', type: 'forum', active: true, lastScraped: '1 hour ago', status: 'online' },
-      { id: '7', name: 'XSS Forum', url: 'http://xss.onion/exploits', type: 'forum', active: true, lastScraped: '2 hours ago', status: 'online' },
-      { id: '8', name: 'LeakBase', url: 'http://leakbase.onion/vulnerabilities', type: 'forum', active: false, lastScraped: '1 day ago', status: 'offline' },
-      { id: '9', name: 'Exploit.in', url: 'http://exploit.onion/raas', type: 'forum', active: true, lastScraped: '3 hours ago', status: 'online' },
-      { id: '10', name: 'Altenen Forum', url: 'http://altenen.onion/fraud', type: 'forum', active: true, lastScraped: '4 hours ago', status: 'online' },
-      { id: '11', name: 'Nulled Forum', url: 'http://nulled.onion/leaks', type: 'forum', active: true, lastScraped: '5 hours ago', status: 'error' },
-      { id: '12', name: 'RAMP Marketplace', url: 'http://ramp.onion/access-market', type: 'marketplace', active: true, lastScraped: '6 hours ago', status: 'online' },
-      { id: '13', name: 'Cracked Forum', url: 'http://cracked.onion/combos', type: 'forum', active: false, lastScraped: '2 days ago', status: 'offline' },
-      { id: '14', name: 'CraxPro', url: 'http://craxpro.onion/credentials', type: 'forum', active: true, lastScraped: '7 hours ago', status: 'online' },
-      { id: '15', name: 'Dread (DarkForums)', url: 'http://dread.onion/hacking', type: 'forum', active: true, lastScraped: '8 hours ago', status: 'online' },
-      
-      // Social & Media
-      { id: '16', name: 'Reddit r/netsec', url: 'https://reddit.com/r/netsec.rss', type: 'social', active: true, lastScraped: '30 min ago', status: 'online' },
-      { id: '17', name: 'CERT-DK Twitter', url: 'https://twitter.com/certdk', type: 'social', active: true, lastScraped: '45 min ago', status: 'online' },
-      { id: '18', name: 'DR Nyheder Cybersikkerhed', url: 'https://dr.dk/nyheder/cybersikkerhed/rss', type: 'rss', active: true, lastScraped: '1 hour ago', status: 'online' }
-    ])
+    // Load data from backend - no mock data
+    // Keywords and sources should be managed via API endpoints
+    setKeywords([])
+    setSources([])
   }, [])
 
   const addKeyword = () => {

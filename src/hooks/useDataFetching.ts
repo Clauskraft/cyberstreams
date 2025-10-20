@@ -2,7 +2,6 @@ import { useState, useEffect, useCallback } from 'react'
 
 interface UseDataFetchingOptions<T> {
   url: string
-  fallbackData?: T[]
   transform?: (data: any) => T[]
   onError?: (error: Error) => void
 }
@@ -16,15 +15,14 @@ interface UseDataFetchingReturn<T> {
 
 /**
  * Custom hook for data fetching with loading and error states
- * Replaces repetitive useState/useEffect patterns
+ * No fallback data - returns empty array on error
  */
 export function useDataFetching<T>({
   url,
-  fallbackData = [],
   transform = (data) => data,
   onError
 }: UseDataFetchingOptions<T>): UseDataFetchingReturn<T> {
-  const [data, setData] = useState<T[]>(fallbackData)
+  const [data, setData] = useState<T[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<Error | null>(null)
 
@@ -48,6 +46,7 @@ export function useDataFetching<T>({
     } catch (err) {
       const error = err instanceof Error ? err : new Error('Unknown error occurred')
       setError(error)
+      setData([]) // Return empty array on error
       onError?.(error)
     } finally {
       setLoading(false)
