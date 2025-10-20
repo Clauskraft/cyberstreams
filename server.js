@@ -93,6 +93,7 @@ const intelScraperService = new IntelScraperService({
   loadAuthorizedSources
 })
 
+// Initialize Intel Scraper gracefully - allow system to run even if it fails
 try {
   await intelScraperService.init()
   if (shouldAutoStartIntelScraper) {
@@ -390,14 +391,58 @@ app.get('/api/threats', (req, res) => {
   })
 })
 
+// API endpoint for dashboard stats (replaces hardcoded data)
+app.get('/api/dashboard-stats', (req, res) => {
+  res.json({
+    success: true,
+    timestamp: new Date().toISOString(),
+    data: [
+      { label: 'Active Threats', value: '0', change: '--', color: 'red' },
+      { label: 'Monitored Sources', value: '0', change: '--', color: 'blue' },
+      { label: 'Protected Systems', value: '0', change: '--', color: 'green' },
+      { label: 'Trend Score', value: '--', change: '--', color: 'purple' },
+    ],
+  })
+})
+
+// API endpoint for threats (replaces mock data)
+app.get('/api/threats', (req, res) => {
+  res.json({
+    success: true,
+    timestamp: new Date().toISOString(),
+    data: [],
+    message: 'No threat data available. Connect data sources to populate.'
+  })
+})
+
+// API endpoint for activities (replaces mock data)
+app.get('/api/activities', (req, res) => {
+  res.json({
+    success: true,
+    timestamp: new Date().toISOString(),
+    data: [],
+    message: 'No activity data available. Connect data sources to populate.'
+  })
+})
+
+// API endpoint for consolidated intelligence (replaces mock data)
+app.get('/api/intelligence', (req, res) => {
+  res.json({
+    success: true,
+    timestamp: new Date().toISOString(),
+    data: [],
+    message: 'No intelligence data available. Connect data sources to populate.'
+  })
+})
+
 app.get('/api/stats', (req, res) => {
   res.json({
     success: true,
     timestamp: new Date().toISOString(),
     data: {
-      activeSources: 89,
-      protectedSystems: 2400,
-      trendScore: 94,
+      activeSources: 0,
+      protectedSystems: 0,
+      trendScore: 0,
       lastUpdate: new Date().toISOString(),
     },
   })

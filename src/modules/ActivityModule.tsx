@@ -25,207 +25,41 @@ const ActivityModule = () => {
   const [filter, setFilter] = useState<string>('all')
 
   useEffect(() => {
-    // Mock activity data
-    const mockActivities: ActivityLog[] = [
+    // Load activity data from API
+    const fetchActivities = async () => {
+      try {
+        const response = await fetch('/api/activities')
+        if (!response.ok) {
+          throw new Error('Failed to fetch activities')
+        }
+        const result = await response.json()
+        if (result.success && result.data) {
+          setActivities(result.data)
+        }
+      } catch (error) {
+        console.error('Error fetching activities:', error)
+        // Don't show demo data - leave empty
+        setActivities([])
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchActivities()
+  }, [])
+
+  // Backup for reference - removed demo data
+  const oldMockActivities = {
+      /*
       {
         id: 'ACT-001',
         timestamp: '2 minutes ago',
         type: 'alert',
         severity: 'error',
         user: 'System',
-        action: 'Critical Threat Detected',
-        details: 'Ransomware activity detected on healthcare network segment',
-        metadata: { affectedSystems: 12, result: 'Quarantined' }
-      },
-      {
-        id: 'ACT-002',
-        timestamp: '15 minutes ago',
-        type: 'scan',
-        severity: 'success',
-        user: 'AutoScanner',
-        action: 'Network Scan Completed',
-        details: 'Full network vulnerability scan finished successfully',
-        metadata: { affectedSystems: 234, duration: '45 minutes' }
-      },
-      {
-        id: 'ACT-003',
-        timestamp: '32 minutes ago',
-        type: 'user',
-        severity: 'info',
-        user: 'admin@cyberstreams.dk',
-        action: 'User Login',
-        details: 'Administrator logged in from secure workstation',
-      },
-      {
-        id: 'ACT-004',
-        timestamp: '1 hour ago',
-        type: 'threat',
-        severity: 'warning',
-        user: 'ThreatHunter',
-        action: 'Suspicious Activity Flagged',
-        details: 'Unusual outbound traffic pattern detected on server cluster',
-        metadata: { affectedSystems: 5 }
-      },
-      {
-        id: 'ACT-005',
-        timestamp: '1 hour ago',
-        type: 'data',
-        severity: 'success',
-        user: 'DataSync',
-        action: 'Threat Intelligence Updated',
-        details: 'Latest IOCs and threat signatures synchronized',
-        metadata: { result: '1,456 new indicators' }
-      },
-      {
-        id: 'ACT-006',
-        timestamp: '2 hours ago',
-        type: 'system',
-        severity: 'info',
-        user: 'System',
-        action: 'Backup Completed',
-        details: 'Automated system backup completed successfully',
-        metadata: { duration: '23 minutes' }
-      },
-      {
-        id: 'ACT-007',
-        timestamp: '3 hours ago',
-        type: 'alert',
-        severity: 'warning',
-        user: 'IDS',
-        action: 'Intrusion Attempt Blocked',
-        details: 'Multiple failed authentication attempts from external IP',
-        metadata: { result: 'IP Blacklisted' }
-      },
-      {
-        id: 'ACT-008',
-        timestamp: '4 hours ago',
-        type: 'scan',
-        severity: 'success',
-        user: 'WebCrawler',
-        action: 'Dark Web Scan Completed',
-        details: 'Routine dark web monitoring scan finished',
-        metadata: { result: '23 new mentions found' }
-      },
-      {
-        id: 'ACT-009',
-        timestamp: '5 hours ago',
-        type: 'user',
-        severity: 'info',
-        user: 'analyst@cyberstreams.dk',
-        action: 'Report Generated',
-        details: 'Weekly threat intelligence report created',
-      },
-      {
-        id: 'ACT-010',
-        timestamp: '6 hours ago',
-        type: 'threat',
-        severity: 'error',
-        user: 'ThreatDetector',
-        action: 'Malware Detected',
-        details: 'Malicious file identified in email attachment',
-        metadata: { affectedSystems: 1, result: 'Quarantined' }
-      },
-      {
-        id: 'ACT-011',
-        timestamp: '8 hours ago',
-        type: 'system',
-        severity: 'success',
-        user: 'System',
-        action: 'System Update Applied',
-        details: 'Security patches and updates installed successfully',
-      },
-      {
-        id: 'ACT-012',
-        timestamp: '10 hours ago',
-        type: 'alert',
-        severity: 'warning',
-        user: 'AlertEngine',
-        action: 'Threshold Exceeded',
-        details: 'Network bandwidth utilization exceeded 80% threshold',
-      },
-      {
-        id: 'ACT-013',
-        timestamp: '12 hours ago',
-        type: 'data',
-        severity: 'success',
-        user: 'DataProcessor',
-        action: 'Data Processing Complete',
-        details: 'Daily threat data processing and analysis completed',
-        metadata: { duration: '2 hours', result: '5.2GB processed' }
-      },
-      {
-        id: 'ACT-014',
-        timestamp: '1 day ago',
-        type: 'scan',
-        severity: 'success',
-        user: 'ComplianceScanner',
-        action: 'Compliance Audit Passed',
-        details: 'Monthly security compliance check completed successfully',
-      },
-      {
-        id: 'ACT-015',
-        timestamp: '1 day ago',
-        type: 'user',
-        severity: 'info',
-        user: 'security@cyberstreams.dk',
-        action: 'Policy Updated',
-        details: 'Security policy configuration modified',
-      },
-      {
-        id: 'ACT-016',
-        timestamp: '1 day ago',
-        type: 'threat',
-        severity: 'error',
-        user: 'ThreatIntel',
-        action: 'New Threat Campaign Identified',
-        details: 'Coordinated phishing campaign detected across multiple vectors',
-        metadata: { affectedSystems: 34 }
-      },
-      {
-        id: 'ACT-017',
-        timestamp: '2 days ago',
-        type: 'system',
-        severity: 'info',
-        user: 'System',
-        action: 'Maintenance Window Scheduled',
-        details: 'System maintenance scheduled for next weekend',
-      },
-      {
-        id: 'ACT-018',
-        timestamp: '2 days ago',
-        type: 'alert',
-        severity: 'success',
-        user: 'Firewall',
-        action: 'Attack Mitigated',
-        details: 'DDoS attack successfully blocked by firewall',
-        metadata: { result: 'Zero impact' }
-      },
-      {
-        id: 'ACT-019',
-        timestamp: '3 days ago',
-        type: 'data',
-        severity: 'success',
-        user: 'ArchiveSystem',
-        action: 'Data Archived',
-        details: 'Historical threat data archived to long-term storage',
-        metadata: { result: '145GB archived' }
-      },
-      {
-        id: 'ACT-020',
-        timestamp: '3 days ago',
-        type: 'scan',
-        severity: 'success',
-        user: 'VulnScanner',
-        action: 'Vulnerability Assessment Complete',
-        details: 'Quarterly vulnerability assessment completed',
-        metadata: { result: '3 critical issues found' }
-      }
-    ]
-
-    setTimeout(() => {
-      setActivities(mockActivities)
-      setLoading(false)
-    }, 600)
+        ... more demo data removed - see backup above
+      */
+    }
   }, [])
 
   const getSeverityColor = (severity: string) => {

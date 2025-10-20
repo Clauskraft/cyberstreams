@@ -34,8 +34,32 @@ const ConsolidatedIntelligence = () => {
   const [timeRange, setTimeRange] = useState('24h')
 
   useEffect(() => {
-    // Mock consolidated intelligence data
-    const mockFindings: ThreatFinding[] = [
+    // Load intelligence from API - NO DEMO DATA
+    const fetchIntelligence = async () => {
+      try {
+        const response = await fetch('/api/intelligence')
+        if (!response.ok) {
+          throw new Error('Failed to fetch intelligence')
+        }
+        const result = await response.json()
+        if (result.success && result.data) {
+          setFindings(result.data)
+        }
+      } catch (error) {
+        console.error('Error fetching intelligence:', error)
+        // Don't show demo data - leave empty
+        setFindings([])
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchIntelligence()
+  }, [])
+
+  // Backup for reference - removed demo data
+  const oldMockFindings = {
+    /*
       {
         id: 'INTEL-001',
         timestamp: '2 minutes ago',
@@ -53,24 +77,6 @@ const ConsolidatedIntelligence = () => {
         correlations: ['INTEL-002', 'INTEL-007'],
         confidence: 95,
         link: 'https://fe-ddis.dk/analysis/apt28-nordic'
-      },
-      {
-        id: 'INTEL-002',
-        timestamp: '15 minutes ago',
-        title: 'EU FIMI Detection: Coordinated Disinformation on Energy Crisis',
-        description: 'Foreign Information Manipulation campaign detected across social media platforms spreading false narratives about EU energy security. Linked to known Russian influence operations.',
-        source: 'EEAS + ENISA',
-        sourceType: 'social',
-        severity: 'high',
-        category: ['FIMI', 'Disinformation', 'Energy', 'Influence Operations'],
-        indicators: [
-          { type: 'Account', value: '@energy_truth_eu' },
-          { type: 'Hashtag', value: '#EUEnergyCrisis' },
-          { type: 'Domain', value: 'eu-energy-facts[.]info' }
-        ],
-        correlations: ['INTEL-001'],
-        confidence: 87,
-        link: 'https://eeas.europa.eu/fimi-alert'
       },
       {
         id: 'INTEL-003',
@@ -201,19 +207,9 @@ const ConsolidatedIntelligence = () => {
         sourceType: 'rss',
         severity: 'low',
         category: ['Insurance', 'Market Analysis', 'Ransomware'],
-        indicators: [
-          { type: 'Trend', value: 'Premium Increase' },
-          { type: 'Impact', value: 'Coverage Restrictions' }
-        ],
-        confidence: 72,
-        link: 'https://www.reuters.com'
-      }
-    ]
-
-    setTimeout(() => {
-      setFindings(mockFindings)
-      setLoading(false)
-    }, 800)
+        ... more demo data removed - see backup above
+      */
+    }
   }, [])
 
   const getSeverityColor = (severity: string) => {
