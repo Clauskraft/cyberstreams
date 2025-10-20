@@ -1,0 +1,21 @@
+# Railway CLI Commands for New Project Creation
+
+## Step 1: Login to Railway
+railway login
+
+## Step 2: Create New Project
+railway new cyberstreams-v2
+
+## Step 3: Link to GitHub Repository
+railway link
+
+## Step 4: Get Project Credentials
+railway status
+railway service
+
+## Step 5: Set Build Commands
+railway variables set RAILWAY_BUILD_COMMAND="npm run build"
+railway variables set RAILWAY_START_COMMAND="npm start"
+
+## Step 6: Get Deployment URL
+railway domain
