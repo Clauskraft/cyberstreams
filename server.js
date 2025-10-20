@@ -1,9 +1,15 @@
 import 'dotenv/config'
 import express from 'express'
 import cors from 'cors'
+import helmet from 'helmet'
+import rateLimit from 'express-rate-limit'
 import { randomUUID } from 'crypto'
 
 import logger from './lib/logger.js'
+import config from './src/server/config.js'
+import { correlationId } from './src/server/middleware/correlationId.js'
+import { requestLogger } from './src/server/middleware/requestLogger.js'
+import { errorHandler, notFoundHandler } from './src/server/middleware/errorHandler.js'
 import createMispClient from './lib/mispClient.js'
 import createOpenCtiClient from './lib/openCtiClient.js'
 import createVectorClient from './lib/vectorClient.js'
@@ -67,7 +73,7 @@ const FALLBACK_AUTHORIZED_SOURCES = [
 ]
 
 const app = express()
-const PORT = Number(process.env.PORT || 3001)
+const PORT = config.port
 const ALLOWED_MISP_OBSERVABLE_TYPES = [
   'ip-src',
   'ip-dst',
@@ -193,7 +199,31 @@ async function loadAuthorizedSources() {
   }
 }
 
-app.use(cors())
+// Security middleware
+app.use(helmet({
+  contentSecurityPolicy: false, // Allow CSP to be configured separately if needed
+  crossOriginEmbedderPolicy: false
+}))
+
+// CORS configuration
+app.use(cors({
+  origin: config.corsOrigin,
+  credentials: true
+}))
+
+// Rate limiting
+const limiter = rateLimit({
+  windowMs: config.rateLimitWindowMs,
+  max: config.rateLimitMaxRequests,
+  message: { success: false, error: 'Too many requests, please try again later.' },
+  standardHeaders: true,
+  legacyHeaders: false
+})
+app.use(limiter)
+
+// Request middleware
+app.use(correlationId)
+app.use(requestLogger)
 app.use(express.json())
 
 app.get('/api/keys', async (req, res) => {
@@ -317,87 +347,49 @@ app.post('/api/mcp/test', async (req, res) => {
   }
 })
 
-// Mock data for pulse endpoint
-const mockPulseData = [
-  {
-    id: '1',
-    title: 'New Ransomware Strain Targeting Healthcare',
-    category: 'Ransomware',
-    severity: 'critical',
-    source: 'Dark Web Forum Alpha',
-    timestamp: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
-    description: 'A new ransomware variant specifically targeting hospital systems has been detected.',
-  },
-  {
-    id: '2',
-    title: 'Major Data Breach: 500K User Records Leaked',
-    category: 'Data Leak',
-    severity: 'high',
-    source: 'Breach Database',
-    timestamp: new Date(Date.now() - 4 * 60 * 60 * 1000).toISOString(),
-    description: 'Credentials from a major e-commerce platform have surfaced on underground markets.',
-  },
-  {
-    id: '3',
-    title: 'Zero-Day Exploit Being Sold',
-    category: 'Exploit',
-    severity: 'critical',
-    source: 'Exploit Market',
-    timestamp: new Date(Date.now() - 6 * 60 * 60 * 1000).toISOString(),
-    description: 'A previously unknown vulnerability in common enterprise software is being auctioned.',
-  },
-  {
-    id: '4',
-    title: 'Phishing Campaign Targeting Financial Sector',
-    category: 'Phishing',
-    severity: 'high',
-    source: 'Threat Intelligence Feed',
-    timestamp: new Date(Date.now() - 8 * 60 * 60 * 1000).toISOString(),
-    description: 'Sophisticated phishing emails mimicking bank communications detected.',
-  },
-  {
-    id: '5',
-    title: 'Botnet Infrastructure Update',
-    category: 'Malware',
-    severity: 'medium',
-    source: 'C2 Tracker',
-    timestamp: new Date(Date.now() - 12 * 60 * 60 * 1000).toISOString(),
-    description: 'Major botnet has shifted to new command and control servers.',
-  },
-]
+// Readiness endpoint
+app.get('/ready', (req, res) => {
+  res.json({
+    ready: true,
+    timestamp: new Date().toISOString()
+  })
+})
 
 // API Routes
 app.get('/api/pulse', (req, res) => {
+  // No mock data - return empty array when no real data available
   res.json({
     success: true,
     timestamp: new Date().toISOString(),
-    data: mockPulseData,
-    count: mockPulseData.length,
+    data: [],
+    count: 0,
   })
 })
 
 app.get('/api/threats', (req, res) => {
+  // No mock data - return zeros when no real data available
   res.json({
     success: true,
     timestamp: new Date().toISOString(),
     data: {
-      total: 156,
-      critical: 12,
-      high: 34,
-      medium: 78,
-      low: 32,
+      total: 0,
+      critical: 0,
+      high: 0,
+      medium: 0,
+      low: 0,
     },
   })
 })
 
 app.get('/api/stats', (req, res) => {
+  // No mock data - return zeros when no real data available
   res.json({
     success: true,
     timestamp: new Date().toISOString(),
     data: {
-      activeSources: 89,
-      protectedSystems: 2400,
-      trendScore: 94,
+      activeSources: 0,
+      protectedSystems: 0,
+      trendScore: 0,
       lastUpdate: new Date().toISOString(),
     },
   })
@@ -1105,17 +1097,34 @@ app.post('/api/intel-scraper/candidates/dismiss', (req, res) => {
   }
 })
 
-// Serve static files from React app
+// Serve static files from React app (after API routes)
 app.use(express.static('dist'))
 
-// Catch-all route - send all non-API requests to React app
-app.get('*', (req, res) => {
+// SPA fallback - send all non-API requests to React app
+app.get('*', (req, res, next) => {
+  // Skip if it's an API route
+  if (req.path.startsWith('/api')) {
+    return next()
+  }
   res.sendFile('index.html', { root: 'dist' })
 })
 
-const server = app.listen(PORT, () => {
-  logger.info(`Cyberstreams API server running at http://localhost:${PORT}`)
-})
+// 404 handler for API routes
+app.use('/api/*', notFoundHandler)
+
+// Global error handler
+app.use(errorHandler)
+
+// Export app for testing
+export { app }
+
+// Only start server if this file is run directly
+let server
+if (import.meta.url === `file://${process.argv[1]}`) {
+  server = app.listen(PORT, () => {
+    logger.info(`Cyberstreams API server running at http://localhost:${PORT}`)
+  })
+}
 
 let shuttingDown = false
 async function shutdown(signal) {
@@ -1134,27 +1143,40 @@ async function shutdown(signal) {
     logger.warn({ err: error }, 'Failed to stop Intel Scraper gracefully during shutdown')
   }
 
-  server.close(async (closeError) => {
-    if (closeError) {
-      logger.error({ err: closeError }, 'Error while closing HTTP server')
-    }
+  if (server) {
+    server.close(async (closeError) => {
+      if (closeError) {
+        logger.error({ err: closeError }, 'Error while closing HTTP server')
+      }
 
+      try {
+        await closePool()
+        logger.info('PostgreSQL connection pool closed')
+      } catch (error) {
+        logger.error({ err: error }, 'Failed to close PostgreSQL connection pool gracefully')
+      } finally {
+        process.exit(closeError ? 1 : 0)
+      }
+    })
+  } else {
     try {
       await closePool()
       logger.info('PostgreSQL connection pool closed')
     } catch (error) {
       logger.error({ err: error }, 'Failed to close PostgreSQL connection pool gracefully')
     } finally {
-      process.exit(closeError ? 1 : 0)
+      process.exit(0)
     }
-  })
+  }
 }
 
-['SIGINT', 'SIGTERM'].forEach((signal) => {
-  process.on(signal, () => {
-    shutdown(signal).catch((error) => {
-      logger.error({ err: error }, 'Unexpected error during shutdown')
-      process.exit(1)
+if (import.meta.url === `file://${process.argv[1]}`) {
+  ['SIGINT', 'SIGTERM'].forEach((signal) => {
+    process.on(signal, () => {
+      shutdown(signal).catch((error) => {
+        logger.error({ err: error }, 'Unexpected error during shutdown')
+        process.exit(1)
+      })
     })
   })
-})
+}
