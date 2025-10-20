@@ -87,7 +87,12 @@ jobs:
               core.warning(`Invalid pr_number input: "${prInput}"; skipping comment`);
               return;
             }
-            const projectUrl = `https://railway.app/project/${process.env.RAILWAY_PROJECT_ID}`;
+            const projectId = process.env.RAILWAY_PROJECT_ID;
+            if (!projectId) {
+              core.warning('RAILWAY_PROJECT_ID not available; skipping comment');
+              return;
+            }
+            const projectUrl = `https://railway.app/project/${projectId}`;
             const body = [
               `✅ Railway deploy triggered and completed.`,
               ``,
