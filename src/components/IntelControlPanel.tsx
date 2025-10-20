@@ -1,8 +1,22 @@
-import React, { useState, useEffect } from 'react'
-import { 
-  Bot, Brain, Zap, Eye, Activity, Clock, 
-  Shield, Globe, Database, Target, AlertTriangle,
-  Play, Pause, RefreshCw, Settings, CheckCircle, XCircle
+import React, { useState, useEffect, useCallback } from 'react'
+import {
+  Bot,
+  Brain,
+  Zap,
+  Eye,
+  Activity,
+  Clock,
+  Shield,
+  Globe,
+  Database,
+  Target,
+  AlertTriangle,
+  Play,
+  Pause,
+  RefreshCw,
+  Settings,
+  CheckCircle,
+  XCircle
 } from 'lucide-react'
 
 interface IntelControlPanelProps {
@@ -10,166 +24,233 @@ interface IntelControlPanelProps {
 }
 
 interface ScraperMetrics {
-  uptime: string
-  totalScanned: number
+  totalRuns: number
+  failedRuns: number
+  totalDocumentsProcessed: number
+  lastDocumentCount: number
+  lastDurationMs: number
+  averageDocumentsPerRun: number
   successRate: number
-  avgResponseTime: number
-  memoryUsage: string
-  cpuUsage: number
+  uptimeSeconds: number
 }
 
 interface RecentActivity {
   id: string
   timestamp: string
   action: string
-  status: 'success' | 'warning' | 'error'
+  status: 'success' | 'warning' | 'error' | 'pending'
   details: string
 }
 
+interface ScraperStatus {
+  isRunning: boolean
+  lastActivity: string | null
+  activeSources: number
+  totalSources: number
+  activeJobs: number
+  pendingApprovals: number
+  complianceEnabled: boolean
+  emergencyBypass: boolean
+  nextRun?: string | null
+  lastRunAt?: string | null
+  lastError?: string | null
+  metrics: ScraperMetrics
+  activity: RecentActivity[]
+}
+
+const DEFAULT_METRICS: ScraperMetrics = {
+  totalRuns: 0,
+  failedRuns: 0,
+  totalDocumentsProcessed: 0,
+  lastDocumentCount: 0,
+  lastDurationMs: 0,
+  averageDocumentsPerRun: 0,
+  successRate: 100,
+  uptimeSeconds: 0
+}
+
+const DEFAULT_STATUS: ScraperStatus = {
+  isRunning: false,
+  lastActivity: null,
+  activeSources: 0,
+  totalSources: 0,
+  activeJobs: 0,
+  pendingApprovals: 0,
+  complianceEnabled: true,
+  emergencyBypass: false,
+  nextRun: null,
+  lastRunAt: null,
+  lastError: null,
+  metrics: DEFAULT_METRICS,
+  activity: []
+}
+
+function formatRelativeTime(timestamp?: string | null) {
+  if (!timestamp) {
+    return 'N/A'
+  }
+
+  const time = new Date(timestamp).getTime()
+  if (Number.isNaN(time)) {
+    return 'N/A'
+  }
+
+  const diffSeconds = Math.max(0, Math.floor((Date.now() - time) / 1000))
+
+  if (diffSeconds < 60) {
+    return `${diffSeconds}s ago`
+  }
+  if (diffSeconds < 3600) {
+    const minutes = Math.floor(diffSeconds / 60)
+    return `${minutes}m ago`
+  }
+  if (diffSeconds < 86400) {
+    const hours = Math.floor(diffSeconds / 3600)
+    return `${hours}h ago`
+  }
+  const days = Math.floor(diffSeconds / 86400)
+  return `${days}d ago`
+}
+
+function formatDuration(ms: number) {
+  if (!Number.isFinite(ms) || ms <= 0) {
+    return '—'
+  }
+  if (ms < 1000) {
+    return `${ms} ms`
+  }
+  const seconds = ms / 1000
+  if (seconds < 60) {
+    return `${seconds.toFixed(1)} s`
+  }
+  const minutes = Math.floor(seconds / 60)
+  const remainingSeconds = Math.round(seconds % 60)
+  return `${minutes}m ${remainingSeconds}s`
+}
+
+function formatUptime(seconds: number) {
+  if (!Number.isFinite(seconds) || seconds <= 0) {
+    return 'Offline'
+  }
+  const hrs = Math.floor(seconds / 3600)
+  const mins = Math.floor((seconds % 3600) / 60)
+  const secs = seconds % 60
+  if (hrs > 0) {
+    return `${hrs}h ${mins}m`
+  }
+  if (mins > 0) {
+    return `${mins}m ${secs}s`
+  }
+  return `${secs}s`
+}
+
 const IntelControlPanel: React.FC<IntelControlPanelProps> = ({ className = '' }) => {
-  const [scraperStatus, setScraperStatus] = useState({
-    isRunning: false,
-    lastActivity: '',
-    activeSources: 15,
-    totalSources: 18,
-    activeJobs: 2,
-    pendingApprovals: 3,
-    complianceEnabled: true,
-    emergencyBypass: false
-  })
-
-  const [metrics, setMetrics] = useState<ScraperMetrics>({
-    uptime: '2d 14h 23m',
-    totalScanned: 15847,
-    successRate: 94.2,
-    avgResponseTime: 1.8,
-    memoryUsage: '2.1 GB',
-    cpuUsage: 23
-  })
-
-  const [recentActivity, setRecentActivity] = useState<RecentActivity[]>([
-    {
-      id: '1',
-      timestamp: '2 min ago',
-      action: 'Source scan completed',
-      status: 'success',
-      details: 'CFCS.dk - 12 new documents found'
-    },
-    {
-      id: '2',
-      timestamp: '5 min ago',
-      action: 'Keyword match detected',
-      status: 'warning',
-      details: 'High-priority keyword "zero-day" found in 3 sources'
-    },
-    {
-      id: '3',
-      timestamp: '8 min ago',
-      action: 'New source discovered',
-      status: 'success',
-      details: 'Auto-discovered: cybersecurity-weekly.com'
-    },
-    {
-      id: '4',
-      timestamp: '12 min ago',
-      action: 'Compliance check failed',
-      status: 'error',
-      details: 'Dark web source blocked by compliance filter'
-    }
-  ])
-
+  const [scraperStatus, setScraperStatus] = useState<ScraperStatus>(DEFAULT_STATUS)
+  const [metrics, setMetrics] = useState<ScraperMetrics>(DEFAULT_METRICS)
+  const [recentActivity, setRecentActivity] = useState<RecentActivity[]>([])
   const [isLoading, setIsLoading] = useState(false)
+  const [message, setMessage] = useState<{ type: 'success' | 'warning' | 'error'; text: string } | null>(null)
+
+  const applyStatusUpdate = useCallback((data: any) => {
+    const mergedStatus: ScraperStatus = {
+      ...DEFAULT_STATUS,
+      ...data,
+      metrics: { ...DEFAULT_METRICS, ...(data?.metrics || {}) },
+      activity: data?.activity || []
+    }
+    setScraperStatus(mergedStatus)
+    setMetrics(mergedStatus.metrics)
+    setRecentActivity(mergedStatus.activity)
+  }, [])
+
+  const fetchStatus = useCallback(async () => {
+    try {
+      const response = await fetch('/api/intel-scraper/status')
+      if (!response.ok) {
+        throw new Error('Failed to fetch status')
+      }
+      const result = await response.json()
+      if (result.success) {
+        applyStatusUpdate(result.data)
+      }
+    } catch (error) {
+      console.error('Failed to fetch Intel Scraper status:', error)
+    }
+  }, [applyStatusUpdate])
 
   useEffect(() => {
-    // Simulate real-time updates
-    const interval = setInterval(() => {
-      setScraperStatus(prev => ({
-        ...prev,
-        lastActivity: new Date().toISOString()
-      }))
-    }, 30000) // Update every 30 seconds
-
+    fetchStatus()
+    const interval = setInterval(fetchStatus, 60000)
     return () => clearInterval(interval)
-  }, [])
+  }, [fetchStatus])
 
   const handleToggleScraper = async () => {
     setIsLoading(true)
+    setMessage(null)
     try {
       const endpoint = scraperStatus.isRunning ? '/api/intel-scraper/stop' : '/api/intel-scraper/start'
       const response = await fetch(endpoint, { method: 'POST' })
-      
-      if (response.ok) {
-        setScraperStatus(prev => ({
-          ...prev,
-          isRunning: !prev.isRunning,
-          lastActivity: new Date().toISOString()
-        }))
+      const result = await response.json()
+
+      if (!response.ok || !result.success) {
+        throw new Error(result.error || 'Failed to toggle scraper')
       }
+
+      applyStatusUpdate(result.data)
+      setMessage({ type: 'success', text: result.message || 'Intel Scraper status opdateret' })
     } catch (error) {
       console.error('Failed to toggle scraper:', error)
+      setMessage({ type: 'error', text: 'Kunne ikke opdatere Intel Scraper status' })
     } finally {
       setIsLoading(false)
     }
   }
 
   const handleEmergencyBypass = async () => {
-    if (confirm('⚠️ ADVARSEL: Emergency bypass vil deaktivere alle compliance checks i 1 time. Fortsæt?')) {
-      setIsLoading(true)
-      try {
-        const response = await fetch('/api/intel-scraper/emergency-bypass', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ reason: 'Manual activation from control panel' })
-        })
-        
-        if (response.ok) {
-          setScraperStatus(prev => ({
-            ...prev,
-            emergencyBypass: true,
-            complianceEnabled: false
-          }))
-          
-          // Auto-disable after 1 hour
-          setTimeout(() => {
-            setScraperStatus(prev => ({
-              ...prev,
-              emergencyBypass: false,
-              complianceEnabled: true
-            }))
-          }, 3600000)
-        }
-      } catch (error) {
-        console.error('Failed to enable emergency bypass:', error)
-      } finally {
-        setIsLoading(false)
+    if (!confirm('⚠️ ADVARSEL: Emergency bypass vil deaktivere alle compliance checks i 1 time. Fortsæt?')) {
+      return
+    }
+
+    setIsLoading(true)
+    setMessage(null)
+    try {
+      const response = await fetch('/api/intel-scraper/emergency-bypass', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ reason: 'Manual activation from control panel' })
+      })
+      const result = await response.json()
+
+      if (!response.ok || !result.success) {
+        throw new Error(result.error || 'Failed to enable emergency bypass')
       }
+
+      applyStatusUpdate(result.data)
+      setMessage({ type: 'warning', text: result.message || 'Emergency bypass aktiveret' })
+    } catch (error) {
+      console.error('Failed to enable emergency bypass:', error)
+      setMessage({ type: 'error', text: 'Kunne ikke aktivere emergency bypass' })
+    } finally {
+      setIsLoading(false)
     }
   }
 
   const handleForceRefresh = async () => {
     setIsLoading(true)
+    setMessage(null)
     try {
-      // Simulate force refresh
-      await new Promise(resolve => setTimeout(resolve, 2000))
-      
-      setMetrics(prev => ({
-        ...prev,
-        totalScanned: prev.totalScanned + Math.floor(Math.random() * 50) + 10,
-        avgResponseTime: Math.round((Math.random() * 2 + 1) * 10) / 10
-      }))
-      
-      // Add new activity
-      const newActivity: RecentActivity = {
-        id: Date.now().toString(),
-        timestamp: 'Just now',
-        action: 'Manual refresh triggered',
-        status: 'success',
-        details: 'Full system refresh completed'
+      const response = await fetch('/api/intel-scraper/run', { method: 'POST' })
+      const result = await response.json()
+
+      if (!response.ok || !result.success) {
+        throw new Error(result.error || 'Failed to execute manual run')
       }
-      
-      setRecentActivity(prev => [newActivity, ...prev.slice(0, 9)])
+
+      applyStatusUpdate(result.data)
+      setMessage({ type: 'success', text: result.message || 'Manuel kørsel gennemført' })
     } catch (error) {
       console.error('Failed to refresh:', error)
+      setMessage({ type: 'error', text: 'Kunne ikke gennemføre manuel kørsel' })
     } finally {
       setIsLoading(false)
     }
@@ -187,7 +268,7 @@ const IntelControlPanel: React.FC<IntelControlPanelProps> = ({ className = '' })
               <p className="text-sm text-gray-400">Real-time monitoring og kontrol af Intel Scraper</p>
             </div>
           </div>
-          
+
           {scraperStatus.emergencyBypass && (
             <div className="bg-red-600 text-white px-4 py-2 rounded-lg font-bold animate-pulse">
               🚨 EMERGENCY BYPASS ACTIVE
@@ -195,6 +276,24 @@ const IntelControlPanel: React.FC<IntelControlPanelProps> = ({ className = '' })
           )}
         </div>
       </div>
+
+      {message && (
+        <div
+          className={`flex items-center gap-3 p-4 rounded-lg border ${
+            message.type === 'success'
+              ? 'bg-green-500/10 border-green-500/30 text-green-300'
+              : message.type === 'warning'
+              ? 'bg-yellow-500/10 border-yellow-500/30 text-yellow-200'
+              : 'bg-red-500/10 border-red-500/30 text-red-200'
+          }`}
+        >
+          {message.type === 'error' ? <XCircle className="w-5 h-5" /> : <CheckCircle className="w-5 h-5" />}
+          <span>{message.text}</span>
+          <button onClick={() => setMessage(null)} className="ml-auto text-sm underline">
+            Luk
+          </button>
+        </div>
+      )}
 
       {/* Status Overview */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -204,7 +303,7 @@ const IntelControlPanel: React.FC<IntelControlPanelProps> = ({ className = '' })
             <Activity className="w-5 h-5 text-cyber-blue" />
             <h3 className="text-lg font-semibold">System Status</h3>
           </div>
-          
+
           <div className="space-y-3">
             <div className="flex justify-between items-center">
               <span className="text-gray-400">Scraper Status:</span>
@@ -226,6 +325,14 @@ const IntelControlPanel: React.FC<IntelControlPanelProps> = ({ className = '' })
                 {scraperStatus.complianceEnabled ? 'ENABLED' : 'DISABLED'}
               </span>
             </div>
+            <div className="flex justify-between items-center">
+              <span className="text-gray-400">Sidste kørsel:</span>
+              <span className="font-semibold text-gray-200">{formatRelativeTime(scraperStatus.lastRunAt)}</span>
+            </div>
+            <div className="flex justify-between items-center">
+              <span className="text-gray-400">Næste planlagte kørsel:</span>
+              <span className="text-gray-300">{formatRelativeTime(scraperStatus.nextRun)}</span>
+            </div>
           </div>
         </div>
 
@@ -235,138 +342,179 @@ const IntelControlPanel: React.FC<IntelControlPanelProps> = ({ className = '' })
             <Target className="w-5 h-5 text-cyber-purple" />
             <h3 className="text-lg font-semibold">Performance</h3>
           </div>
-          
+
           <div className="space-y-3">
             <div className="flex justify-between items-center">
-              <span className="text-gray-400">Uptime:</span>
-              <span className="font-bold text-green-400">{metrics.uptime}</span>
+              <span className="text-gray-400">Total Documents:</span>
+              <span className="font-bold text-cyber-purple">{metrics.totalDocumentsProcessed.toLocaleString()}</span>
             </div>
             <div className="flex justify-between items-center">
-              <span className="text-gray-400">Total Scanned:</span>
-              <span className="font-bold text-cyan-400">{metrics.totalScanned.toLocaleString()}</span>
+              <span className="text-gray-400">Sidste run (docs):</span>
+              <span className="font-bold text-cyber-purple">{metrics.lastDocumentCount}</span>
+            </div>
+            <div className="flex justify-between items-center">
+              <span className="text-gray-400">Gns. per run:</span>
+              <span className="font-bold text-cyber-purple">{metrics.averageDocumentsPerRun}</span>
             </div>
             <div className="flex justify-between items-center">
               <span className="text-gray-400">Success Rate:</span>
-              <span className="font-bold text-green-400">{metrics.successRate}%</span>
+              <span className="font-bold text-green-400">{metrics.successRate.toFixed(1)}%</span>
             </div>
             <div className="flex justify-between items-center">
-              <span className="text-gray-400">Avg Response:</span>
-              <span className="font-bold text-blue-400">{metrics.avgResponseTime}s</span>
+              <span className="text-gray-400">Varighed (sidste run):</span>
+              <span className="font-bold text-yellow-400">{formatDuration(metrics.lastDurationMs)}</span>
+            </div>
+            <div className="flex justify-between items-center">
+              <span className="text-gray-400">Uptime:</span>
+              <span className="font-bold text-cyber-blue">{formatUptime(metrics.uptimeSeconds)}</span>
             </div>
           </div>
         </div>
 
-        {/* Resource Usage */}
+        {/* Compliance & Approvals */}
         <div className="bg-gray-800 rounded-lg p-6 border border-gray-700">
           <div className="flex items-center gap-3 mb-4">
-            <Database className="w-5 h-5 text-green-400" />
-            <h3 className="text-lg font-semibold">Resources</h3>
+            <Shield className="w-5 h-5 text-emerald-400" />
+            <h3 className="text-lg font-semibold">Compliance & Approvals</h3>
           </div>
-          
+
           <div className="space-y-3">
-            <div className="flex justify-between items-center">
-              <span className="text-gray-400">Memory Usage:</span>
-              <span className="font-bold text-blue-400">{metrics.memoryUsage}</span>
-            </div>
-            <div className="flex justify-between items-center">
-              <span className="text-gray-400">CPU Usage:</span>
-              <div className="flex items-center gap-2">
-                <div className="w-16 h-2 bg-gray-700 rounded-full overflow-hidden">
-                  <div 
-                    className="h-full bg-gradient-to-r from-green-500 to-yellow-500 transition-all duration-500"
-                    style={{ width: `${metrics.cpuUsage}%` }}
-                  />
-                </div>
-                <span className="font-bold text-yellow-400">{metrics.cpuUsage}%</span>
-              </div>
-            </div>
             <div className="flex justify-between items-center">
               <span className="text-gray-400">Pending Approvals:</span>
               <span className="font-bold text-yellow-400">{scraperStatus.pendingApprovals}</span>
             </div>
+            <div className="flex justify-between items-center">
+              <span className="text-gray-400">Failed Runs:</span>
+              <span className="font-bold text-red-400">{metrics.failedRuns}</span>
+            </div>
+            <div className="flex justify-between items-center">
+              <span className="text-gray-400">Emergency Bypass:</span>
+              <span className={`font-bold ${scraperStatus.emergencyBypass ? 'text-red-400' : 'text-green-400'}`}>
+                {scraperStatus.emergencyBypass ? 'ACTIVE' : 'DISABLED'}
+              </span>
+            </div>
+            <div className="flex justify-between items-center">
+              <span className="text-gray-400">Sidste aktivitet:</span>
+              <span className="font-bold text-gray-300">{formatRelativeTime(scraperStatus.lastActivity)}</span>
+            </div>
+            {scraperStatus.lastError && (
+              <div className="text-sm text-red-400">Seneste fejl: {scraperStatus.lastError}</div>
+            )}
           </div>
         </div>
       </div>
 
-      {/* Control Buttons */}
+      {/* Control Actions */}
       <div className="bg-gray-800 rounded-lg p-6 border border-gray-700">
-        <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
-          <Settings className="w-5 h-5" />
-          Control Actions
-        </h3>
-        
-        <div className="flex flex-wrap gap-3">
+        <div className="flex items-center gap-3 mb-4">
+          <Settings className="w-5 h-5 text-gray-300" />
+          <h3 className="text-lg font-semibold">Kontrolhandlinger</h3>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <button
             onClick={handleToggleScraper}
-            disabled={isLoading}
-            className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-all ${
+            className={`flex items-center justify-center space-x-2 px-4 py-3 rounded-lg transition-colors ${
               scraperStatus.isRunning
-                ? 'bg-red-600 hover:bg-red-700 text-white'
-                : 'bg-green-600 hover:bg-green-700 text-white'
-            } ${isLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
+                ? 'bg-red-600 hover:bg-red-700'
+                : 'bg-green-600 hover:bg-green-700'
+            }`}
+            disabled={isLoading}
           >
-            {isLoading ? (
-              <RefreshCw className="w-4 h-4 animate-spin" />
-            ) : scraperStatus.isRunning ? (
-              <Pause className="w-4 h-4" />
-            ) : (
-              <Play className="w-4 h-4" />
-            )}
-            {scraperStatus.isRunning ? 'Stop Scraper' : 'Start Scraper'}
+            {scraperStatus.isRunning ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4" />}
+            <span>{scraperStatus.isRunning ? 'Stop Scraper' : 'Start Scraper'}</span>
           </button>
 
           <button
             onClick={handleForceRefresh}
+            className="flex items-center justify-center space-x-2 px-4 py-3 rounded-lg bg-gray-700 hover:bg-gray-600 transition-colors"
             disabled={isLoading}
-            className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium bg-blue-600 hover:bg-blue-700 text-white transition-all ${
-              isLoading ? 'opacity-50 cursor-not-allowed' : ''
-            }`}
           >
             <RefreshCw className={`w-4 h-4 ${isLoading ? 'animate-spin' : ''}`} />
-            Force Refresh
+            <span>Force Refresh</span>
           </button>
 
           <button
             onClick={handleEmergencyBypass}
+            className="flex items-center justify-center space-x-2 px-4 py-3 rounded-lg bg-red-700 hover:bg-red-800 transition-colors"
             disabled={isLoading || scraperStatus.emergencyBypass}
-            className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium bg-red-700 hover:bg-red-800 text-white transition-all ${
-              isLoading || scraperStatus.emergencyBypass ? 'opacity-50 cursor-not-allowed' : ''
-            }`}
           >
             <AlertTriangle className="w-4 h-4" />
-            Emergency Bypass
+            <span>Emergency Bypass</span>
           </button>
+        </div>
+      </div>
+
+      {/* Metrics Overview */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {/* Source Coverage */}
+        <div className="bg-gray-800 rounded-lg p-6 border border-gray-700">
+          <div className="flex items-center gap-3 mb-4">
+            <Globe className="w-5 h-5 text-cyber-blue" />
+            <h3 className="text-lg font-semibold">Source Coverage</h3>
+          </div>
+
+          <div className="grid grid-cols-2 gap-4 text-sm text-gray-300">
+            <div>
+              <p className="text-gray-400">Aktive kilder</p>
+              <p className="text-xl font-bold">{scraperStatus.activeSources}</p>
+            </div>
+            <div>
+              <p className="text-gray-400">Samlede kilder</p>
+              <p className="text-xl font-bold">{scraperStatus.totalSources}</p>
+            </div>
+            <div>
+              <p className="text-gray-400">Total runs</p>
+              <p className="text-xl font-bold">{metrics.totalRuns}</p>
+            </div>
+            <div>
+              <p className="text-gray-400">Fejl</p>
+              <p className="text-xl font-bold text-red-400">{metrics.failedRuns}</p>
+            </div>
+          </div>
+        </div>
+
+        {/* Resource Usage Placeholder */}
+        <div className="bg-gray-800 rounded-lg p-6 border border-gray-700">
+          <div className="flex items-center gap-3 mb-4">
+            <Database className="w-5 h-5 text-cyber-purple" />
+            <h3 className="text-lg font-semibold">Ydelsesmålinger</h3>
+          </div>
+          <p className="text-sm text-gray-400">
+            Integrer med overvågningssystem for CPU, hukommelse og netværk for at få fuldt overblik over ressourceforbrug.
+          </p>
         </div>
       </div>
 
       {/* Recent Activity */}
       <div className="bg-gray-800 rounded-lg p-6 border border-gray-700">
-        <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
-          <Clock className="w-5 h-5" />
-          Recent Activity
-        </h3>
-        
+        <div className="flex items-center gap-3 mb-4">
+          <Activity className="w-5 h-5 text-cyber-blue" />
+          <h3 className="text-lg font-semibold">Recent Activity</h3>
+        </div>
+
         <div className="space-y-3">
+          {recentActivity.length === 0 && (
+            <div className="text-sm text-gray-500">Ingen aktivitet registreret endnu.</div>
+          )}
           {recentActivity.map((activity) => (
-            <div key={activity.id} className="flex items-start gap-3 p-3 bg-gray-900 rounded-lg">
-              <div className={`w-2 h-2 rounded-full mt-2 ${
-                activity.status === 'success' ? 'bg-green-400' :
-                activity.status === 'warning' ? 'bg-yellow-400' : 'bg-red-400'
-              }`} />
-              
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center justify-between">
-                  <p className="font-medium text-white">{activity.action}</p>
-                  <span className="text-xs text-gray-400">{activity.timestamp}</span>
-                </div>
-                <p className="text-sm text-gray-400 mt-1">{activity.details}</p>
+            <div
+              key={activity.id}
+              className={`rounded-lg border p-4 ${
+                activity.status === 'success'
+                  ? 'border-green-500/30 bg-green-500/5'
+                  : activity.status === 'warning'
+                  ? 'border-yellow-500/30 bg-yellow-500/5'
+                  : activity.status === 'pending'
+                  ? 'border-cyber-blue/30 bg-cyber-blue/5'
+                  : 'border-red-500/30 bg-red-500/5'
+              }`}
+            >
+              <div className="flex justify-between items-center">
+                <div className="font-medium">{activity.action}</div>
+                <div className="text-sm text-gray-400">{formatRelativeTime(activity.timestamp)}</div>
               </div>
-              
-              <div className="flex-shrink-0">
-                {activity.status === 'success' && <CheckCircle className="w-4 h-4 text-green-400" />}
-                {activity.status === 'warning' && <AlertTriangle className="w-4 h-4 text-yellow-400" />}
-                {activity.status === 'error' && <XCircle className="w-4 h-4 text-red-400" />}
-              </div>
+              <p className="text-sm text-gray-300 mt-2">{activity.details}</p>
             </div>
           ))}
         </div>

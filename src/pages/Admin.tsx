@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { Card } from '@components/Card'
 import { Text } from '@components/Text'
 import { Button } from '@components/Button'
@@ -45,6 +45,52 @@ interface VectorDBStats {
   searchPerformance: string
   storageUsed: string
 }
+
+const formatRelativeTime = (timestamp?: string | null) => {
+  if (!timestamp) return 'N/A'
+  const time = new Date(timestamp).getTime()
+  if (Number.isNaN(time)) return 'N/A'
+  const diffSeconds = Math.max(0, Math.floor((Date.now() - time) / 1000))
+  if (diffSeconds < 60) return `${diffSeconds}s ago`
+  if (diffSeconds < 3600) return `${Math.floor(diffSeconds / 60)}m ago`
+  if (diffSeconds < 86400) return `${Math.floor(diffSeconds / 3600)}h ago`
+  return `${Math.floor(diffSeconds / 86400)}d ago`
+}
+
+const mapIntelStatus = (data: any) => ({
+  isRunning: Boolean(data?.isRunning),
+  totalSources: data?.totalSources ?? 0,
+  activeSources: data?.activeSources ?? 0,
+  activeJobs: data?.activeJobs ?? 0,
+  pendingApprovals: data?.pendingApprovals ?? 0,
+  complianceEnabled: data?.complianceEnabled ?? true,
+  emergencyBypass: data?.emergencyBypass ?? false,
+  lastActivity: data?.lastActivity || '',
+  lastRunAt: data?.lastRunAt || '',
+  nextRun: data?.nextRun || '',
+  lastError: data?.lastError || ''
+})
+
+const mapApprovals = (approvals: any[] = []) =>
+  approvals.map((approval) => ({
+    id: approval.id || `approval-${Date.now()}`,
+    type: approval.type || 'new_source',
+    timestamp: approval.timestamp || new Date().toISOString(),
+    data: approval.data || {},
+    status: approval.status || 'pending'
+  }))
+
+const mapCandidates = (candidates: any[] = []) =>
+  candidates.map((candidate) => ({
+    id: candidate.id || candidate.url || `candidate-${Date.now()}`,
+    url: candidate.url,
+    domain: candidate.domain,
+    detectedPurpose: candidate.detectedPurpose,
+    foundVia: candidate.foundVia,
+    initialRelevanceScore: candidate.initialRelevanceScore ?? 0,
+    complianceRisk: candidate.complianceRisk || 'medium',
+    suggestedKeywords: candidate.suggestedKeywords || []
+  }))
 
 export default function Admin() {
   const [activeTab, setActiveTab] = useState<'keywords' | 'sources' | 'scraper' | 'database' | 'settings' | 'intel-scraper' | 'control-panel' | 'link-checker'>('keywords')
@@ -109,83 +155,46 @@ export default function Admin() {
   // Intel Scraper specific state
   const [intelScraperStatus, setIntelScraperStatus] = useState({
     isRunning: false,
-    totalSources: 18,
-    activeSources: 15,
-    activeJobs: 2,
-    pendingApprovals: 3,
+    totalSources: 0,
+    activeSources: 0,
+    activeJobs: 0,
+    pendingApprovals: 0,
     complianceEnabled: true,
     emergencyBypass: false,
-    lastActivity: '2024-01-15T14:23:00Z'
+    lastActivity: '',
+    lastRunAt: '',
+    nextRun: '',
+    lastError: ''
   })
 
-  const [pendingApprovals, setPendingApprovals] = useState([
-    {
-      id: 'approval_1',
-      type: 'new_source',
-      timestamp: '2024-01-15T13:15:00Z',
-      data: {
-        url: 'https://security-weekly.dk/threats',
-        domain: 'security-weekly.dk',
-        detectedPurpose: 'technical',
-        initialRelevanceScore: 0.72,
-        complianceRisk: 'low'
-      },
-      status: 'pending'
-    },
-    {
-      id: 'approval_2',
-      type: 'new_source',
-      timestamp: '2024-01-15T12:45:00Z',
-      data: {
-        url: 'http://darkmarket.onion/intel',
-        domain: 'darkmarket.onion',
-        detectedPurpose: 'unknown',
-        initialRelevanceScore: 0.45,
-        complianceRisk: 'high'
-      },
-      status: 'pending'
-    },
-    {
-      id: 'approval_3',
-      type: 'historical_fetch',
-      timestamp: '2024-01-15T11:30:00Z',
-      data: {
-        sourceName: 'CFCS Threat Reports',
-        periodMonths: 12
-      },
-      status: 'pending'
-    }
-  ])
+  const [pendingApprovals, setPendingApprovals] = useState<any[]>([])
 
-  const [newSourceCandidates, setNewSourceCandidates] = useState([
-    {
-      url: 'https://cybersecurity-news.eu/rss',
-      domain: 'cybersecurity-news.eu',
-      detectedPurpose: 'technical',
-      foundVia: 'https://cfcs.dk/threat-analysis-2024',
-      initialRelevanceScore: 0.83,
-      complianceRisk: 'low',
-      suggestedKeywords: ['cybersecurity', 'threats', 'vulnerabilities']
-    },
-    {
-      url: 'https://politiken.dk/indland/it-politik/rss',
-      domain: 'politiken.dk',
-      detectedPurpose: 'political',
-      foundVia: 'auto_discovery',
-      initialRelevanceScore: 0.67,
-      complianceRisk: 'low',
-      suggestedKeywords: ['it-politik', 'digitalisering', 'lovgivning']
-    },
-    {
-      url: 'http://underground-forum.onion/data',
-      domain: 'underground-forum.onion',
-      detectedPurpose: 'unknown',
-      foundVia: 'link_analysis',
-      initialRelevanceScore: 0.34,
-      complianceRisk: 'high',
-      suggestedKeywords: ['breach', 'credentials', 'exploits']
+  const [newSourceCandidates, setNewSourceCandidates] = useState<any[]>([])
+
+  const fetchIntelScraperStatus = useCallback(async () => {
+    try {
+      const response = await fetch('/api/intel-scraper/status')
+      if (!response.ok) {
+        throw new Error('Failed to fetch Intel Scraper status')
+      }
+
+      const result = await response.json()
+      if (!result.success) {
+        throw new Error(result.error || 'Intel Scraper status returned error')
+      }
+
+      const status = mapIntelStatus(result.data)
+      setIntelScraperStatus(status)
+      setPendingApprovals(mapApprovals(result.data?.pendingApprovals))
+      setNewSourceCandidates(mapCandidates(result.data?.candidates))
+    } catch (error) {
+      console.error('Failed to refresh Intel Scraper status:', error)
     }
-  ])
+  }, [])
+
+  useEffect(() => {
+    fetchIntelScraperStatus()
+  }, [fetchIntelScraperStatus])
 
   useEffect(() => {
     // Load mock data med dark-web kilder og politiske keywords
@@ -302,14 +311,17 @@ export default function Admin() {
   const handleStartIntelScraper = async () => {
     try {
       setStatus('Starting Intel Scraper...')
-      await new Promise(resolve => setTimeout(resolve, 1500))
-      setIntelScraperStatus(prev => ({ 
-        ...prev, 
-        isRunning: true, 
-        lastActivity: new Date().toISOString() 
-      }))
-      setStatus('Intel Scraper started successfully')
+      const response = await fetch('/api/intel-scraper/start', { method: 'POST' })
+      const result = await response.json()
+      if (!response.ok || !result.success) {
+        throw new Error(result.error || 'Failed to start Intel Scraper')
+      }
+      setIntelScraperStatus(mapIntelStatus(result.data))
+      setPendingApprovals(mapApprovals(result.data?.pendingApprovals))
+      setNewSourceCandidates(mapCandidates(result.data?.candidates))
+      setStatus(result.message || 'Intel Scraper started successfully')
     } catch (error) {
+      console.error(error)
       setStatus('Failed to start Intel Scraper')
     }
   }
@@ -317,10 +329,17 @@ export default function Admin() {
   const handleStopIntelScraper = async () => {
     try {
       setStatus('Stopping Intel Scraper...')
-      await new Promise(resolve => setTimeout(resolve, 1000))
-      setIntelScraperStatus(prev => ({ ...prev, isRunning: false }))
-      setStatus('Intel Scraper stopped')
+      const response = await fetch('/api/intel-scraper/stop', { method: 'POST' })
+      const result = await response.json()
+      if (!response.ok || !result.success) {
+        throw new Error(result.error || 'Failed to stop Intel Scraper')
+      }
+      setIntelScraperStatus(mapIntelStatus(result.data))
+      setPendingApprovals(mapApprovals(result.data?.pendingApprovals))
+      setNewSourceCandidates(mapCandidates(result.data?.candidates))
+      setStatus(result.message || 'Intel Scraper stopped')
     } catch (error) {
+      console.error(error)
       setStatus('Failed to stop Intel Scraper')
     }
   }
@@ -329,24 +348,21 @@ export default function Admin() {
     if (confirm('⚠️ ADVARSEL: Emergency Bypass deaktiverer alle compliance checks i 1 time. Fortsæt kun i kritiske situationer!')) {
       try {
         setStatus('Enabling Emergency Bypass...')
-        await new Promise(resolve => setTimeout(resolve, 1000))
-        setIntelScraperStatus(prev => ({ 
-          ...prev, 
-          emergencyBypass: true, 
-          complianceEnabled: false 
-        }))
-        setStatus('🚨 EMERGENCY BYPASS ENABLED - Auto-disable in 1 hour')
-        
-        // Auto-disable after 1 hour
-        setTimeout(() => {
-          setIntelScraperStatus(prev => ({ 
-            ...prev, 
-            emergencyBypass: false, 
-            complianceEnabled: true 
-          }))
-          setStatus('Emergency Bypass auto-disabled')
-        }, 3600000)
+        const response = await fetch('/api/intel-scraper/emergency-bypass', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ reason: 'Manual activation from admin panel' })
+        })
+        const result = await response.json()
+        if (!response.ok || !result.success) {
+          throw new Error(result.error || 'Failed to enable Emergency Bypass')
+        }
+        setIntelScraperStatus(mapIntelStatus(result.data))
+        setPendingApprovals(mapApprovals(result.data?.pendingApprovals))
+        setNewSourceCandidates(mapCandidates(result.data?.candidates))
+        setStatus(result.message || '🚨 EMERGENCY BYPASS ENABLED - Auto-disable in 1 hour')
       } catch (error) {
+        console.error(error)
         setStatus('Failed to enable Emergency Bypass')
       }
     }
@@ -355,62 +371,66 @@ export default function Admin() {
   const handleApproveSource = async (approvalId: string, decision: 'approve' | 'reject') => {
     try {
       setStatus(`${decision === 'approve' ? 'Approving' : 'Rejecting'} source...`)
-      await new Promise(resolve => setTimeout(resolve, 500))
-      
-      setPendingApprovals(prev => prev.filter(a => a.id !== approvalId))
-      setIntelScraperStatus(prev => ({ 
-        ...prev, 
-        pendingApprovals: prev.pendingApprovals - 1 
-      }))
-      
-      setStatus(`Source ${decision === 'approve' ? 'approved' : 'rejected'} successfully`)
+      const response = await fetch(`/api/intel-scraper/approvals/${approvalId}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ decision })
+      })
+      const result = await response.json()
+      if (!response.ok || !result.success) {
+        throw new Error(result.error || 'Approval request failed')
+      }
+      setIntelScraperStatus(mapIntelStatus(result.data))
+      setPendingApprovals(mapApprovals(result.data?.pendingApprovals))
+      setNewSourceCandidates(mapCandidates(result.data?.candidates))
+      setStatus(result.message || `Source ${decision === 'approve' ? 'approved' : 'rejected'} successfully`)
     } catch (error) {
+      console.error(error)
       setStatus(`Failed to ${decision} source`)
     }
   }
 
   const handleAddSourceCandidate = async (candidate: any, approved: boolean = false) => {
     try {
-      setStatus('Adding source candidate...')
-      await new Promise(resolve => setTimeout(resolve, 500))
-      
-      if (approved) {
-        // Add directly to sources
-        const newSourceEntry = {
-          id: String(sources.length + 1),
-          name: candidate.domain,
-          url: candidate.url,
-          type: candidate.detectedPurpose === 'technical' ? 'rss' : 'forum' as 'rss' | 'forum' | 'marketplace' | 'social' | 'api',
-          active: true,
-          lastScraped: 'Never',
-          status: 'online' as 'online' | 'offline' | 'error'
-        }
-        setSources(prev => [...prev, newSourceEntry])
-        setIntelScraperStatus(prev => ({ 
-          ...prev, 
-          totalSources: prev.totalSources + 1,
-          activeSources: prev.activeSources + 1
-        }))
-      } else {
-        // Add to pending approvals
-        const newApproval = {
-          id: `approval_${Date.now()}`,
-          type: 'new_source',
-          timestamp: new Date().toISOString(),
-          data: candidate,
-          status: 'pending'
-        }
-        setPendingApprovals(prev => [...prev, newApproval])
-        setIntelScraperStatus(prev => ({ 
-          ...prev, 
-          pendingApprovals: prev.pendingApprovals + 1 
-        }))
+      setStatus('Processing source candidate...')
+      const response = await fetch('/api/intel-scraper/candidates/accept', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ candidateId: candidate.id, autoApprove: approved })
+      })
+      const result = await response.json()
+      if (!response.ok || !result.success) {
+        throw new Error(result.error || 'Failed to process candidate')
       }
-      
-      setNewSourceCandidates(prev => prev.filter(c => c.url !== candidate.url))
-      setStatus(`Source candidate ${approved ? 'added directly' : 'sent for approval'}`)
+      setIntelScraperStatus(mapIntelStatus(result.data))
+      setPendingApprovals(mapApprovals(result.data?.pendingApprovals))
+      setNewSourceCandidates(mapCandidates(result.data?.candidates))
+      setStatus(result.message || `Source candidate ${approved ? 'added directly' : 'sent for approval'}`)
     } catch (error) {
+      console.error(error)
       setStatus('Failed to process source candidate')
+    }
+  }
+
+  const handleDismissCandidate = async (candidateId: string) => {
+    try {
+      setStatus('Dismissing candidate...')
+      const response = await fetch('/api/intel-scraper/candidates/dismiss', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ candidateId })
+      })
+      const result = await response.json()
+      if (!response.ok || !result.success) {
+        throw new Error(result.error || 'Failed to dismiss candidate')
+      }
+      setIntelScraperStatus(mapIntelStatus(result.data))
+      setPendingApprovals(mapApprovals(result.data?.pendingApprovals))
+      setNewSourceCandidates(mapCandidates(result.data?.candidates))
+      setStatus(result.message || 'Candidate dismissed')
+    } catch (error) {
+      console.error(error)
+      setStatus('Failed to dismiss candidate')
     }
   }
 
@@ -728,7 +748,7 @@ export default function Admin() {
                 <div className="bg-gray-800 p-3 rounded">
                   <div className="text-xs text-gray-400">Last Activity</div>
                   <div className="text-sm font-medium">
-                    {new Date(intelScraperStatus.lastActivity).toLocaleString('da-DK')}
+                    {intelScraperStatus.lastActivity ? formatRelativeTime(intelScraperStatus.lastActivity) : 'N/A'}
                   </div>
                 </div>
               </div>
@@ -745,10 +765,10 @@ export default function Admin() {
                     Stop Intel Scraper
                   </Button>
                 )}
-                
-                <Button 
-                  onClick={handleEmergencyBypass} 
-                  variant="danger" 
+
+                <Button
+                  onClick={handleEmergencyBypass}
+                  variant="danger"
                   className="bg-red-700 hover:bg-red-800"
                   disabled={intelScraperStatus.emergencyBypass}
                 >
@@ -756,7 +776,13 @@ export default function Admin() {
                   Emergency Bypass
                 </Button>
               </div>
-              
+
+              {intelScraperStatus.lastError && (
+                <div className="mt-3 p-3 bg-red-500/10 border border-red-500/20 rounded text-sm text-red-300">
+                  Seneste fejl: {intelScraperStatus.lastError}
+                </div>
+              )}
+
               {status && (
                 <div className="mt-3 p-2 bg-gray-800 rounded text-sm">
                   <span className="text-gray-400">Status:</span> {status}
@@ -903,8 +929,8 @@ export default function Admin() {
                             <Eye className="w-4 h-4 mr-1" />
                             Request Approval
                           </Button>
-                          <Button 
-                            onClick={() => setNewSourceCandidates(prev => prev.filter(c => c.url !== candidate.url))}
+                          <Button
+                            onClick={() => handleDismissCandidate(candidate.id)}
                             variant="danger"
                             className="px-3 py-1 text-sm"
                           >
