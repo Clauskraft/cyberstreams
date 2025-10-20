@@ -31,6 +31,7 @@ jobs:
         run: npm install -g @railway/cli@4
 
       - name: Deploy to Railway
+        id: railway_deploy
         env:
           RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
           RAILWAY_ENVIRONMENT: ${{ secrets.RAILWAY_ENVIRONMENT }}
@@ -66,3 +67,23 @@ jobs:
           fi
 
           railway up --ci --build --wait --no-confirm --service "$RAILWAY_SERVICE_ID"
+          
+          echo "deployment_status=success" >> $GITHUB_OUTPUT
+
+      - name: Post-deployment health check
+        if: steps.railway_deploy.outputs.deployment_status == 'success'
+        env:
+          RAILWAY_APP_URL: ${{ secrets.RAILWAY_APP_URL }}
+          GITHUB_SHA: ${{ github.sha }}
+          GITHUB_REF_NAME: ${{ github.ref_name }}
+          GITHUB_ACTOR: ${{ github.actor }}
+        run: |
+          echo "Waiting 30 seconds for service to be ready..."
+          sleep 30
+          
+          if [ -n "${RAILWAY_APP_URL:-}" ]; then
+            npm run railway:check || echo "Health check failed but continuing"
+          else
+            echo "RAILWAY_APP_URL not configured, skipping health check"
+          fi
+

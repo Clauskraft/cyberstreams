@@ -403,12 +403,39 @@ app.get('/api/stats', (req, res) => {
   })
 })
 
-app.get('/api/health', (req, res) => {
-  res.json({
+app.get('/api/health', async (req, res) => {
+  const healthStatus = {
     status: 'operational',
     timestamp: new Date().toISOString(),
-    version: '1.0.0',
-  })
+    version: '1.4.0',
+    environment: process.env.NODE_ENV || 'development',
+    services: {
+      server: 'operational',
+      misp: mispClient.isConfigured ? 'configured' : 'not_configured',
+      openCti: openCtiClient.isConfigured ? 'configured' : 'not_configured',
+      vectorStore: vectorClient ? 'available' : 'not_available',
+      intelScraper: intelScraperService ? 'available' : 'not_available'
+    },
+    uptime: process.uptime(),
+    memory: {
+      used: Math.round(process.memoryUsage().heapUsed / 1024 / 1024),
+      total: Math.round(process.memoryUsage().heapTotal / 1024 / 1024),
+      rss: Math.round(process.memoryUsage().rss / 1024 / 1024)
+    }
+  }
+
+  // Check database connectivity if available
+  try {
+    const { query } = await import('./lib/postgres.js')
+    await query('SELECT 1')
+    healthStatus.services.database = 'connected'
+  } catch (error) {
+    healthStatus.services.database = 'disconnected'
+    healthStatus.status = 'degraded'
+  }
+
+  const httpStatus = healthStatus.status === 'operational' ? 200 : 503
+  res.status(httpStatus).json(healthStatus)
 })
 
 app.get('/api/config/sources', async (req, res) => {
