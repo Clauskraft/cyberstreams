@@ -10,13 +10,11 @@ En avanceret cybersecurity threat intelligence platform med administrator panel,
 - **RAG Integration**: Intelligent dokumentanalyse med OpenAI/Anthropic integration
 - **Vector Database**: PostgreSQL med pgvector for semantic search
 - **Real-time Alerts**: Automatiske alerts for high-priority matches
-- **Cloudflare Edge Deployment**: Global distribution med edge computing
 
 ## 📋 Prerequisites
 
 - Node.js 18+ 
 - PostgreSQL 15+ med pgvector extension
-- Cloudflare account (for deployment)
 - OpenAI API key (for RAG features)
 
 ## 🛠️ Installation
@@ -62,80 +60,46 @@ npm run server:dev  # Backend på port 3001
 npm run client:dev  # Frontend på port 5173
 ```
 
-## 🌍 Cloudflare Deployment
+## 🚀 Deployment
 
-### 1. Cloudflare Account Setup
+### Production Deployment
 
-```bash
-# Login til Cloudflare
-npx wrangler login
-
-# Opret KV namespace
-npx wrangler kv:namespace create "CACHE"
-npx wrangler kv:namespace create "CACHE" --preview
-
-# Opret D1 database
-npx wrangler d1 create cyberstreams-db
-
-# Opret R2 bucket
-npx wrangler r2 bucket create cyberstreams-storage
-
-# Opret Vectorize index
-npx wrangler vectorize:index create cyberstreams-vectors --dimensions=1536 --metric=cosine
-```
-
-### 2. Opdater wrangler.toml
-
-Opdater `wrangler.toml` med de IDs du fik fra ovenstående kommandoer:
-
-```toml
-[[kv_namespaces]]
-binding = "CACHE"
-id = "YOUR_KV_NAMESPACE_ID"  # Fra output af kv:namespace create
-preview_id = "YOUR_PREVIEW_KV_ID"
-
-[[d1_databases]]
-binding = "DB"
-database_name = "cyberstreams-db"
-database_id = "YOUR_D1_DATABASE_ID"  # Fra output af d1 create
-```
-
-### 3. Database Migration i D1
-
-```bash
-# Eksporter PostgreSQL schema til D1
-npx wrangler d1 execute cyberstreams-db --file=./scripts/d1-schema.sql
-
-# Eller kør migrations direkte
-npx wrangler d1 execute cyberstreams-db --command="CREATE TABLE keywords (id INTEGER PRIMARY KEY, keyword TEXT, category TEXT, priority INTEGER, active INTEGER DEFAULT 1)"
-```
-
-### 4. Deploy til Cloudflare
+This enhanced version can be deployed using standard Node.js hosting:
 
 ```bash
 # Build production version
 npm run build
 
-# Deploy Workers
-npx wrangler deploy
-
-# Deploy Pages (for static assets)
-npx wrangler pages deploy dist --project-name=cyberstreams
-
-# Eller alt i én kommando
-npm run deploy:cloudflare
+# Start production server
+npm start
 ```
 
-### 5. Environment Variables i Cloudflare
+### Environment Variables
+
+Configure these environment variables for production:
+
+```env
+# Database
+DATABASE_URL=postgresql://user:password@host:5432/cyberstreams
+POSTGRES_HOST=your-postgres-host
+POSTGRES_PORT=5432
+POSTGRES_DB=cyberstreams
+POSTGRES_USER=your-username
+POSTGRES_PASSWORD=your-password
+
+# OpenAI Integration
+OPENAI_API_KEY=your-openai-api-key
+
+# Server
+PORT=3000
+NODE_ENV=production
+```
+
+### Database Migration
 
 ```bash
-# Set secrets
-npx wrangler secret put OPENAI_API_KEY
-npx wrangler secret put DATABASE_URL
-npx wrangler secret put API_KEY
-
-# Set variables
-npx wrangler vars set ENVIRONMENT production
+# Run database migrations
+npm run migrate
 ```
 
 ## 🔧 Configuration
@@ -183,22 +147,34 @@ VALUES ('web', 'https://example.com/feed', 3600);
 
 ```
 ┌─────────────────────────────────────────┐
-│           Cloudflare Edge               │
+│         Application Server              │
 │  ┌─────────────────────────────────┐   │
-│  │     Workers (API Gateway)       │   │
+│  │     Express API Server          │   │
 │  └──────────┬──────────────────────┘   │
 │             │                           │
 │  ┌──────────▼──────────┐               │
-│  │    KV (Cache)       │               │
+│  │   In-Memory Cache   │               │
 │  └─────────────────────┘               │
-│                                         │
-│  ┌─────────────────────┐               │
-│  │    D1 (Database)    │               │
-│  └─────────────────────┘               │
-│                                         │
-│  ┌─────────────────────┐               │
-│  │  Vectorize (Search) │               │
-│  └─────────────────────┘               │
+└─────────────────────────────────────────┘
+              │
+              ▼
+┌─────────────────────────────────────────┐
+│        PostgreSQL Database              │
+│  ┌─────────────────────────────────┐   │
+│  │   Main Database (Tables)        │   │
+│  └─────────────────────────────────┘   │
+│  ┌─────────────────────────────────┐   │
+│  │   pgvector (Vector Search)      │   │
+│  └─────────────────────────────────┘   │
+└─────────────────────────────────────────┘
+              │
+              ▼
+┌─────────────────────────────────────────┐
+│        External Services                │
+│  - OpenAI API (RAG)                     │
+│  - MISP (Threat Intel)                  │
+│  - OpenCTI (Threat Intel)               │
+└─────────────────────────────────────────┘
 │                                         │
 │  ┌─────────────────────┐               │
 │  │   R2 (Storage)      │               │
@@ -217,9 +193,9 @@ VALUES ('web', 'https://example.com/feed', 3600);
 ## 🔒 Security
 
 - Alle API endpoints er beskyttet med Bearer token authentication
-- CORS er konfigureret for production miljø
-- Rate limiting implementeret via Cloudflare
-- Sensitive data gemmes som secrets i Cloudflare
+- CORS er konfigureret for production miljø  
+- Rate limiting kan implementeres via reverse proxy (nginx/traefik)
+- Sensitive data gemmes som environment variables
 
 ## 📝 Environment Variables
 
@@ -228,8 +204,9 @@ Se `.env.example` for komplet liste af konfigurationsmuligheder.
 ### Kritiske Variables:
 - `DATABASE_URL` - PostgreSQL connection string
 - `OPENAI_API_KEY` - For RAG funktionalitet
-- `CF_ACCOUNT_ID` - Cloudflare account ID
 - `API_KEY` - For API authentication
+- `PORT` - Server port (default: 3000)
+- `NODE_ENV` - Environment (development/production)
 
 ## 🐛 Troubleshooting
 
@@ -242,16 +219,13 @@ psql $DATABASE_URL -c "SELECT 1"
 psql $DATABASE_URL -c "SELECT * FROM pg_extension WHERE extname = 'vector'"
 ```
 
-### Cloudflare Deployment Issues
+### Server Issues
 ```bash
-# Check deployment status
-npx wrangler tail
+# Check server logs
+npm start
 
-# View logs
-npx wrangler logs
-
-# Test worker locally
-npx wrangler dev
+# Test in development mode
+npm run dev
 ```
 
 ### RAG Processing Issues
@@ -295,7 +269,7 @@ For support og spørgsmål:
 - Administrator panel med fuld CRUD funktionalitet
 - RAG integration med OpenAI/Anthropic
 - PostgreSQL pgvector for semantic search
-- Cloudflare edge deployment
+- Docker and standard deployment support
 - Enhanced monitoring capabilities
 
 ### Version 1.0.0
