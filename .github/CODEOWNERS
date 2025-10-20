@@ -1,0 +1,19 @@
+# CODEOWNERS file
+# These owners will be the default owners for everything in the repo.
+# Unless a later match takes precedence, they will be requested for
+# review when someone opens a pull request.
+
+* @Clauskraft
+
+# Specific file type ownership
+*.yml @Clauskraft
+*.yaml @Clauskraft
+*.json @Clauskraft
+*.md @Clauskraft
+
+# GitHub workflows
+/.github/ @Clauskraft
+
+# Security and configuration files
+/SECURITY.md @Clauskraft
+/.env.example @Clauskraft
