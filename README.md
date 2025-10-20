@@ -1,6 +1,6 @@
 # Cyberstreams - Dark Web Threat Intelligence Platform
 
-![Version](https://img.shields.io/badge/version-1.3.0-blue)
+![Version](https://img.shields.io/badge/version-1.4.0-blue)
 ![License](https://img.shields.io/badge/license-MIT-green)
 ![React](https://img.shields.io/badge/React-18.2.0-61dafb)
 ![TypeScript](https://img.shields.io/badge/TypeScript-5.0.2-3178c6)
@@ -216,10 +216,43 @@ tar -czf ../../cyberstreams-deploy.zip .
    - Project name: `cyberstreams`
    - Deploy
 
+### Railway (Backend Deployment)
+
+Automated deployment with full monitoring and health checks:
+
+1. **GitHub Actions** automatically deploys to Railway on pushes to `main`/`master`
+2. **Health monitoring** runs every 15 minutes to ensure service availability
+3. **Automated alerts** via GitHub Issues when deployments fail or service is down
+4. **Deployment tracking** maintains history of all deployments
+
+For detailed setup and release management:
+📚 **[Railway Release Management Guide](RAILWAY_RELEASE_MANAGEMENT.md)**
+
+Quick commands:
+```bash
+# Check Railway service health
+npm run railway:health
+
+# Check deployment status
+npm run railway:check
+
+# View deployment report
+npm run railway:report
+```
+
 ### Environment Variables
 No environment variables required for basic deployment. All data is currently mock data.
 
 ## 📝 Version History
+
+### v1.4.0 (2025-10-20)
+- 🚀 Add comprehensive Railway release management system
+- 📊 Enhanced health endpoint with detailed service status
+- 🔍 Automated deployment monitoring workflow
+- 🚨 Automated GitHub issue creation for deployment failures
+- 📈 Deployment history tracking and reporting
+- 🛠️ Railway manager CLI tools (health, check, report)
+- 📚 Complete release management documentation
 
 ### v1.1.0 (2025-10-13)
 - ✨ Add ThreatsModule with comprehensive threat management
