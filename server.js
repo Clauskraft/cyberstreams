@@ -414,9 +414,13 @@ app.post('/api/migrate', async (req, res) => {
   try {
     console.log('Starting database migration...')
     
-    // Create pgvector extension
-    await pool.query('CREATE EXTENSION IF NOT EXISTS vector')
-    console.log('✓ Vector extension created')
+    // Create pgvector extension (skip if not available)
+    try {
+      await pool.query('CREATE EXTENSION IF NOT EXISTS vector')
+      console.log('✓ Vector extension created')
+    } catch (error) {
+      console.log('⚠ Vector extension not available, skipping...')
+    }
     
     // Keywords table
     await pool.query(`
