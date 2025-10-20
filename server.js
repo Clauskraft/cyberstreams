@@ -85,6 +85,36 @@ const mispClient = createMispClient()
 const openCtiClient = createOpenCtiClient()
 const vectorClient = createVectorClient()
 
+
+async function loadAuthorizedSources() {
+  const now = Date.now()
+  if (cachedSources && now - cachedSourcesLoadedAt < CACHE_TTL_MS) {
+    return cachedSources
+  }
+
+  try {
+    await ensureSourcesTable()
+    const sources = await getAuthorizedSources()
+
+    if (!sources.length && process.env.AUTO_SEED_SOURCES !== 'false') {
+      await saveAuthorizedSources(FALLBACK_AUTHORIZED_SOURCES)
+      cachedSources = FALLBACK_AUTHORIZED_SOURCES
+    } else if (!sources.length) {
+      cachedSources = FALLBACK_AUTHORIZED_SOURCES
+    } else {
+      cachedSources = sources
+    }
+
+    cachedSourcesLoadedAt = now
+    return cachedSources
+  } catch (error) {
+    logger.error({ err: error }, 'Failed to load authorized sources from PostgreSQL, using fallback list')
+    cachedSources = FALLBACK_AUTHORIZED_SOURCES
+    cachedSourcesLoadedAt = now
+    return cachedSources
+  }
+}
+
 const shouldAutoStartIntelScraper = process.env.AUTO_START_INTEL_SCRAPER !== 'false'
 
 const intelScraperService = new IntelScraperService({
@@ -160,39 +190,6 @@ function validateMcpKeyFormat(serverId, key) {
   }
 }
 
-// Initialize cache variables before functions that use them
-let cachedSources = null
-let cachedSourcesLoadedAt = 0
-const CACHE_TTL_MS = 5 * 60 * 1000
-
-async function loadAuthorizedSources() {
-  const now = Date.now()
-  if (cachedSources && now - cachedSourcesLoadedAt < CACHE_TTL_MS) {
-    return cachedSources
-  }
-
-  try {
-    await ensureSourcesTable()
-    const sources = await getAuthorizedSources()
-
-    if (!sources.length && process.env.AUTO_SEED_SOURCES !== 'false') {
-      await saveAuthorizedSources(FALLBACK_AUTHORIZED_SOURCES)
-      cachedSources = FALLBACK_AUTHORIZED_SOURCES
-    } else if (!sources.length) {
-      cachedSources = FALLBACK_AUTHORIZED_SOURCES
-    } else {
-      cachedSources = sources
-    }
-
-    cachedSourcesLoadedAt = now
-    return cachedSources
-  } catch (error) {
-    logger.error({ err: error }, 'Failed to load authorized sources from PostgreSQL, using fallback list')
-    cachedSources = FALLBACK_AUTHORIZED_SOURCES
-    cachedSourcesLoadedAt = now
-    return cachedSources
-  }
-}
 
 app.use(cors())
 app.use(express.json())
