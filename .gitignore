@@ -51,6 +51,8 @@ Thumbs.db
 
 # Cloudflare
 .wrangler/
+*.archived
+wrangler.toml.archived
 
 # Python
 __pycache__/
