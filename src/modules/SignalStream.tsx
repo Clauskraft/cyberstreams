@@ -412,9 +412,38 @@ const SignalStream = () => {
         const response = await fetch('/api/signal-stream')
         const data = await response.json()
         
-        if (data.success && data.data.length > 0) {
-          setArticles(data.data)
-          setActiveArticleId(data.data[0]?.id ?? '')
+        if (data.success && data.data && data.data.length > 0) {
+          // Transform API data to SignalStreamArticle format
+          const transformedArticles: SignalStreamArticle[] = data.data.map((item: any, index: number) => ({
+            id: `api-art-${index + 1}`,
+            title: item.title || 'Untitled Article',
+            summary: item.description || 'No summary available',
+            keyPoints: ['Data from monitoring results'],
+            analysis: ['Analysis pending'],
+            implications: ['Implications to be determined'],
+            sources: [{
+              id: `source-${index + 1}`,
+              name: 'Monitoring Source',
+              url: item.url || '',
+              type: 'web' as const,
+              trustScore: 0.7
+            }],
+            images: [],
+            tags: ['monitoring', 'threat-intelligence'],
+            focusLane: 'threat-intelligence',
+            evidence: {
+              credibility: 0.7,
+              relevance: 0.8,
+              recency: 0.9,
+              impact: 0.6
+            },
+            createdAt: item.created_at || new Date().toISOString(),
+            language: 'en' as const,
+            why: ['Automated monitoring result']
+          }))
+          
+          setArticles(transformedArticles)
+          setActiveArticleId(transformedArticles[0]?.id ?? '')
         }
       } catch (error) {
         console.error('Error fetching signal stream data:', error)
