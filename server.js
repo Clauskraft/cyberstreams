@@ -93,6 +93,7 @@ const intelScraperService = new IntelScraperService({
   loadAuthorizedSources
 })
 
+// Initialize Intel Scraper gracefully - allow system to run even if it fails
 try {
   await intelScraperService.init()
   if (shouldAutoStartIntelScraper) {
@@ -317,76 +318,62 @@ app.post('/api/mcp/test', async (req, res) => {
   }
 })
 
-// Mock data for pulse endpoint
-const mockPulseData = [
-  {
-    id: '1',
-    title: 'New Ransomware Strain Targeting Healthcare',
-    category: 'Ransomware',
-    severity: 'critical',
-    source: 'Dark Web Forum Alpha',
-    timestamp: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
-    description: 'A new ransomware variant specifically targeting hospital systems has been detected.',
-  },
-  {
-    id: '2',
-    title: 'Major Data Breach: 500K User Records Leaked',
-    category: 'Data Leak',
-    severity: 'high',
-    source: 'Breach Database',
-    timestamp: new Date(Date.now() - 4 * 60 * 60 * 1000).toISOString(),
-    description: 'Credentials from a major e-commerce platform have surfaced on underground markets.',
-  },
-  {
-    id: '3',
-    title: 'Zero-Day Exploit Being Sold',
-    category: 'Exploit',
-    severity: 'critical',
-    source: 'Exploit Market',
-    timestamp: new Date(Date.now() - 6 * 60 * 60 * 1000).toISOString(),
-    description: 'A previously unknown vulnerability in common enterprise software is being auctioned.',
-  },
-  {
-    id: '4',
-    title: 'Phishing Campaign Targeting Financial Sector',
-    category: 'Phishing',
-    severity: 'high',
-    source: 'Threat Intelligence Feed',
-    timestamp: new Date(Date.now() - 8 * 60 * 60 * 1000).toISOString(),
-    description: 'Sophisticated phishing emails mimicking bank communications detected.',
-  },
-  {
-    id: '5',
-    title: 'Botnet Infrastructure Update',
-    category: 'Malware',
-    severity: 'medium',
-    source: 'C2 Tracker',
-    timestamp: new Date(Date.now() - 12 * 60 * 60 * 1000).toISOString(),
-    description: 'Major botnet has shifted to new command and control servers.',
-  },
-]
+// Removed mock data - replaced with empty responses below
 
 // API Routes
 app.get('/api/pulse', (req, res) => {
   res.json({
     success: true,
     timestamp: new Date().toISOString(),
-    data: mockPulseData,
-    count: mockPulseData.length,
+    data: [],
+    count: 0,
+    message: 'No pulse data available. Connect data sources to populate.'
   })
 })
 
+// REMOVED old hardcoded /api/threats endpoint - see below for proper one
+
+// API endpoint for dashboard stats (replaces hardcoded data)
+app.get('/api/dashboard-stats', (req, res) => {
+  res.json({
+    success: true,
+    timestamp: new Date().toISOString(),
+    data: [
+      { label: 'Active Threats', value: '0', change: '--', color: 'red' },
+      { label: 'Monitored Sources', value: '0', change: '--', color: 'blue' },
+      { label: 'Protected Systems', value: '0', change: '--', color: 'green' },
+      { label: 'Trend Score', value: '--', change: '--', color: 'purple' },
+    ],
+  })
+})
+
+// API endpoint for threats (replaces mock data)
 app.get('/api/threats', (req, res) => {
   res.json({
     success: true,
     timestamp: new Date().toISOString(),
-    data: {
-      total: 156,
-      critical: 12,
-      high: 34,
-      medium: 78,
-      low: 32,
-    },
+    data: [],
+    message: 'No threat data available. Connect data sources to populate.'
+  })
+})
+
+// API endpoint for activities (replaces mock data)
+app.get('/api/activities', (req, res) => {
+  res.json({
+    success: true,
+    timestamp: new Date().toISOString(),
+    data: [],
+    message: 'No activity data available. Connect data sources to populate.'
+  })
+})
+
+// API endpoint for consolidated intelligence (replaces mock data)
+app.get('/api/intelligence', (req, res) => {
+  res.json({
+    success: true,
+    timestamp: new Date().toISOString(),
+    data: [],
+    message: 'No intelligence data available. Connect data sources to populate.'
   })
 })
 
@@ -395,9 +382,9 @@ app.get('/api/stats', (req, res) => {
     success: true,
     timestamp: new Date().toISOString(),
     data: {
-      activeSources: 89,
-      protectedSystems: 2400,
-      trendScore: 94,
+      activeSources: 0,
+      protectedSystems: 0,
+      trendScore: 0,
       lastUpdate: new Date().toISOString(),
     },
   })

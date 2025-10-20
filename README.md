@@ -1,11 +1,47 @@
 # Cyberstreams - Dark Web Threat Intelligence Platform
 
-![Version](https://img.shields.io/badge/version-1.3.0-blue)
+![Version](https://img.shields.io/badge/version-1.4.0-blue)
 ![License](https://img.shields.io/badge/license-MIT-green)
 ![React](https://img.shields.io/badge/React-18.2.0-61dafb)
 ![TypeScript](https://img.shields.io/badge/TypeScript-5.0.2-3178c6)
+![Status](https://img.shields.io/badge/status-production--ready-green)
 
 Advanced threat intelligence platform for monitoring and analyzing dark web activities, cyber threats, and security incidents.
+
+> **✅ PRODUCTION READY**: All demo data has been removed. The system is now clean and ready for real customer data integration.
+
+## 🚀 Quick Start
+
+```bash
+# Install dependencies
+npm install
+
+# Start development server
+npm run dev
+
+# Build for production
+npm run build
+
+# Start API server (runs without external dependencies)
+npm run server
+```
+
+## 🔧 System Status
+
+**Current State**: Production-ready without demo data
+- ✅ All mock/demo data removed from frontend modules
+- ✅ All hardcoded statistics removed
+- ✅ API endpoints return empty arrays (ready for real data)
+- ✅ System runs without external dependencies
+- ✅ Error boundaries in place
+- ✅ TypeScript build successful
+- ✅ Production build verified
+
+**Optional Integrations** (system works without these):
+- PostgreSQL for data persistence
+- MISP for threat intelligence sharing
+- OpenCTI for cyber threat intelligence
+- Vector database for semantic search
 
 ## 🚀 Live Demo
 
@@ -217,9 +253,57 @@ tar -czf ../../cyberstreams-deploy.zip .
    - Deploy
 
 ### Environment Variables
-No environment variables required for basic deployment. All data is currently mock data.
+
+**System runs without configuration!** The following environment variables are optional:
+
+```bash
+# Core application (optional - defaults to port 3001)
+PORT=3001
+NODE_ENV=production
+
+# PostgreSQL (optional - system uses in-memory storage without it)
+DATABASE_URL=postgresql://user:password@host:5432/cyberstreams
+
+# MISP integration (optional - system works without it)
+MISP_BASE_URL=https://misp.example.com
+MISP_API_KEY=your-api-key
+
+# OpenCTI integration (optional - system works without it)
+OPENCTI_API_URL=https://opencti.example.com:8080
+OPENCTI_TOKEN=your-token
+
+# Vector database (optional - system works without it)
+VECTOR_DB_URL=http://qdrant:6333
+VECTOR_DB_API_KEY=your-api-key
+```
+
+See `.env.example` for complete configuration options.
 
 ## 📝 Version History
+
+### v1.4.0 (2025-10-20) - Production Ready Release
+- 🔥 **CRITICAL**: Removed ALL demo/mock data from system
+- 🔥 Removed hardcoded statistics from dashboard
+- 🔥 Removed mock data from all modules (Threats, Activity, Intelligence)
+- ✅ All API endpoints now return empty arrays (ready for real data)
+- ✅ System runs without external dependencies
+- ✅ Production-ready without PostgreSQL, MISP, or OpenCTI
+- 📁 Organized documentation (36 files → 5 in root + organized docs/ directory)
+- 📁 Organized deployment scripts into scripts/deployment/
+- 📝 Updated README with current status
+
+### v1.3.0 (2025-10-19) - SignalStream Intelligence Module
+- ✨ Add SignalStream with AI-powered intelligence aggregation
+- ✨ In-Memory Vector Store with semantic search
+- ✨ Focus Lanes for categorized intelligence streams
+- ✨ Session Tracing for investigation workflows
+- ⚡ Optimized bundle size
+
+### v1.2.0 (2025-10-19) - Admin Features
+- ✨ Add Admin Panel with Intel Control
+- ✨ Add Vector Database Management
+- ✨ Add Link Validation System
+- 🔧 Add Intel Scraper API
 
 ### v1.1.0 (2025-10-13)
 - ✨ Add ThreatsModule with comprehensive threat management
