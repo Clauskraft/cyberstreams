@@ -9,7 +9,7 @@ Advanced threat intelligence platform for monitoring and analyzing dark web acti
 
 ## 🚀 Live Demo
 
-- **Production**: https://8b6c2bc3.cyberstreams.pages.dev
+- **Production**: Deployed on Railway
 - **Custom Domain**: cyberstreams.dk (pending DNS configuration)
 
 ## ✨ Features
@@ -81,7 +81,7 @@ Advanced threat intelligence platform for monitoring and analyzing dark web acti
 - **Build Tool**: Vite 4.5.14
 - **Styling**: Tailwind CSS 3.3.3
 - **Icons**: Lucide React 0.263.1
-- **Hosting**: Cloudflare Pages
+- **Hosting**: Railway
 - **Minification**: Terser
 
 ## 📦 Performance Optimizations
@@ -196,28 +196,50 @@ cyberstreams/
 
 ## 🚀 Deployment
 
-### Cloudflare Pages (Recommended)
+### Railway (Primary Deployment)
+
+The application is configured for deployment on Railway:
 
 1. Build the project:
 ```bash
-cd cyberstreams
 npm run build
 ```
 
-2. Create deployment ZIP:
+2. Railway deployment:
+   - Railway automatically deploys from the main branch
+   - Uses Dockerfile or Nixpacks for build
+   - Environment variables configured in Railway dashboard
+   - PostgreSQL database provided by Railway
+
+### Local Development
+
+1. Install dependencies:
 ```bash
-cd dist
-tar -czf ../../cyberstreams-deploy.zip .
+npm ci
 ```
 
-3. Upload to Cloudflare Pages:
-   - Go to: https://dash.cloudflare.com/pages/new/upload
-   - Upload ZIP file
-   - Project name: `cyberstreams`
-   - Deploy
+2. Build frontend:
+```bash
+npm run build
+```
+
+3. Start server:
+```bash
+npm start
+```
+
+The server will run on port 3001 (or PORT environment variable).
 
 ### Environment Variables
-No environment variables required for basic deployment. All data is currently mock data.
+
+Required environment variables (see `.env.example`):
+
+- `PORT`: Server port (default: 3001)
+- `NODE_ENV`: Environment (development/production)
+- `DATABASE_URL`: PostgreSQL connection string
+- `POSTGRES_*`: Database connection details
+- `MISP_*`: MISP integration settings (optional)
+- `OPENCTI_*`: OpenCTI integration settings (optional)
 
 ## 📝 Version History
 
@@ -289,12 +311,12 @@ Contributions are welcome! Please feel free to submit a Pull Request.
 - Built with [React](https://react.dev/)
 - Styled with [Tailwind CSS](https://tailwindcss.com/)
 - Icons by [Lucide](https://lucide.dev/)
-- Hosted on [Cloudflare Pages](https://pages.cloudflare.com/)
+- Hosted on [Railway](https://railway.app/)
 - Developed with [Claude Code](https://claude.com/claude-code)
 
 ---
 
-**Status**: ✅ Production Ready | 🚀 Deployed on Cloudflare Pages | 📦 Version 1.3.0
+**Status**: ✅ Production Ready | 🚀 Deployed on Railway | 📦 Version 1.4.0
 
 ## 🆕 Recent Updates (v1.2.0 - 2025-10-19)
 

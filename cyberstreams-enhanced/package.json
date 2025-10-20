@@ -11,8 +11,6 @@
     "preview": "vite preview",
     "start": "node server.js",
     "migrate": "node scripts/migrate.js",
-    "deploy:cloudflare": "npm run build && wrangler pages deploy dist",
-    "deploy:workers": "wrangler deploy",
     "brand:brandA": "cross-env VITE_BRAND=brandA vite",
     "brand:brandB": "cross-env VITE_BRAND=brandB vite",
     "brand:brandC": "cross-env VITE_BRAND=brandC vite"
@@ -41,8 +39,6 @@
     "@types/express": "^4.17.21",
     "@types/pg": "^8.10.9",
     "@types/node": "^20.10.0",
-    "@cloudflare/workers-types": "^4.20231218.0",
-    "wrangler": "^3.22.0",
     "cross-env": "^7.0.3",
     "typescript": "^5.6.2",
     "vite": "^5.4.0",
