@@ -435,7 +435,12 @@ const SignalStream = () => {
               credibility: 0.7,
               relevance: 0.8,
               recency: 0.9,
-              impact: 0.6
+              impact: 0.6,
+              vectorScore: 0.75,
+              bm25Score: 0.65,
+              freshnessHours: 6,
+              domainAuthority: 0.85,
+              citationCoverage: 0.9
             },
             createdAt: item.created_at || new Date().toISOString(),
             language: 'en' as const,
