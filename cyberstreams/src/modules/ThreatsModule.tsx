@@ -1,8 +1,9 @@
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import {
-  Shield, Search, Filter, AlertTriangle,
+  Shield, Search, AlertTriangle,
   TrendingUp, Database, Globe, Lock
 } from 'lucide-react'
+import NoData from '@components/NoData'
 
 interface Threat {
   id: string
@@ -18,142 +19,11 @@ interface Threat {
 }
 
 const ThreatsModule = () => {
-  const [threats, setThreats] = useState<Threat[]>([])
-  const [loading, setLoading] = useState(true)
+  const [threats] = useState<Threat[]>([])
+  const [loading] = useState(false)
   const [searchTerm, setSearchTerm] = useState('')
   const [filterSeverity, setFilterSeverity] = useState<string>('all')
   const [filterStatus, setFilterStatus] = useState<string>('all')
-
-  useEffect(() => {
-    // Mock threat data
-    const mockThreats: Threat[] = [
-      {
-        id: 'THR-001',
-        name: 'Ransomware-as-a-Service Distribution',
-        type: 'Ransomware',
-        severity: 'critical',
-        status: 'active',
-        affectedSystems: 47,
-        detectedAt: '2 hours ago',
-        lastUpdate: '15 min ago',
-        description: 'Large-scale ransomware campaign targeting healthcare and financial sectors through compromised VPN credentials.',
-        indicators: ['185.220.101.45', 'malicious-payload.exe', 'C2: darknet-server.onion']
-      },
-      {
-        id: 'THR-002',
-        name: 'Zero-Day Exploit CVE-2025-XXXX',
-        type: 'Exploit',
-        severity: 'critical',
-        status: 'investigating',
-        affectedSystems: 156,
-        detectedAt: '5 hours ago',
-        lastUpdate: '1 hour ago',
-        description: 'Previously unknown vulnerability in enterprise software being actively exploited in the wild.',
-        indicators: ['CVE-2025-XXXX', 'exploit-kit-v2.3', '192.168.1.100']
-      },
-      {
-        id: 'THR-003',
-        name: 'Data Exfiltration Campaign',
-        type: 'Data Breach',
-        severity: 'high',
-        status: 'active',
-        affectedSystems: 23,
-        detectedAt: '1 day ago',
-        lastUpdate: '3 hours ago',
-        description: 'Systematic data theft operation targeting customer databases across multiple organizations.',
-        indicators: ['data-stealer.py', '10.0.0.50', 'exfil-server.com']
-      },
-      {
-        id: 'THR-004',
-        name: 'Phishing Infrastructure Network',
-        type: 'Phishing',
-        severity: 'high',
-        status: 'active',
-        affectedSystems: 89,
-        detectedAt: '1 day ago',
-        lastUpdate: '6 hours ago',
-        description: 'Coordinated phishing campaign using cloned banking websites to harvest credentials.',
-        indicators: ['phishing-domain.net', 'credential-harvester.js']
-      },
-      {
-        id: 'THR-005',
-        name: 'Botnet C2 Infrastructure',
-        type: 'Malware',
-        severity: 'high',
-        status: 'mitigated',
-        affectedSystems: 234,
-        detectedAt: '2 days ago',
-        lastUpdate: '1 day ago',
-        description: 'Command and control infrastructure for IoT botnet used in DDoS attacks.',
-        indicators: ['bot-c2.darkweb', '203.0.113.42', 'mirai-variant-v3']
-      },
-      {
-        id: 'THR-006',
-        name: 'Supply Chain Compromise',
-        type: 'APT',
-        severity: 'critical',
-        status: 'investigating',
-        affectedSystems: 12,
-        detectedAt: '3 days ago',
-        lastUpdate: '8 hours ago',
-        description: 'Advanced persistent threat targeting software supply chain to distribute backdoored updates.',
-        indicators: ['update-server-compromised', 'backdoor.dll']
-      },
-      {
-        id: 'THR-007',
-        name: 'Cryptocurrency Mining Malware',
-        type: 'Malware',
-        severity: 'medium',
-        status: 'mitigated',
-        affectedSystems: 67,
-        detectedAt: '3 days ago',
-        lastUpdate: '1 day ago',
-        description: 'Cryptojacking campaign leveraging browser-based mining scripts.',
-        indicators: ['coinhive-alternative.js', 'mining-pool.io']
-      },
-      {
-        id: 'THR-008',
-        name: 'Credential Stuffing Attack',
-        type: 'Access',
-        severity: 'medium',
-        status: 'active',
-        affectedSystems: 145,
-        detectedAt: '4 days ago',
-        lastUpdate: '12 hours ago',
-        description: 'Automated credential stuffing using previously breached password databases.',
-        indicators: ['bruteforce-tool-v4', 'leaked-creds.txt']
-      },
-      {
-        id: 'THR-009',
-        name: 'SQL Injection Campaign',
-        type: 'Web Attack',
-        severity: 'medium',
-        status: 'investigating',
-        affectedSystems: 34,
-        detectedAt: '5 days ago',
-        lastUpdate: '1 day ago',
-        description: 'Automated SQL injection attempts targeting vulnerable web applications.',
-        indicators: ['sqlmap-automated', 'injection-payload-db']
-      },
-      {
-        id: 'THR-010',
-        name: 'Social Engineering Operation',
-        type: 'Social Engineering',
-        severity: 'low',
-        status: 'investigating',
-        affectedSystems: 8,
-        detectedAt: '1 week ago',
-        lastUpdate: '2 days ago',
-        description: 'Targeted social engineering campaign aimed at executive-level personnel.',
-        indicators: ['pretexting-calls', 'ceo-fraud-emails']
-      }
-    ]
-
-    setTimeout(() => {
-      setThreats(mockThreats)
-      setLoading(false)
-    }, 800)
-  }, [])
 
   const getSeverityColor = (severity: string) => {
     switch (severity) {
@@ -340,10 +210,7 @@ const ThreatsModule = () => {
       </div>
 
       {filteredThreats.length === 0 && (
-        <div className="text-center py-12 text-gray-400">
-          <Filter className="w-12 h-12 mx-auto mb-4 opacity-50" />
-          <p>No threats match your current filters</p>
-        </div>
+        <NoData title="Ingen data" message="Ingen data at vise endnu." />
       )}
     </div>
   )
