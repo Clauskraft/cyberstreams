@@ -1,0 +1,108 @@
+name: Smoke Test
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  smoke-test:
+    name: Smoke Test
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20.x'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build project
+        run: npm run build
+
+      - name: Start server in background
+        run: |
+          node server.js &
+          SERVER_PID=$!
+          echo "SERVER_PID=$SERVER_PID" >> $GITHUB_ENV
+        env:
+          PORT: 3001
+          NODE_ENV: test
+
+      - name: Wait for server to start
+        run: |
+          timeout 30 bash -c 'until curl -f http://localhost:3001/api/health > /dev/null 2>&1; do sleep 1; done'
+
+      - name: Test /ready endpoint
+        run: |
+          response=$(curl -s -w "\n%{http_code}" http://localhost:3001/ready)
+          http_code=$(echo "$response" | tail -n1)
+          body=$(echo "$response" | head -n-1)
+          
+          echo "HTTP Status: $http_code"
+          echo "Response Body: $body"
+          
+          if [ "$http_code" != "200" ]; then
+            echo "❌ /ready endpoint failed with status $http_code"
+            exit 1
+          fi
+          
+          if ! echo "$body" | grep -q '"ready":true'; then
+            echo "❌ /ready endpoint response doesn't contain 'ready: true'"
+            exit 1
+          fi
+          
+          echo "✅ /ready endpoint OK"
+
+      - name: Test /api/health endpoint
+        run: |
+          response=$(curl -s -w "\n%{http_code}" http://localhost:3001/api/health)
+          http_code=$(echo "$response" | tail -n1)
+          body=$(echo "$response" | head -n-1)
+          
+          echo "HTTP Status: $http_code"
+          echo "Response Body: $body"
+          
+          if [ "$http_code" != "200" ]; then
+            echo "❌ /api/health endpoint failed with status $http_code"
+            exit 1
+          fi
+          
+          if ! echo "$body" | grep -q '"status":"operational"'; then
+            echo "❌ /api/health endpoint response doesn't contain correct status"
+            exit 1
+          fi
+          
+          echo "✅ /api/health endpoint OK"
+
+      - name: Test /api/pulse endpoint returns valid structure
+        run: |
+          response=$(curl -s http://localhost:3001/api/pulse)
+          echo "Response: $response"
+          
+          if ! echo "$response" | grep -q '"success":'; then
+            echo "❌ /api/pulse endpoint doesn't return valid JSON structure"
+            exit 1
+          fi
+          
+          echo "✅ /api/pulse endpoint returns valid structure"
+
+      - name: Stop server
+        if: always()
+        run: |
+          if [ ! -z "$SERVER_PID" ]; then
+            kill $SERVER_PID || true
+          fi
