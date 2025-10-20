@@ -27,8 +27,16 @@ export const SettingsModule: React.FC = () => {
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null)
 
   useEffect(() => {
-    loadKeys()
-    loadMcpServers()
+    const initialize = async () => {
+      setLoading(true)
+      try {
+        await Promise.all([loadKeys(), loadMcpServers()])
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    initialize()
   }, [])
 
   const loadKeys = async () => {
@@ -36,12 +44,15 @@ export const SettingsModule: React.FC = () => {
       const response = await fetch('/api/keys')
       const result = await response.json()
       if (result.success) {
-        setApiKeys(result.data)
+        const keys: ApiKey[] = (result.data || []).map((key: any) => ({
+          name: key.name,
+          value: key.value,
+          created: key.created
+        }))
+        setApiKeys(keys)
       }
     } catch (error) {
       showMessage('error', 'Failed to load API keys')
-    } finally {
-      setLoading(false)
     }
   }
 
@@ -50,7 +61,11 @@ export const SettingsModule: React.FC = () => {
       const response = await fetch('/api/mcp/servers')
       const result = await response.json()
       if (result.success) {
-        setMcpServers(result.data)
+          setMcpServers((result.data || []).map((server: any) => ({
+            id: server.id,
+            name: server.name,
+            status: server.status
+          })))
       }
     } catch (error) {
       showMessage('error', 'Failed to load MCP servers')
@@ -74,8 +89,7 @@ export const SettingsModule: React.FC = () => {
       if (result.success) {
         showMessage('success', 'API key saved successfully!')
         setNewKey({ name: '', value: '' })
-        loadKeys()
-        loadMcpServers()
+        await Promise.all([loadKeys(), loadMcpServers()])
       } else {
         showMessage('error', result.error || 'Failed to save key')
       }
@@ -93,8 +107,7 @@ export const SettingsModule: React.FC = () => {
 
       if (result.success) {
         showMessage('success', 'API key deleted')
-        loadKeys()
-        loadMcpServers()
+        await Promise.all([loadKeys(), loadMcpServers()])
       } else {
         showMessage('error', result.error || 'Failed to delete key')
       }
@@ -108,14 +121,14 @@ export const SettingsModule: React.FC = () => {
       const response = await fetch('/api/mcp/test', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ server: server.id, apiKey: 'test' })
+        body: JSON.stringify({ server: server.id })
       })
       const result = await response.json()
 
       if (result.success) {
-        showMessage('success', `${server.name}: ${result.message}`)
+        showMessage('success', `${server.name}: ${result.message || 'Connection validated'}`)
       } else {
-        showMessage('error', `Test failed for ${server.name}`)
+        showMessage('error', result.error || `Test failed for ${server.name}`)
       }
     } catch (error) {
       showMessage('error', `Failed to test ${server.name}`)

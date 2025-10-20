@@ -13,6 +13,14 @@ import {
   saveAuthorizedSources
 } from './lib/authorizedSourceRepository.js'
 import { closePool } from './lib/postgres.js'
+import IntelScraperService from './lib/intelScraperService.js'
+import {
+  ensureIntegrationTables,
+  listApiKeys,
+  upsertApiKey,
+  deleteApiKey,
+  findApiKey
+} from './lib/integrationSettingsRepository.js'
 
 // Fallback sources used until the PostgreSQL repository is populated
 const FALLBACK_AUTHORIZED_SOURCES = [
@@ -77,6 +85,81 @@ const mispClient = createMispClient()
 const openCtiClient = createOpenCtiClient()
 const vectorClient = createVectorClient()
 
+const shouldAutoStartIntelScraper = process.env.AUTO_START_INTEL_SCRAPER !== 'false'
+
+const intelScraperService = new IntelScraperService({
+  mispClient,
+  openCtiClient,
+  loadAuthorizedSources
+})
+
+try {
+  await intelScraperService.init()
+  if (shouldAutoStartIntelScraper) {
+    intelScraperService
+      .start()
+      .then(() => {
+        logger.info('Intel Scraper auto-started successfully on boot')
+      })
+      .catch((error) => {
+        logger.error({ err: error }, 'Failed to auto-start Intel Scraper during initialization')
+      })
+  } else {
+    logger.info('Intel Scraper auto-start disabled via AUTO_START_INTEL_SCRAPER=false')
+  }
+} catch (error) {
+  logger.error({ err: error }, 'Failed to initialize Intel Scraper service')
+}
+
+try {
+  const tablesReady = await ensureIntegrationTables()
+  if (!tablesReady) {
+    logger.warn('Using in-memory storage for integration API keys')
+  }
+} catch (error) {
+  logger.error({ err: error }, 'Failed to ensure integration settings tables exist')
+}
+
+const MCP_SERVERS = [
+  { id: 'openai', name: 'OpenAI (ChatGPT)' },
+  { id: 'anthropic', name: 'Anthropic (Claude)' },
+  { id: 'custom_mcp', name: 'Custom MCP Server' }
+]
+
+function maskApiKey(value) {
+  if (!value) {
+    return ''
+  }
+
+  const trimmed = value.trim()
+  if (trimmed.length <= 4) {
+    return '••••'
+  }
+
+  const visible = trimmed.slice(-4)
+  return `${'•'.repeat(Math.max(4, trimmed.length - 4))}${visible}`
+}
+
+function validateMcpKeyFormat(serverId, key) {
+  if (!key) {
+    return false
+  }
+
+  const normalized = key.trim()
+  switch (serverId) {
+    case 'openai':
+      return normalized.startsWith('sk-') && normalized.length > 20
+    case 'anthropic':
+      return (
+        normalized.startsWith('sk-ant-') ||
+        normalized.startsWith('anthropic-') ||
+        normalized.startsWith('ak-')
+      )
+    default:
+      return normalized.length >= 12
+  }
+}
+
 let cachedSources = null
 let cachedSourcesLoadedAt = 0
 const CACHE_TTL_MS = 5 * 60 * 1000
@@ -112,6 +195,127 @@ async function loadAuthorizedSources() {
 
 app.use(cors())
 app.use(express.json())
+
+app.get('/api/keys', async (req, res) => {
+  try {
+    const keys = await listApiKeys()
+    const sanitized = keys.map((key) => ({
+      name: key.name,
+      value: maskApiKey(key.value),
+      created: key.created_at
+    }))
+
+    res.json({ success: true, data: sanitized })
+  } catch (error) {
+    logger.error({ err: error }, 'Failed to load integration API keys')
+    res.status(500).json({ success: false, error: 'Failed to load API keys' })
+  }
+})
+
+app.post('/api/keys', async (req, res) => {
+  const { name, value } = req.body || {}
+
+  if (typeof name !== 'string' || typeof value !== 'string') {
+    return res.status(400).json({ success: false, error: 'name and value must be provided as strings' })
+  }
+
+  const trimmedName = name.trim()
+  const trimmedValue = value.trim()
+
+  if (!trimmedName || !trimmedValue) {
+    return res.status(400).json({ success: false, error: 'Both name and value are required' })
+  }
+
+  try {
+    const stored = await upsertApiKey(trimmedName, trimmedValue)
+    res.status(201).json({
+      success: true,
+      data: {
+        name: stored.name,
+        value: maskApiKey(stored.value),
+        created: stored.created_at
+      }
+    })
+  } catch (error) {
+    logger.error({ err: error, name: trimmedName }, 'Failed to store API key')
+    res.status(500).json({ success: false, error: 'Failed to save API key' })
+  }
+})
+
+app.delete('/api/keys/:name', async (req, res) => {
+  const { name } = req.params
+  if (!name) {
+    return res.status(400).json({ success: false, error: 'Key name is required' })
+  }
+
+  try {
+    const removed = await deleteApiKey(name)
+    if (!removed) {
+      return res.status(404).json({ success: false, error: 'API key not found' })
+    }
+
+    res.json({ success: true })
+  } catch (error) {
+    logger.error({ err: error, name }, 'Failed to delete API key')
+    res.status(500).json({ success: false, error: 'Failed to delete API key' })
+  }
+})
+
+app.get('/api/mcp/servers', async (req, res) => {
+  try {
+    const keys = await listApiKeys()
+    const keyNames = new Set(keys.map((key) => key.name))
+
+    const knownServers = MCP_SERVERS.map((server) => ({
+      id: server.id,
+      name: server.name,
+      status: keyNames.has(server.id) ? 'configured' : 'not_configured'
+    }))
+
+    const extraServers = keys
+      .filter((key) => !MCP_SERVERS.some((server) => server.id === key.name))
+      .map((key) => ({
+        id: key.name,
+        name: `Custom integration (${key.name})`,
+        status: 'configured'
+      }))
+
+    res.json({ success: true, data: [...knownServers, ...extraServers] })
+  } catch (error) {
+    logger.error({ err: error }, 'Failed to load MCP servers')
+    res.status(500).json({ success: false, error: 'Failed to load MCP servers' })
+  }
+})
+
+app.post('/api/mcp/test', async (req, res) => {
+  const { server, apiKey } = req.body || {}
+  const serverId = typeof server === 'string' && server.trim().toLowerCase()
+
+  if (!serverId) {
+    return res.status(400).json({ success: false, error: 'server identifier is required' })
+  }
+
+  try {
+    const storedKey = await findApiKey(serverId)
+    const keyToTest = (typeof apiKey === 'string' && apiKey.trim()) || storedKey?.value
+
+    if (!keyToTest) {
+      return res.status(400).json({ success: false, error: 'No API key available for validation' })
+    }
+
+    if (!validateMcpKeyFormat(serverId, keyToTest)) {
+      return res.status(400).json({ success: false, error: 'API key format is invalid for the selected server' })
+    }
+
+    res.json({
+      success: true,
+      message: `API key for ${serverId} passed format validation`
+    })
+  } catch (error) {
+    logger.error({ err: error, serverId }, 'Failed to validate MCP server key')
+    res.status(500).json({ success: false, error: 'Failed to validate MCP server key' })
+  }
+})
 
 // Mock data for pulse endpoint
 const mockPulseData = [
@@ -414,7 +618,7 @@ class DailyPulseGenerator {
 
     if (!combined.length) {
       logger.warn('Falling back to mock documents because no CTI data was returned')
-      return this.getFallbackData().data
+      return this.getFallbackDocuments()
     }
 
     return combined
@@ -622,17 +826,82 @@ class DailyPulseGenerator {
     return tomorrow.toISOString()
   }
 
+  getFallbackDocuments() {
+    const now = Date.now()
+
+    return [
+      {
+        id: 'fallback_cfcs',
+        title: 'CFCS udsender midlertidig trusselsopdatering',
+        description:
+          'Center for Cybersikkerhed opretholder forhøjet opmærksomhedsniveau. Ingen alvorlige hændelser registreret det seneste døgn.',
+        source: 'Center for Cybersikkerhed (CFCS)',
+        sourceDomain: 'cfcs.dk',
+        url: 'https://www.cfcs.dk/',
+        timestamp: new Date(now - 60 * 60 * 1000).toISOString(),
+        category: 'guidance',
+        severity: 'medium',
+        verified: true,
+        qualityScore: 0.7,
+        cves: [],
+        cvssScore: 0,
+        geography: ['Denmark'],
+        affectedSectors: ['government']
+      },
+      {
+        id: 'fallback_enisa',
+        title: 'ENISA bekræfter stabil trusselsituation i EU',
+        description:
+          'ENISA rapporterer ingen kritiske afvigelser i den seneste overvågning af europæiske cybersikkerhedshændelser.',
+        source: 'ENISA',
+        sourceDomain: 'enisa.europa.eu',
+        url: 'https://www.enisa.europa.eu/',
+        timestamp: new Date(now - 2 * 60 * 60 * 1000).toISOString(),
+        category: 'update',
+        severity: 'low',
+        verified: true,
+        qualityScore: 0.6,
+        cves: [],
+        cvssScore: 0,
+        geography: ['European Union'],
+        affectedSectors: ['information_technology']
+      },
+      {
+        id: 'fallback_cisa',
+        title: 'CISA vedligeholder varsel om kendte sårbarheder',
+        description:
+          'CISA fastholder fokus på patching af kendte sårbarheder. Ingen nye kritiske CVE’er er tilføjet i dag.',
+        source: 'CISA',
+        sourceDomain: 'cisa.gov',
+        url: 'https://www.cisa.gov/known-exploited-vulnerabilities-catalog',
+        timestamp: new Date(now - 3 * 60 * 60 * 1000).toISOString(),
+        category: 'vulnerability',
+        severity: 'medium',
+        verified: true,
+        qualityScore: 0.65,
+        cves: [],
+        cvssScore: 7.1,
+        geography: ['United States'],
+        affectedSectors: ['critical_infrastructure']
+      }
+    ]
+  }
+
   getFallbackData() {
-    return [{
-      id: 'fallback_1',
-      title: 'Dagens Puls midlertidigt utilgængelig',
-      summary: 'Vi arbejder på at genoprettte dagens sikkerhedsoversigt. Tjek tilbage om lidt.',
-      category: 'system',
-      severity: 'low',
-      source: 'Cyberstreams System',
+    const data = this.getFallbackDocuments()
+
+    return {
+      success: true,
       timestamp: new Date().toISOString(),
-      verified: false
-    }]
+      timezone: this.timezone,
+      totalSources: FALLBACK_AUTHORIZED_SOURCES.length,
+      validDocuments: data.length,
+      selectedItems: data.length,
+      data,
+      lastUpdate: this.getLastUpdateTime(),
+      nextUpdate: this.getNextUpdateTime(),
+      isFallback: true
+    }
   }
 }
 
@@ -655,252 +924,184 @@ app.get('/api/daily-pulse', async (req, res) => {
 })
 
 // Intel Scraper API Endpoints
-let intelScraperInstance = null
-let scraperStatus = {
-  isRunning: false,
-  totalSources: 18,
-  activeSources: 15,
-  activeJobs: 0,
-  pendingApprovals: 3,
-  complianceEnabled: true,
-  emergencyBypass: false,
-  lastActivity: new Date().toISOString()
-}
-
-// Get Intel Scraper status
-app.get('/api/intel-scraper/status', (req, res) => {
-  res.json({
-    success: true,
-    data: scraperStatus
-  })
+app.get('/api/intel-scraper/status', async (req, res) => {
+  try {
+    const status = intelScraperService.getStatus()
+    res.json({ success: true, data: status })
+  } catch (error) {
+    logger.error({ err: error }, 'Failed to load Intel Scraper status')
+    res.status(500).json({ success: false, error: 'Failed to load Intel Scraper status' })
+  }
 })
 
-// Start Intel Scraper
 app.post('/api/intel-scraper/start', async (req, res) => {
   try {
-    if (scraperStatus.isRunning) {
-      return res.status(400).json({
-        success: false,
-        error: 'Intel Scraper is already running'
-      })
-    }
-
-    // Simulate starting the scraper
-    scraperStatus.isRunning = true
-    scraperStatus.activeJobs = 2
-    scraperStatus.lastActivity = new Date().toISOString()
-
-    res.json({
-      success: true,
-      message: 'Intel Scraper started successfully',
-      data: scraperStatus
-    })
+    const status = await intelScraperService.start()
+    res.json({ success: true, message: 'Intel Scraper started successfully', data: status })
   } catch (error) {
-    res.status(500).json({
-      success: false,
-      error: error.message
-    })
+    if (error.message.includes('already running')) {
+      return res.status(400).json({ success: false, error: error.message })
+    }
+    logger.error({ err: error }, 'Failed to start Intel Scraper')
+    res.status(500).json({ success: false, error: 'Failed to start Intel Scraper' })
   }
 })
 
-// Stop Intel Scraper
 app.post('/api/intel-scraper/stop', async (req, res) => {
   try {
-    if (!scraperStatus.isRunning) {
-      return res.status(400).json({
-        success: false,
-        error: 'Intel Scraper is not running'
-      })
-    }
-
-    // Simulate stopping the scraper
-    scraperStatus.isRunning = false
-    scraperStatus.activeJobs = 0
-    scraperStatus.lastActivity = new Date().toISOString()
-
-    res.json({
-      success: true,
-      message: 'Intel Scraper stopped successfully',
-      data: scraperStatus
-    })
+    const status = await intelScraperService.stop()
+    res.json({ success: true, message: 'Intel Scraper stopped successfully', data: status })
   } catch (error) {
-    res.status(500).json({
-      success: false,
-      error: error.message
-    })
+    if (error.message.includes('not running')) {
+      return res.status(400).json({ success: false, error: error.message })
+    }
+    logger.error({ err: error }, 'Failed to stop Intel Scraper')
+    res.status(500).json({ success: false, error: 'Failed to stop Intel Scraper' })
   }
 })
 
-// Emergency compliance bypass
-app.post('/api/intel-scraper/emergency-bypass', async (req, res) => {
+app.post('/api/intel-scraper/run', async (req, res) => {
   try {
-    const { reason, duration = 3600000 } = req.body
-
-    if (!reason) {
-      return res.status(400).json({
-        success: false,
-        error: 'Reason is required for emergency bypass'
-      })
-    }
-
-    scraperStatus.emergencyBypass = true
-    scraperStatus.complianceEnabled = false
-    scraperStatus.lastActivity = new Date().toISOString()
-
-    // Auto-disable after specified duration
-    setTimeout(() => {
-      scraperStatus.emergencyBypass = false
-      scraperStatus.complianceEnabled = true
-      scraperStatus.lastActivity = new Date().toISOString()
-    }, duration)
-
-    res.json({
-      success: true,
-      message: `Emergency bypass enabled for ${duration / 1000} seconds`,
-      data: {
-        ...scraperStatus,
-        bypassReason: reason,
-        bypassDuration: duration
-      }
-    })
+    const status = await intelScraperService.runNow('manual-trigger')
+    res.json({ success: true, message: 'Intel Scraper run completed', data: status })
   } catch (error) {
-    res.status(500).json({
-      success: false,
-      error: error.message
-    })
+    if (error.message.includes('already processing')) {
+      return res.status(409).json({ success: false, error: error.message })
+    }
+    logger.error({ err: error }, 'Failed to execute manual Intel Scraper run')
+    res.status(500).json({ success: false, error: 'Failed to execute manual run' })
   }
 })
 
-// Get pending approvals
-app.get('/api/intel-scraper/approvals', (req, res) => {
-  const mockApprovals = [
-    {
-      id: 'approval_1',
-      type: 'new_source',
-      timestamp: new Date(Date.now() - 30 * 60 * 1000).toISOString(),
-      data: {
-        url: 'https://security-weekly.dk/threats',
-        domain: 'security-weekly.dk',
-        detectedPurpose: 'technical',
-        initialRelevanceScore: 0.72,
-        complianceRisk: 'low'
-      },
-      status: 'pending'
-    },
-    {
-      id: 'approval_2',
-      type: 'new_source',
-      timestamp: new Date(Date.now() - 45 * 60 * 1000).toISOString(),
-      data: {
-        url: 'http://darkmarket.onion/intel',
-        domain: 'darkmarket.onion',
-        detectedPurpose: 'unknown',
-        initialRelevanceScore: 0.45,
-        complianceRisk: 'high'
-      },
-      status: 'pending'
-    }
-  ]
+app.post('/api/intel-scraper/emergency-bypass', async (req, res) => {
+  const { reason, duration = 3600000 } = req.body || {}
 
-  res.json({
-    success: true,
-    data: mockApprovals
-  })
+  if (typeof reason !== 'string' || !reason.trim()) {
+    return res.status(400).json({ success: false, error: 'Reason is required for emergency bypass' })
+  }
+
+  const durationMs = Number(duration)
+  if (!Number.isFinite(durationMs) || durationMs <= 0) {
+    return res.status(400).json({ success: false, error: 'duration must be a positive number of milliseconds' })
+  }
+
+  try {
+    const status = await intelScraperService.enableEmergencyBypass({ reason: reason.trim(), durationMs })
+    res.json({
+      success: true,
+      message: `Emergency bypass enabled for ${Math.round(durationMs / 1000)} seconds`,
+      data: status
+    })
+  } catch (error) {
+    if (error.message.includes('already active')) {
+      return res.status(409).json({ success: false, error: error.message })
+    }
+    logger.error({ err: error }, 'Failed to enable emergency bypass')
+    res.status(500).json({ success: false, error: 'Failed to enable emergency bypass' })
+  }
 })
 
-// Process approval decision
-app.post('/api/intel-scraper/approvals/:id', (req, res) => {
+app.get('/api/intel-scraper/approvals', (req, res) => {
+  try {
+    const approvals = intelScraperService.getPendingApprovals()
+    res.json({ success: true, data: approvals })
+  } catch (error) {
+    logger.error({ err: error }, 'Failed to load scraper approvals')
+    res.status(500).json({ success: false, error: 'Failed to load approvals' })
+  }
+})
+
+app.post('/api/intel-scraper/approvals/:id', async (req, res) => {
   const { id } = req.params
-  const { decision, reason } = req.body
+  const { decision, reason } = req.body || {}
 
   if (!['approve', 'reject'].includes(decision)) {
-    return res.status(400).json({
-      success: false,
-      error: 'Decision must be either "approve" or "reject"'
-    })
+    return res.status(400).json({ success: false, error: 'Decision must be either "approve" or "reject"' })
   }
 
-  // Simulate processing approval
-  scraperStatus.pendingApprovals = Math.max(0, scraperStatus.pendingApprovals - 1)
-  
-  if (decision === 'approve') {
-    scraperStatus.totalSources += 1
-    scraperStatus.activeSources += 1
-  }
-
-  scraperStatus.lastActivity = new Date().toISOString()
-
-  res.json({
-    success: true,
-    message: `Source ${decision}d successfully`,
-    data: {
-      approvalId: id,
-      decision,
-      reason,
-      updatedStatus: scraperStatus
-    }
-  })
-})
-
-// Get source candidates
-app.get('/api/intel-scraper/candidates', (req, res) => {
-  const mockCandidates = [
-    {
-      url: 'https://cybersecurity-news.eu/rss',
-      domain: 'cybersecurity-news.eu',
-      detectedPurpose: 'technical',
-      foundVia: 'https://cfcs.dk/threat-analysis-2024',
-      initialRelevanceScore: 0.83,
-      complianceRisk: 'low',
-      suggestedKeywords: ['cybersecurity', 'threats', 'vulnerabilities']
-    },
-    {
-      url: 'https://politiken.dk/indland/it-politik/rss',
-      domain: 'politiken.dk',
-      detectedPurpose: 'political',
-      foundVia: 'auto_discovery',
-      initialRelevanceScore: 0.67,
-      complianceRisk: 'low',
-      suggestedKeywords: ['it-politik', 'digitalisering', 'lovgivning']
-    }
-  ]
-
-  res.json({
-    success: true,
-    data: mockCandidates
-  })
-})
-
-// Run source discovery scan
-app.post('/api/intel-scraper/discover', async (req, res) => {
   try {
-    const { urls, keywords } = req.body
+    const result = await intelScraperService.resolveApproval(id, decision, reason)
+    res.json({
+      success: true,
+      message: `Source ${decision}d successfully`,
+      data: result.status
+    })
+  } catch (error) {
+    if (error.message.includes('not found')) {
+      return res.status(404).json({ success: false, error: 'Approval request not found' })
+    }
+    logger.error({ err: error, id }, 'Failed to process approval decision')
+    res.status(500).json({ success: false, error: 'Failed to process approval decision' })
+  }
+})
 
-    // Simulate discovery process
-    await new Promise(resolve => setTimeout(resolve, 2000))
+app.get('/api/intel-scraper/candidates', (req, res) => {
+  try {
+    const candidates = intelScraperService.getCandidates()
+    res.json({ success: true, data: candidates })
+  } catch (error) {
+    logger.error({ err: error }, 'Failed to load candidate sources')
+    res.status(500).json({ success: false, error: 'Failed to load source candidates' })
+  }
+})
 
-    const discoveredSources = [
-      {
-        url: 'https://new-tech-blog.com/security',
-        domain: 'new-tech-blog.com',
-        detectedPurpose: 'technical',
-        foundVia: urls?.[0] || 'manual_scan',
-        initialRelevanceScore: 0.65,
-        complianceRisk: 'low',
-        suggestedKeywords: keywords || ['security', 'technology']
-      }
-    ]
+app.post('/api/intel-scraper/discover', async (req, res) => {
+  const { urls = [], keywords = [] } = req.body || {}
+
+  try {
+    const candidates = await intelScraperService.discover({
+      urls: Array.isArray(urls) ? urls : [],
+      keywords: Array.isArray(keywords) ? keywords : []
+    })
 
     res.json({
       success: true,
-      message: `Discovered ${discoveredSources.length} new source candidates`,
-      data: discoveredSources
+      message: `Discovery scan completed with ${candidates.length} candidates`,
+      data: candidates
     })
   } catch (error) {
-    res.status(500).json({
-      success: false,
-      error: error.message
+    logger.error({ err: error }, 'Failed to run discovery scan')
+    res.status(500).json({ success: false, error: 'Failed to run discovery scan' })
+  }
+})
+
+app.post('/api/intel-scraper/candidates/accept', async (req, res) => {
+  const { candidateId, autoApprove = false } = req.body || {}
+
+  if (typeof candidateId !== 'string' || !candidateId.trim()) {
+    return res.status(400).json({ success: false, error: 'candidateId is required' })
+  }
+
+  try {
+    const status = await intelScraperService.acceptCandidate(candidateId.trim(), {
+      autoApprove: Boolean(autoApprove)
     })
+    res.json({ success: true, message: 'Candidate processed successfully', data: status })
+  } catch (error) {
+    if (error.message.includes('not found')) {
+      return res.status(404).json({ success: false, error: 'Candidate not found' })
+    }
+    logger.error({ err: error, candidateId }, 'Failed to process candidate acceptance')
+    res.status(500).json({ success: false, error: 'Failed to process candidate' })
+  }
+})
+
+app.post('/api/intel-scraper/candidates/dismiss', (req, res) => {
+  const { candidateId } = req.body || {}
+
+  if (typeof candidateId !== 'string' || !candidateId.trim()) {
+    return res.status(400).json({ success: false, error: 'candidateId is required' })
+  }
+
+  try {
+    const status = intelScraperService.dismissCandidate(candidateId.trim())
+    res.json({ success: true, message: 'Candidate dismissed', data: status })
+  } catch (error) {
+    if (error.message.includes('not found')) {
+      return res.status(404).json({ success: false, error: 'Candidate not found' })
+    }
+    logger.error({ err: error, candidateId }, 'Failed to dismiss candidate')
+    res.status(500).json({ success: false, error: 'Failed to dismiss candidate' })
   }
 })
 
@@ -924,6 +1125,14 @@ async function shutdown(signal) {
   shuttingDown = true
 
   logger.info({ signal }, 'Received shutdown signal, closing server')
+
+  try {
+    if (intelScraperService?.status?.isRunning) {
+      await intelScraperService.stop()
+    }
+  } catch (error) {
+    logger.warn({ err: error }, 'Failed to stop Intel Scraper gracefully during shutdown')
+  }
 
   server.close(async (closeError) => {
     if (closeError) {

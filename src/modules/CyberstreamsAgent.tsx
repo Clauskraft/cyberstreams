@@ -33,6 +33,96 @@ interface AgentStats {
   nextRun: string
 }
 
+const politicalKeywords = ['politik', 'policy', 'law', 'lov', 'government', 'regulation', 'eu', 'parliament']
+const threatKeywords = ['ransomware', 'malware', 'apt', 'exploit', 'vulnerability', 'cve', 'threat', 'phishing']
+
+function formatRelativeTime(timestamp?: string | null) {
+  if (!timestamp) {
+    return 'N/A'
+  }
+
+  const value = new Date(timestamp).getTime()
+  if (Number.isNaN(value)) {
+    return 'N/A'
+  }
+
+  const diffSeconds = Math.max(0, Math.floor((Date.now() - value) / 1000))
+
+  if (diffSeconds < 60) {
+    return `${diffSeconds}s ago`
+  }
+  if (diffSeconds < 3600) {
+    const minutes = Math.floor(diffSeconds / 60)
+    return `${minutes}m ago`
+  }
+  if (diffSeconds < 86400) {
+    const hours = Math.floor(diffSeconds / 3600)
+    return `${hours}h ago`
+  }
+  const days = Math.floor(diffSeconds / 86400)
+  return `${days}d ago`
+}
+
+function determineCategory(title: string, description: string, tags: string[]): 'threat' | 'politics' | 'both' {
+  const text = `${title} ${description}`.toLowerCase()
+  const tagText = tags.join(' ').toLowerCase()
+  const combined = `${text} ${tagText}`
+
+  const hasThreat = threatKeywords.some((keyword) => combined.includes(keyword))
+  const hasPolitical = politicalKeywords.some((keyword) => combined.includes(keyword))
+
+  if (hasThreat && hasPolitical) {
+    return 'both'
+  }
+  if (hasPolitical) {
+    return 'politics'
+  }
+  return 'threat'
+}
+
+function buildAudience(category: 'threat' | 'politics' | 'both', severity: AgentFinding['severity']): string[] {
+  const base = new Set<string>()
+  if (category === 'politics' || category === 'both') {
+    base.add('Ledelse')
+    base.add('Compliance')
+  }
+  if (category === 'threat' || category === 'both') {
+    base.add('CISO')
+    base.add('SOC')
+  }
+  if (severity === 'critical' || severity === 'high') {
+    base.add('Incident Response')
+  }
+  return Array.from(base)
+}
+
+function mapFindingFromApi(item: any): AgentFinding {
+  const title = item.title || 'Intel finding'
+  const description = item.description || 'Ingen beskrivelse tilgængelig'
+  const tags: string[] = Array.isArray(item.tags) ? item.tags : []
+  const category = determineCategory(title, description, tags)
+  const severity = (item.severity as AgentFinding['severity']) || 'medium'
+  const timestamp = item.timestamp || new Date().toISOString()
+
+  return {
+    id: item.id || `intel-${Date.now()}`,
+    timestamp: formatRelativeTime(timestamp),
+    title,
+    description,
+    category,
+    severity,
+    source: item.source || 'Ukendt kilde',
+    confidence: item.confidence ?? 50,
+    cves: Array.isArray(item.cves) ? item.cves : [],
+    iocs: Array.isArray(item.iocs) ? item.iocs : [],
+    verified: item.verified ?? true,
+    link: item.url || undefined,
+    audience: buildAudience(category, severity),
+    tags,
+    sourceType: item.origin === 'opencti' ? 'technical' : 'osint'
+  }
+}
+
 const CyberstreamsAgent = () => {
   const [activeTab, setActiveTab] = useState<'trusler' | 'politik' | 'begge'>('trusler')
   const [findings, setFindings] = useState<AgentFinding[]>([])
@@ -53,8 +143,8 @@ const CyberstreamsAgent = () => {
     threatsActive: 0,
     politicsActive: 0,
     unverified: 0,
-    lastRun: '5 min ago',
-    nextRun: '10 min'
+    lastRun: 'N/A',
+    nextRun: 'N/A'
   })
 
   useEffect(() => {
@@ -74,8 +164,7 @@ const CyberstreamsAgent = () => {
 
     loadData()
 
-    // Simuleret agent data med alle tre kategorier
-    const mockFindings: AgentFinding[] = [
+    const fallbackFindings: AgentFinding[] = [
       {
         id: 'AGENT-001',
         timestamp: '2 min ago',
@@ -190,20 +279,63 @@ const CyberstreamsAgent = () => {
       }
     ]
 
-    // Simuler loading
-    setTimeout(() => {
-      setFindings(mockFindings)
-      setStats({
-        totalFindings: mockFindings.length,
-        newToday: mockFindings.filter(f => f.timestamp.includes('min') || f.timestamp.includes('hour')).length,
-        threatsActive: mockFindings.filter(f => f.category === 'threat' || f.category === 'both').length,
-        politicsActive: mockFindings.filter(f => f.category === 'politics' || f.category === 'both').length,
-        unverified: mockFindings.filter(f => !f.verified).length,
-        lastRun: '5 min ago',
-        nextRun: '10 min'
-      })
-      setLoading(false)
-    }, 1000)
+    const loadData = async () => {
+      try {
+        const response = await fetch('/api/intel-scraper/status')
+        if (!response.ok) {
+          throw new Error('Failed to fetch Intel Scraper status')
+        }
+
+        const result = await response.json()
+        if (!result.success) {
+          throw new Error(result.error || 'Intel Scraper status returned error')
+        }
+
+        const statusData = result.data
+        if (statusData) {
+          setScraperStatus({
+            isRunning: statusData.isRunning,
+            lastActivity: formatRelativeTime(statusData.lastActivity),
+            activeSources: statusData.activeSources,
+            totalSources: statusData.totalSources
+          })
+        }
+
+        const apiFindings: AgentFinding[] = Array.isArray(statusData?.latestFindings)
+          ? statusData.latestFindings.map(mapFindingFromApi)
+          : []
+
+        const dataset = apiFindings.length ? apiFindings : fallbackFindings
+        setFindings(dataset)
+        setFilteredFindings(dataset)
+        setStats({
+          totalFindings: dataset.length,
+          newToday: dataset.filter((f) => f.timestamp.includes('ago')).length,
+          threatsActive: dataset.filter((f) => f.category === 'threat' || f.category === 'both').length,
+          politicsActive: dataset.filter((f) => f.category === 'politics' || f.category === 'both').length,
+          unverified: dataset.filter((f) => !f.verified).length,
+          lastRun: formatRelativeTime(statusData?.lastRunAt),
+          nextRun: formatRelativeTime(statusData?.nextRun)
+        })
+      } catch (error) {
+        console.warn('Could not load Intel Scraper data, using fallback set:', error)
+        setFindings(fallbackFindings)
+        setFilteredFindings(fallbackFindings)
+        setStats({
+          totalFindings: fallbackFindings.length,
+          newToday: fallbackFindings.filter(f => f.timestamp.includes('min') || f.timestamp.includes('hour')).length,
+          threatsActive: fallbackFindings.filter(f => f.category === 'threat' || f.category === 'both').length,
+          politicsActive: fallbackFindings.filter(f => f.category === 'politics' || f.category === 'both').length,
+          unverified: fallbackFindings.filter(f => !f.verified).length,
+          lastRun: 'N/A',
+          nextRun: 'N/A'
+        })
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    loadData()
   }, [])
 
   useEffect(() => {
@@ -263,6 +395,8 @@ const CyberstreamsAgent = () => {
       case 'media': return Globe
       case 'social': return Activity
       case 'darkweb': return Eye
+      case 'technical': return Database
+      case 'osint': return Globe
       default: return Globe
     }
   }
