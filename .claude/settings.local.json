@@ -78,7 +78,16 @@
       "Bash(gh workflow:*)",
       "Bash(gh run list:*)",
       "Bash(gh run view:*)",
-      "Bash(rm:*)"
+      "Bash(rm:*)",
+      "mcp__serena__get_current_config",
+      "Bash(test:*)",
+      "Bash(gh issue view:*)",
+      "Bash(npm run:*)",
+      "Bash(railway list:*)",
+      "Bash(gh secret list:*)",
+      "Bash(npm install:*)",
+      "Bash(git stash:*)",
+      "Bash(git stash pop:*)"
     ],
     "deny": [],
     "ask": []

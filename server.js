@@ -67,7 +67,7 @@ const FALLBACK_AUTHORIZED_SOURCES = [
 ]
 
 const app = express()
-const PORT = Number(process.env.PORT || 3001)
+const PORT = Number(process.env.PORT || 3000)
 const ALLOWED_MISP_OBSERVABLE_TYPES = [
   'ip-src',
   'ip-dst',
@@ -160,6 +160,7 @@ function validateMcpKeyFormat(serverId, key) {
   }
 }
 
+// Initialize cache variables before functions that use them
 let cachedSources = null
 let cachedSourcesLoadedAt = 0
 const CACHE_TTL_MS = 5 * 60 * 1000
@@ -1110,6 +1111,10 @@ app.use(express.static('dist'))
 
 // Catch-all route - send all non-API requests to React app
 app.get('*', (req, res) => {
+  // Skip API routes
+  if (req.path.startsWith('/api/')) {
+    return res.status(404).json({ error: 'API endpoint not found' })
+  }
   res.sendFile('index.html', { root: 'dist' })
 })
 
