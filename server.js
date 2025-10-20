@@ -91,11 +91,13 @@ app.use((req, res, next) => {
 // Database connection
 let pool = null
 if (process.env.DATABASE_URL) {
+  console.log('DATABASE_URL found, connecting to database...')
   pool = new Pool({
     connectionString: process.env.DATABASE_URL,
     ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false
-      })
-  } else {
+  })
+  console.log('Database pool created successfully')
+} else {
   console.log('No DATABASE_URL found - running in mock mode for local development')
 }
 
@@ -114,8 +116,11 @@ function checkDatabase(req, res, next) {
 async function initDB() {
   if (!pool) {
     console.log('Skipping database initialization - no database connection available')
+    console.log('DATABASE_URL:', process.env.DATABASE_URL ? 'SET' : 'NOT SET')
     return
   }
+  
+  console.log('Starting database initialization...')
   
   try {
     // Enable pgvector extension
