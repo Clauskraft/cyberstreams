@@ -1,0 +1,406 @@
+# Page snapshot
+
+```yaml
+- generic [ref=e3]:
+  - banner [ref=e4]:
+    - generic [ref=e6]:
+      - generic [ref=e7]:
+        - img [ref=e8]
+        - generic [ref=e10]:
+          - heading "CYBERSTREAMS" [level=1] [ref=e11]
+          - paragraph [ref=e12]: Dark Web Intelligence Platform
+      - generic [ref=e16]: LIVE
+  - navigation [ref=e19]:
+    - button "Dashboard" [ref=e20] [cursor=pointer]:
+      - img [ref=e21]
+      - generic [ref=e23]: Dashboard
+    - button "Agent" [ref=e24] [cursor=pointer]:
+      - img [ref=e25]
+      - generic [ref=e28]: Agent
+    - button "Threats" [ref=e29] [cursor=pointer]:
+      - img [ref=e30]
+      - generic [ref=e32]: Threats
+    - button "SignalStream" [ref=e33] [cursor=pointer]:
+      - img [ref=e34]
+      - generic [ref=e40]: SignalStream
+    - button "Activity" [active] [ref=e41] [cursor=pointer]:
+      - img [ref=e42]
+      - generic [ref=e45]: Activity
+    - button "Consolidated Intel" [ref=e46] [cursor=pointer]:
+      - img [ref=e47]
+      - generic [ref=e52]: Consolidated Intel
+    - button "OsintLab" [ref=e53] [cursor=pointer]:
+      - img [ref=e54]
+      - generic [ref=e57]: OsintLab
+    - button "Admin" [ref=e58] [cursor=pointer]:
+      - img [ref=e59]
+      - generic [ref=e62]: Admin
+  - main [ref=e63]:
+    - generic [ref=e64]:
+      - generic [ref=e65]:
+        - generic [ref=e67]:
+          - generic [ref=e68]:
+            - paragraph [ref=e69]: Total Activities
+            - paragraph [ref=e70]: "20"
+          - img [ref=e71]
+        - generic [ref=e74]:
+          - generic [ref=e75]:
+            - paragraph [ref=e76]: Errors
+            - paragraph [ref=e77]: "3"
+          - img [ref=e78]
+        - generic [ref=e83]:
+          - generic [ref=e84]:
+            - paragraph [ref=e85]: Warnings
+            - paragraph [ref=e86]: "3"
+          - img [ref=e87]
+        - generic [ref=e90]:
+          - generic [ref=e91]:
+            - paragraph [ref=e92]: Success
+            - paragraph [ref=e93]: "9"
+          - img [ref=e94]
+      - generic [ref=e98]:
+        - button "all" [ref=e99] [cursor=pointer]
+        - button "alert" [ref=e100] [cursor=pointer]
+        - button "threat" [ref=e101] [cursor=pointer]
+        - button "scan" [ref=e102] [cursor=pointer]
+        - button "system" [ref=e103] [cursor=pointer]
+        - button "user" [ref=e104] [cursor=pointer]
+        - button "data" [ref=e105] [cursor=pointer]
+      - generic [ref=e106]:
+        - generic [ref=e107]:
+          - heading "Activity Timeline" [level=2] [ref=e108]
+          - paragraph [ref=e109]: Real-time system activity log
+        - generic [ref=e111]:
+          - generic [ref=e112]:
+            - img [ref=e114]
+            - generic [ref=e118]:
+              - generic [ref=e119]:
+                - generic [ref=e120]:
+                  - heading "Critical Threat Detected" [level=3] [ref=e121]
+                  - generic [ref=e122]: alert
+                - generic [ref=e123]:
+                  - img [ref=e124]
+                  - generic [ref=e127]: 2 minutes ago
+              - paragraph [ref=e128]: Ransomware activity detected on healthcare network segment
+              - generic [ref=e129]:
+                - generic [ref=e130]:
+                  - img [ref=e131]
+                  - text: System
+                - generic [ref=e134]:
+                  - img [ref=e135]
+                  - text: 12 systems
+                - generic [ref=e139]: Quarantined
+          - generic [ref=e140]:
+            - img [ref=e142]
+            - generic [ref=e145]:
+              - generic [ref=e146]:
+                - generic [ref=e147]:
+                  - heading "Network Scan Completed" [level=3] [ref=e148]
+                  - generic [ref=e149]: scan
+                - generic [ref=e150]:
+                  - img [ref=e151]
+                  - generic [ref=e154]: 15 minutes ago
+              - paragraph [ref=e155]: Full network vulnerability scan finished successfully
+              - generic [ref=e156]:
+                - generic [ref=e157]:
+                  - img [ref=e158]
+                  - text: AutoScanner
+                - generic [ref=e161]:
+                  - img [ref=e162]
+                  - text: 234 systems
+                - generic [ref=e166]:
+                  - img [ref=e167]
+                  - text: 45 minutes
+          - generic [ref=e170]:
+            - img [ref=e172]
+            - generic [ref=e174]:
+              - generic [ref=e175]:
+                - generic [ref=e176]:
+                  - heading "User Login" [level=3] [ref=e177]
+                  - generic [ref=e178]: user
+                - generic [ref=e179]:
+                  - img [ref=e180]
+                  - generic [ref=e183]: 32 minutes ago
+              - paragraph [ref=e184]: Administrator logged in from secure workstation
+              - generic [ref=e186]:
+                - img [ref=e187]
+                - text: admin@cyberstreams.dk
+          - generic [ref=e190]:
+            - img [ref=e192]
+            - generic [ref=e194]:
+              - generic [ref=e195]:
+                - generic [ref=e196]:
+                  - heading "Suspicious Activity Flagged" [level=3] [ref=e197]
+                  - generic [ref=e198]: threat
+                - generic [ref=e199]:
+                  - img [ref=e200]
+                  - generic [ref=e203]: 1 hour ago
+              - paragraph [ref=e204]: Unusual outbound traffic pattern detected on server cluster
+              - generic [ref=e205]:
+                - generic [ref=e206]:
+                  - img [ref=e207]
+                  - text: ThreatHunter
+                - generic [ref=e210]:
+                  - img [ref=e211]
+                  - text: 5 systems
+          - generic [ref=e215]:
+            - img [ref=e217]
+            - generic [ref=e220]:
+              - generic [ref=e221]:
+                - generic [ref=e222]:
+                  - heading "Threat Intelligence Updated" [level=3] [ref=e223]
+                  - generic [ref=e224]: data
+                - generic [ref=e225]:
+                  - img [ref=e226]
+                  - generic [ref=e229]: 1 hour ago
+              - paragraph [ref=e230]: Latest IOCs and threat signatures synchronized
+              - generic [ref=e231]:
+                - generic [ref=e232]:
+                  - img [ref=e233]
+                  - text: DataSync
+                - generic [ref=e236]: 1,456 new indicators
+          - generic [ref=e237]:
+            - img [ref=e239]
+            - generic [ref=e241]:
+              - generic [ref=e242]:
+                - generic [ref=e243]:
+                  - heading "Backup Completed" [level=3] [ref=e244]
+                  - generic [ref=e245]: system
+                - generic [ref=e246]:
+                  - img [ref=e247]
+                  - generic [ref=e250]: 2 hours ago
+              - paragraph [ref=e251]: Automated system backup completed successfully
+              - generic [ref=e252]:
+                - generic [ref=e253]:
+                  - img [ref=e254]
+                  - text: System
+                - generic [ref=e257]:
+                  - img [ref=e258]
+                  - text: 23 minutes
+          - generic [ref=e261]:
+            - img [ref=e263]
+            - generic [ref=e265]:
+              - generic [ref=e266]:
+                - generic [ref=e267]:
+                  - heading "Intrusion Attempt Blocked" [level=3] [ref=e268]
+                  - generic [ref=e269]: alert
+                - generic [ref=e270]:
+                  - img [ref=e271]
+                  - generic [ref=e274]: 3 hours ago
+              - paragraph [ref=e275]: Multiple failed authentication attempts from external IP
+              - generic [ref=e276]:
+                - generic [ref=e277]:
+                  - img [ref=e278]
+                  - text: IDS
+                - generic [ref=e281]: IP Blacklisted
+          - generic [ref=e282]:
+            - img [ref=e284]
+            - generic [ref=e287]:
+              - generic [ref=e288]:
+                - generic [ref=e289]:
+                  - heading "Dark Web Scan Completed" [level=3] [ref=e290]
+                  - generic [ref=e291]: scan
+                - generic [ref=e292]:
+                  - img [ref=e293]
+                  - generic [ref=e296]: 4 hours ago
+              - paragraph [ref=e297]: Routine dark web monitoring scan finished
+              - generic [ref=e298]:
+                - generic [ref=e299]:
+                  - img [ref=e300]
+                  - text: WebCrawler
+                - generic [ref=e303]: 23 new mentions found
+          - generic [ref=e304]:
+            - img [ref=e306]
+            - generic [ref=e308]:
+              - generic [ref=e309]:
+                - generic [ref=e310]:
+                  - heading "Report Generated" [level=3] [ref=e311]
+                  - generic [ref=e312]: user
+                - generic [ref=e313]:
+                  - img [ref=e314]
+                  - generic [ref=e317]: 5 hours ago
+              - paragraph [ref=e318]: Weekly threat intelligence report created
+              - generic [ref=e320]:
+                - img [ref=e321]
+                - text: analyst@cyberstreams.dk
+          - generic [ref=e324]:
+            - img [ref=e326]
+            - generic [ref=e330]:
+              - generic [ref=e331]:
+                - generic [ref=e332]:
+                  - heading "Malware Detected" [level=3] [ref=e333]
+                  - generic [ref=e334]: threat
+                - generic [ref=e335]:
+                  - img [ref=e336]
+                  - generic [ref=e339]: 6 hours ago
+              - paragraph [ref=e340]: Malicious file identified in email attachment
+              - generic [ref=e341]:
+                - generic [ref=e342]:
+                  - img [ref=e343]
+                  - text: ThreatDetector
+                - generic [ref=e346]:
+                  - img [ref=e347]
+                  - text: 1 systems
+                - generic [ref=e351]: Quarantined
+          - generic [ref=e352]:
+            - img [ref=e354]
+            - generic [ref=e357]:
+              - generic [ref=e358]:
+                - generic [ref=e359]:
+                  - heading "System Update Applied" [level=3] [ref=e360]
+                  - generic [ref=e361]: system
+                - generic [ref=e362]:
+                  - img [ref=e363]
+                  - generic [ref=e366]: 8 hours ago
+              - paragraph [ref=e367]: Security patches and updates installed successfully
+              - generic [ref=e369]:
+                - img [ref=e370]
+                - text: System
+          - generic [ref=e373]:
+            - img [ref=e375]
+            - generic [ref=e377]:
+              - generic [ref=e378]:
+                - generic [ref=e379]:
+                  - heading "Threshold Exceeded" [level=3] [ref=e380]
+                  - generic [ref=e381]: alert
+                - generic [ref=e382]:
+                  - img [ref=e383]
+                  - generic [ref=e386]: 10 hours ago
+              - paragraph [ref=e387]: Network bandwidth utilization exceeded 80% threshold
+              - generic [ref=e389]:
+                - img [ref=e390]
+                - text: AlertEngine
+          - generic [ref=e393]:
+            - img [ref=e395]
+            - generic [ref=e398]:
+              - generic [ref=e399]:
+                - generic [ref=e400]:
+                  - heading "Data Processing Complete" [level=3] [ref=e401]
+                  - generic [ref=e402]: data
+                - generic [ref=e403]:
+                  - img [ref=e404]
+                  - generic [ref=e407]: 12 hours ago
+              - paragraph [ref=e408]: Daily threat data processing and analysis completed
+              - generic [ref=e409]:
+                - generic [ref=e410]:
+                  - img [ref=e411]
+                  - text: DataProcessor
+                - generic [ref=e414]:
+                  - img [ref=e415]
+                  - text: 2 hours
+                - generic [ref=e418]: 5.2GB processed
+          - generic [ref=e419]:
+            - img [ref=e421]
+            - generic [ref=e424]:
+              - generic [ref=e425]:
+                - generic [ref=e426]:
+                  - heading "Compliance Audit Passed" [level=3] [ref=e427]
+                  - generic [ref=e428]: scan
+                - generic [ref=e429]:
+                  - img [ref=e430]
+                  - generic [ref=e433]: 1 day ago
+              - paragraph [ref=e434]: Monthly security compliance check completed successfully
+              - generic [ref=e436]:
+                - img [ref=e437]
+                - text: ComplianceScanner
+          - generic [ref=e440]:
+            - img [ref=e442]
+            - generic [ref=e444]:
+              - generic [ref=e445]:
+                - generic [ref=e446]:
+                  - heading "Policy Updated" [level=3] [ref=e447]
+                  - generic [ref=e448]: user
+                - generic [ref=e449]:
+                  - img [ref=e450]
+                  - generic [ref=e453]: 1 day ago
+              - paragraph [ref=e454]: Security policy configuration modified
+              - generic [ref=e456]:
+                - img [ref=e457]
+                - text: security@cyberstreams.dk
+          - generic [ref=e460]:
+            - img [ref=e462]
+            - generic [ref=e466]:
+              - generic [ref=e467]:
+                - generic [ref=e468]:
+                  - heading "New Threat Campaign Identified" [level=3] [ref=e469]
+                  - generic [ref=e470]: threat
+                - generic [ref=e471]:
+                  - img [ref=e472]
+                  - generic [ref=e475]: 1 day ago
+              - paragraph [ref=e476]: Coordinated phishing campaign detected across multiple vectors
+              - generic [ref=e477]:
+                - generic [ref=e478]:
+                  - img [ref=e479]
+                  - text: ThreatIntel
+                - generic [ref=e482]:
+                  - img [ref=e483]
+                  - text: 34 systems
+          - generic [ref=e487]:
+            - img [ref=e489]
+            - generic [ref=e491]:
+              - generic [ref=e492]:
+                - generic [ref=e493]:
+                  - heading "Maintenance Window Scheduled" [level=3] [ref=e494]
+                  - generic [ref=e495]: system
+                - generic [ref=e496]:
+                  - img [ref=e497]
+                  - generic [ref=e500]: 2 days ago
+              - paragraph [ref=e501]: System maintenance scheduled for next weekend
+              - generic [ref=e503]:
+                - img [ref=e504]
+                - text: System
+          - generic [ref=e507]:
+            - img [ref=e509]
+            - generic [ref=e512]:
+              - generic [ref=e513]:
+                - generic [ref=e514]:
+                  - heading "Attack Mitigated" [level=3] [ref=e515]
+                  - generic [ref=e516]: alert
+                - generic [ref=e517]:
+                  - img [ref=e518]
+                  - generic [ref=e521]: 2 days ago
+              - paragraph [ref=e522]: DDoS attack successfully blocked by firewall
+              - generic [ref=e523]:
+                - generic [ref=e524]:
+                  - img [ref=e525]
+                  - text: Firewall
+                - generic [ref=e528]: Zero impact
+          - generic [ref=e529]:
+            - img [ref=e531]
+            - generic [ref=e534]:
+              - generic [ref=e535]:
+                - generic [ref=e536]:
+                  - heading "Data Archived" [level=3] [ref=e537]
+                  - generic [ref=e538]: data
+                - generic [ref=e539]:
+                  - img [ref=e540]
+                  - generic [ref=e543]: 3 days ago
+              - paragraph [ref=e544]: Historical threat data archived to long-term storage
+              - generic [ref=e545]:
+                - generic [ref=e546]:
+                  - img [ref=e547]
+                  - text: ArchiveSystem
+                - generic [ref=e550]: 145GB archived
+          - generic [ref=e551]:
+            - img [ref=e553]
+            - generic [ref=e556]:
+              - generic [ref=e557]:
+                - generic [ref=e558]:
+                  - heading "Vulnerability Assessment Complete" [level=3] [ref=e559]
+                  - generic [ref=e560]: scan
+                - generic [ref=e561]:
+                  - img [ref=e562]
+                  - generic [ref=e565]: 3 days ago
+              - paragraph [ref=e566]: Quarterly vulnerability assessment completed
+              - generic [ref=e567]:
+                - generic [ref=e568]:
+                  - img [ref=e569]
+                  - text: VulnScanner
+                - generic [ref=e572]: 3 critical issues found
+  - contentinfo [ref=e573]:
+    - generic [ref=e575]:
+      - generic [ref=e576]:
+        - generic [ref=e578]: Version
+        - generic [ref=e579]: 1.4.0
+      - generic [ref=e581]: "Released: 2025-10-19"
+```

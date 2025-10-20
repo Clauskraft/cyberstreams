@@ -1,0 +1,295 @@
+# Page snapshot
+
+```yaml
+- generic [ref=e3]:
+  - banner [ref=e4]:
+    - generic [ref=e6]:
+      - generic [ref=e7]:
+        - img [ref=e8]
+        - generic [ref=e10]:
+          - heading "CYBERSTREAMS" [level=1] [ref=e11]
+          - paragraph [ref=e12]: Dark Web Intelligence Platform
+      - generic [ref=e16]: LIVE
+  - navigation [ref=e19]:
+    - button "Dashboard" [ref=e20] [cursor=pointer]:
+      - img [ref=e21]
+      - generic [ref=e23]: Dashboard
+    - button "Agent" [ref=e24] [cursor=pointer]:
+      - img [ref=e25]
+      - generic [ref=e28]: Agent
+    - button "Threats" [ref=e29] [cursor=pointer]:
+      - img [ref=e30]
+      - generic [ref=e32]: Threats
+    - button "SignalStream" [active] [ref=e33] [cursor=pointer]:
+      - img [ref=e34]
+      - generic [ref=e40]: SignalStream
+    - button "Activity" [ref=e41] [cursor=pointer]:
+      - img [ref=e42]
+      - generic [ref=e45]: Activity
+    - button "Consolidated Intel" [ref=e46] [cursor=pointer]:
+      - img [ref=e47]
+      - generic [ref=e52]: Consolidated Intel
+    - button "OsintLab" [ref=e53] [cursor=pointer]:
+      - img [ref=e54]
+      - generic [ref=e57]: OsintLab
+    - button "Admin" [ref=e58] [cursor=pointer]:
+      - img [ref=e59]
+      - generic [ref=e62]: Admin
+  - main [ref=e63]:
+    - generic [ref=e64]:
+      - generic [ref=e66]:
+        - generic [ref=e67]:
+          - img [ref=e68]
+          - generic [ref=e71]:
+            - heading "SignalStream Intelligence" [level=1] [ref=e72]
+            - paragraph [ref=e73]: Differentieret Pulse-klon med evidenskriterier, fokusstier og horisontskifte.
+        - generic [ref=e74]:
+          - generic [ref=e75]:
+            - img [ref=e76]
+            - text: Datasuverænitet
+          - generic [ref=e79]:
+            - img [ref=e80]
+            - text: Vektorlager aktivt
+          - generic [ref=e84]:
+            - img [ref=e85]
+            - text: 14 dages friskhed
+      - generic [ref=e88]:
+        - generic [ref=e89]:
+          - generic [ref=e90]:
+            - generic [ref=e91]:
+              - generic [ref=e92]:
+                - heading "System prompt" [level=2] [ref=e93]:
+                  - img [ref=e94]
+                  - text: System prompt
+                - paragraph [ref=e98]: Indlæs eller tilpas den strategiske profil. Promptnavnet bruges i sessionstraces.
+              - generic [ref=e99]: SignalStream Default
+            - textbox [ref=e100]: "Du er SignalStream – et analysemodul der leverer verificerede cyber-, cloud- og governance-indsigter. Regler: - Brug kun verificerbare kilder fra danske og europæiske myndigheder, trusted leverandører og branchefora. - Mærk udsagn uden kilde som [Unverified]. - Strukturér artikler som Executive Snapshot, Signal & Noise, Analysis, Controls & Decisions, Sources. - Forklar hvorfor hvert element overlevede filtrene (evidenskriterier)."
+            - generic [ref=e101]:
+              - button "Gem navn" [ref=e102] [cursor=pointer]
+              - button "Nulstil til standard" [ref=e103] [cursor=pointer]
+          - generic [ref=e104]:
+            - generic [ref=e105]:
+              - generic [ref=e106]:
+                - heading "Datasæt & ingest" [level=2] [ref=e107]:
+                  - img [ref=e108]
+                  - text: Datasæt & ingest
+                - paragraph [ref=e113]: Kør ingest for at placere artikler, kilder og trusler i SignalStreams vektorlager.
+              - button "Ingest" [ref=e114] [cursor=pointer]:
+                - img [ref=e115]
+                - text: Ingest
+            - generic [ref=e120]:
+              - generic [ref=e121]:
+                - text: Status
+                - generic [ref=e122]: idle
+              - generic [ref=e123]:
+                - text: Artikler
+                - generic [ref=e124]: "2"
+              - generic [ref=e125]:
+                - text: Trusler
+                - generic [ref=e126]: "2"
+          - generic [ref=e128]:
+            - generic [ref=e129]:
+              - heading "Komponér artikler" [level=2] [ref=e130]:
+                - img [ref=e131]
+                - text: Komponér artikler
+              - paragraph [ref=e133]: SignalStream kombinerer prompten med vektorlageret.
+            - button "Komponér brief" [ref=e134] [cursor=pointer]:
+              - img [ref=e135]
+              - text: Komponér brief
+          - generic [ref=e138]:
+            - generic [ref=e139]:
+              - heading "Fokusstier" [level=2] [ref=e140]:
+                - img [ref=e141]
+                - text: Fokusstier
+              - button "Horisontskifte" [ref=e144] [cursor=pointer]:
+                - img [ref=e145]
+                - text: Horisontskifte
+            - generic [ref=e147]:
+              - 'button "CloudKey® bruges som reference i ny EU-vejledning om datasuverænitet ENISA fremhæver TDC Erhvervs CloudKey® som eksempel på operationel datasuverænitet i public cloud-miljøer. Fokus er at afvise tredjelandsadgang og sikre nøglekontrol gennem HYOK. EU Datasuverænitet 20.10.2025, 17.33.21 Visualisering af krypteringsnøgler i et datasenter Evidensscore: 0.88 Friskhed: 6 timer Domæneautoritet: 0.91 datasuverænitet, cloud, AI governance Public Source: EU Cloud Data Sovereignty Guide 2024 Public Source: CloudKey® – datasuverænitet i public cloud" [ref=e149] [cursor=pointer]':
+                - generic [ref=e150]:
+                  - generic [ref=e151]:
+                    - heading "CloudKey® bruges som reference i ny EU-vejledning om datasuverænitet" [level=3] [ref=e152]
+                    - paragraph [ref=e153]: ENISA fremhæver TDC Erhvervs CloudKey® som eksempel på operationel datasuverænitet i public cloud-miljøer. Fokus er at afvise tredjelandsadgang og sikre nøglekontrol gennem HYOK.
+                  - generic [ref=e154]:
+                    - generic [ref=e155]: EU Datasuverænitet
+                    - text: 20.10.2025, 17.33.21
+                - generic [ref=e156]:
+                  - img "Visualisering af krypteringsnøgler i et datasenter" [ref=e157]
+                  - generic [ref=e158]:
+                    - generic [ref=e159]:
+                      - img [ref=e160]
+                      - generic [ref=e164]: "Evidensscore: 0.88"
+                    - generic [ref=e165]:
+                      - img [ref=e166]
+                      - generic [ref=e170]: "Friskhed: 6 timer"
+                    - generic [ref=e171]:
+                      - img [ref=e172]
+                      - generic [ref=e175]: "Domæneautoritet: 0.91"
+                    - generic [ref=e176]:
+                      - img [ref=e177]
+                      - generic [ref=e179]: datasuverænitet, cloud, AI governance
+                - generic [ref=e180]:
+                  - generic [ref=e181]: "Public Source: EU Cloud Data Sovereignty Guide 2024"
+                  - generic [ref=e182]: "Public Source: CloudKey® – datasuverænitet i public cloud"
+              - 'button "Delegate udvider samarbejdet med CloudKey® for Copilot-sikkerhed Delegate integrerer CloudKey® i deres Copilot-implementeringer for at sikre, at AI kun får adgang til autoriserede informationsrum. Fokus er at beskytte kundedata og understøtte DORA-krav. AI Access Control 20.10.2025, 17.33.21 Team samarbejder om AI-governance dashboards Evidensscore: 0.84 Friskhed: 12 timer Domæneautoritet: 0.76 AI, Copilot, CloudKey, DORA Public Source: Microsoft consultancy chooses Danish encryption solution Public Source: EU Commission – DORA Implementation Note" [ref=e184] [cursor=pointer]':
+                - generic [ref=e185]:
+                  - generic [ref=e186]:
+                    - heading "Delegate udvider samarbejdet med CloudKey® for Copilot-sikkerhed" [level=3] [ref=e187]
+                    - paragraph [ref=e188]: Delegate integrerer CloudKey® i deres Copilot-implementeringer for at sikre, at AI kun får adgang til autoriserede informationsrum. Fokus er at beskytte kundedata og understøtte DORA-krav.
+                  - generic [ref=e189]:
+                    - generic [ref=e190]: AI Access Control
+                    - text: 20.10.2025, 17.33.21
+                - generic [ref=e191]:
+                  - img "Team samarbejder om AI-governance dashboards" [ref=e192]
+                  - generic [ref=e193]:
+                    - generic [ref=e194]:
+                      - img [ref=e195]
+                      - generic [ref=e199]: "Evidensscore: 0.84"
+                    - generic [ref=e200]:
+                      - img [ref=e201]
+                      - generic [ref=e205]: "Friskhed: 12 timer"
+                    - generic [ref=e206]:
+                      - img [ref=e207]
+                      - generic [ref=e210]: "Domæneautoritet: 0.76"
+                    - generic [ref=e211]:
+                      - img [ref=e212]
+                      - generic [ref=e214]: AI, Copilot, CloudKey, DORA
+                - generic [ref=e215]:
+                  - generic [ref=e216]: "Public Source: Microsoft consultancy chooses Danish encryption solution"
+                  - generic [ref=e217]: "Public Source: EU Commission – DORA Implementation Note"
+          - generic [ref=e219]:
+            - generic [ref=e220]:
+              - heading "Artikelvisning" [level=2] [ref=e221]:
+                - img [ref=e222]
+                - text: Artikelvisning
+              - button "Udvid fokus" [ref=e226] [cursor=pointer]:
+                - img [ref=e227]
+                - text: Udvid fokus
+            - generic [ref=e229]:
+              - img "Visualisering af krypteringsnøgler i et datasenter" [ref=e230]
+              - generic [ref=e231]:
+                - generic [ref=e232]:
+                  - heading "Executive Snapshot" [level=3] [ref=e233]
+                  - paragraph [ref=e234]: ENISA fremhæver TDC Erhvervs CloudKey® som eksempel på operationel datasuverænitet i public cloud-miljøer. Fokus er at afvise tredjelandsadgang og sikre nøglekontrol gennem HYOK.
+                - generic [ref=e235]:
+                  - heading "Signal & Noise" [level=3] [ref=e236]
+                  - list [ref=e237]:
+                    - listitem [ref=e238]: ENISA beskriver CloudKey® som praksisnært eksempel på europæisk nøglekontrol
+                    - listitem [ref=e239]: Guiden adresserer AI-tjenester, herunder Copilot og andre generative assistenter
+                    - listitem [ref=e240]: Anbefaler EU-organisationer at kombinere HYOK med Zero-Trust for kritiske data
+            - generic [ref=e241]:
+              - generic [ref=e242]:
+                - heading "Analysis" [level=3] [ref=e243]
+                - list [ref=e244]:
+                  - listitem [ref=e245]: Guiden placerer CloudKey® som referencearkitektur for datasuverænitet i offentlige miljøer
+                  - listitem [ref=e246]: TDC Erhverv positionerer sig som lokal leverandør med dokumenteret kontrol over krypteringsnøgler
+                  - listitem [ref=e247]: EU retter fokus mod runtime-sikkerhed og confidential compute for sensitive arbejdsbelastninger
+              - generic [ref=e248]:
+                - heading "Controls & Decisions" [level=3] [ref=e249]
+                - list [ref=e250]:
+                  - listitem [ref=e251]: Danske myndigheder kan henvise til CloudKey® i udbud der kræver lokal nøglekontrol
+                  - listitem [ref=e252]: TDC Erhverv bør udarbejde tekniske workshops sammen med ENISA for at cementere positionen
+                  - listitem [ref=e253]: Kunder bør opdatere deres AI-governance-politikker til at inkludere HYOK-principper
+            - generic [ref=e254]:
+              - heading "Cited Sources" [level=3] [ref=e255]:
+                - img [ref=e256]
+                - text: Cited Sources
+              - list [ref=e260]:
+                - listitem [ref=e261]:
+                  - generic [ref=e262]: EU Cloud Data Sovereignty Guide 2024
+                  - link "https://www.enisa.europa.eu/publications/eu-cloud-data-sovereignty-guide" [ref=e263] [cursor=pointer]:
+                    - /url: https://www.enisa.europa.eu/publications/eu-cloud-data-sovereignty-guide
+                - listitem [ref=e264]:
+                  - generic [ref=e265]: CloudKey® – datasuverænitet i public cloud
+                  - link "https://tdc.dk/enterprise/produkter/cloudkey/" [ref=e266] [cursor=pointer]:
+                    - /url: https://tdc.dk/enterprise/produkter/cloudkey/
+            - generic [ref=e267]:
+              - img "Diagram over governance-processer for cloud compliance" [ref=e268]
+              - paragraph [ref=e269]: Procesdiagram anvendt i SignalStream til governance-briefing
+          - generic [ref=e270]:
+            - generic [ref=e271]:
+              - heading "Horisontskifte forslag" [level=2] [ref=e272]:
+                - img [ref=e273]
+                - text: Horisontskifte forslag
+              - button "Historisk perspektiv" [ref=e277] [cursor=pointer]
+            - generic [ref=e278]:
+              - generic [ref=e279]: Kortlæg hvordan CloudKey® understøtter NIS2 bilag II kontroller
+              - generic [ref=e280]: Udbyg fokus til dansk forsyningssektor og hybride cloud-miljøer
+              - generic [ref=e281]: Analysér relationen mellem CloudKey® og EU Data Act artikel 23
+              - generic [ref=e282]: Inddrag Copilot for Security og nødvendige datapolitikker
+        - generic [ref=e283]:
+          - generic [ref=e284]:
+            - heading "Konfiguration" [level=2] [ref=e285]:
+              - img [ref=e286]
+              - text: Konfiguration
+            - generic [ref=e290]:
+              - generic [ref=e291]:
+                - generic [ref=e292]: Sprog
+                - button "DA" [ref=e293] [cursor=pointer]
+              - generic [ref=e294]:
+                - generic [ref=e295]: Maks artikler
+                - button "6" [ref=e296] [cursor=pointer]
+              - generic [ref=e297]:
+                - text: Tilladte domæner
+                - generic [ref=e298]:
+                  - generic [ref=e299]:
+                    - checkbox "enisa.europa.eu" [checked] [ref=e300]
+                    - text: enisa.europa.eu
+                  - generic [ref=e301]:
+                    - checkbox "digst.dk" [checked] [ref=e302]
+                    - text: digst.dk
+                  - generic [ref=e303]:
+                    - checkbox "cfcs.dk" [checked] [ref=e304]
+                    - text: cfcs.dk
+                  - generic [ref=e305]:
+                    - checkbox "tdc.dk" [checked] [ref=e306]
+                    - text: tdc.dk
+              - generic [ref=e307]:
+                - generic [ref=e308]:
+                  - checkbox "Kræv kilder" [checked] [ref=e309]
+                  - text: Kræv kilder
+                - generic [ref=e310]:
+                  - checkbox "Afvis lavt tillidsniveau" [checked] [ref=e311]
+                  - text: Afvis lavt tillidsniveau
+          - generic [ref=e312]:
+            - heading "Evidenskriterier" [level=2] [ref=e313]:
+              - img [ref=e314]
+              - text: Evidenskriterier
+            - generic [ref=e318]:
+              - generic [ref=e319]:
+                - generic [ref=e320]: Vector-score
+                - generic [ref=e321]: "0.88"
+              - generic [ref=e322]:
+                - generic [ref=e323]: BM25
+                - generic [ref=e324]: "0.82"
+              - generic [ref=e325]:
+                - generic [ref=e326]: Friskhed (timer)
+                - generic [ref=e327]: "6"
+              - generic [ref=e328]:
+                - generic [ref=e329]: Domæneautoritet
+                - generic [ref=e330]: "0.91"
+              - generic [ref=e331]:
+                - generic [ref=e332]: Citationsdækning
+                - generic [ref=e333]: 100%
+              - generic [ref=e334]:
+                - paragraph [ref=e335]: • Match på datasuverænitet og HYOK i system-prompten
+                - paragraph [ref=e336]: • Høj domæneautoritet fra ENISA og TDC Erhverv
+                - paragraph [ref=e337]: • Aktuel reference (seneste 24 timer) med fuld citationsdækning
+          - generic [ref=e338]:
+            - generic [ref=e339]:
+              - heading "Sessionstraces" [level=2] [ref=e340]:
+                - img [ref=e341]
+                - text: Sessionstraces
+              - button "Arkivér trace" [ref=e345] [cursor=pointer]
+            - generic [ref=e347]:
+              - generic [ref=e348]:
+                - generic [ref=e349]: Session oprettet
+                - generic [ref=e350]: 17.33.22
+              - paragraph [ref=e351]: compose
+  - contentinfo [ref=e352]:
+    - generic [ref=e354]:
+      - generic [ref=e355]:
+        - generic [ref=e357]: Version
+        - generic [ref=e358]: 1.4.0
+      - generic [ref=e360]: "Released: 2025-10-19"
+```

@@ -1,399 +1,304 @@
-# Cyberstreams - Dark Web Threat Intelligence Platform
+# Cyberstreams Enhanced - Threat Intelligence Platform
 
-![Version](https://img.shields.io/badge/version-1.3.0-blue)
-![License](https://img.shields.io/badge/license-MIT-green)
-![React](https://img.shields.io/badge/React-18.2.0-61dafb)
-![TypeScript](https://img.shields.io/badge/TypeScript-5.0.2-3178c6)
+En avanceret cybersecurity threat intelligence platform med administrator panel, søgeordsovervågning og RAG (Retrieval-Augmented Generation) integration.
 
-Advanced threat intelligence platform for monitoring and analyzing dark web activities, cyber threats, and security incidents.
+## 🚀 Features
 
-## 🚀 Live Demo
+- **Administrator Dashboard**: Komplet kontrol over søgeord, kilder og konfiguration
+- **Søgeords Overvågning**: Opret og administrer søgeord med prioriteter og kategorier
+- **Multi-Source Monitoring**: Support for web, social media, dokumenter og dark web kilder
+- **RAG Integration**: Intelligent dokumentanalyse med OpenAI/Anthropic integration
+- **Vector Database**: PostgreSQL med pgvector for semantic search
+- **Real-time Alerts**: Automatiske alerts for high-priority matches
+- **Cloudflare Edge Deployment**: Global distribution med edge computing
 
-- **Production**: https://8b6c2bc3.cyberstreams.pages.dev
-- **Custom Domain**: cyberstreams.dk (pending DNS configuration)
+## 📋 Prerequisites
 
-## ✨ Features
+- Node.js 18+ 
+- PostgreSQL 15+ med pgvector extension
+- Cloudflare account (for deployment)
+- OpenAI API key (for RAG features)
 
-### 🎯 Dashboard
-- Real-time threat statistics and metrics
-- System health monitoring
-- Quick access to critical information
+## 🛠️ Installation
 
-### 🛡️ Threats Module
-- Comprehensive threat database with 10+ threat types
-- Advanced filtering by severity (critical, high, medium, low)
-- Status tracking (active, mitigated, investigating)
-- IOC (Indicators of Compromise) display
-- Search functionality across threat names and descriptions
-- Detailed metadata for each threat
+### 1. Clone og Setup
 
-### 📊 Activity Module
-- Real-time activity timeline with 20+ log types
-- Activity type filtering (scan, alert, threat, system, user, data)
-- Severity indicators with visual icons
-- Metadata display (affected systems, duration, results)
-- Comprehensive stats dashboard
-
-### 📡 Dagens Puls (Daily Feed)
-- Real-time threat intelligence feed
-- Curated security news and updates
-- Severity-based color coding
-
-### 🤖 Cyberstreams Agent (NEW)
-- AI-powered threat analysis
-- Automated finding collection
-- Severity classification
-- Source correlation and tracking
-- Interactive threat exploration
-
-### 🧠 Intelligence Services (NEW)
-- Hourly ingestion pipeline consolidating RSS, HTML, API and dark-web feeds
-- Automated STIX 2.1 normalization with distribution to MISP and OpenCTI
-- GPT-powered summarisation API with CVE enrichment and [Unverified] tagging
-- Semantic search powered by Qdrant/Weaviate vector embeddings
-- JWT-protected API layer with rate limiting
-
-### 🔍 Consolidated Intelligence (NEW)
-- Multi-source intelligence aggregation
-- 30+ European CERT/CSIRT sources
-- Advanced filtering and search
-- IOC extraction and correlation
-- Confidence scoring
-- Visual analytics and charts
-
-### 🧭 OsintLab (NEW)
-- Curated OSINT catalog hydrated from markdown with daily diff snapshots
-- Policy-aware CLI, web, and Docker runners with full audit trails
-- MCP tools (`osint.search`, `osint.info`, `osint.run`) for automation pipelines
-- React tab with license gating, playbooks, run history, and export options
-- PowerShell sync script and scheduled GitHub Action for continuous updates
-
-### ⚙️ Admin Panel (NEW)
-- Keyword management (CRUD operations)
-- Source configuration
-- RAG (Retrieval-Augmented Generation) settings
-- LLM model selection
-- Vector store configuration
-- Scraper controls
-
-### 🔒 Error Handling
-- Professional ErrorBoundary component
-- Graceful error recovery
-- User-friendly error messages
-- Stack trace for debugging
-
-## 🏗️ Tech Stack
-
-- **Frontend**: React 18 + TypeScript
-- **Build Tool**: Vite 4.5.14
-- **Styling**: Tailwind CSS 3.3.3
-- **Icons**: Lucide React 0.263.1
-- **Hosting**: Cloudflare Pages
-- **Minification**: Terser
-
-## 📦 Performance Optimizations
-
-- **Lazy Loading**: All modules loaded on-demand with React.Suspense
-- **Code Splitting**: Separate vendor chunks (React, icons)
-- **Bundle Size**: 62% reduction (154KB → 59KB)
-- **Minification**: Terser with console.log removal
-- **Compression**: Gzip enabled
-- **Build Time**: ~3-4 seconds
-
-### Bundle Analysis
-```
-index.html                      0.64 KB │ gzip: 0.36 KB
-assets/index.css               17.37 KB │ gzip: 3.97 KB
-assets/DagensPuls.js            1.50 KB │ gzip: 0.83 KB
-assets/HomeContent.js           2.48 KB │ gzip: 1.16 KB
-assets/icons.js                 3.62 KB │ gzip: 1.63 KB
-assets/ActivityModule.js        9.49 KB │ gzip: 2.70 KB
-assets/ThreatsModule.js        10.12 KB │ gzip: 2.82 KB
-assets/react-vendor.js        139.45 KB │ gzip: 44.76 KB
-```
-
-## 🛠️ Installation & Setup
-
-### Prerequisites
-- Node.js 18+ and npm
-- Git
-
-### Quick Start with GitHub Codespaces 🚀
-The fastest way to get started! Click the button below to open in a cloud-based development environment:
-
-[![Open in GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://codespaces.new/Clauskraft/cyberstreams)
-
-Everything is pre-configured:
-- ✅ Node.js 20 environment
-- ✅ All dependencies installed automatically
-- ✅ VS Code extensions ready
-- ✅ Development server ports forwarded
-- ✅ GitHub Copilot enabled
-
-See [`.devcontainer/README.md`](.devcontainer/README.md) for details.
-
-### Local Development
 ```bash
 # Clone repository
-git clone https://github.com/Clauskraft/cyberstreams.git
-cd cyberstreams
+git clone https://github.com/yourusername/cyberstreams-enhanced.git
+cd cyberstreams-enhanced
 
-# Install dependencies
+# Installer dependencies
 npm install
 
-# Run development server
-npm run dev
-
-# Build for production
-npm run build
-
-# Preview production build
-npm run preview
-```
-
-### Backend & Intelligence Services
-```bash
-# Configure environment
+# Kopier environment fil
 cp .env.example .env
 
-# Start API with hourly ingestion scheduler
-npm run server
-
-# (Optional) Seed authorized sources into PostgreSQL
-npx ts-node scripts/migrate-authorized-sources.ts
+# Rediger .env med dine credentials
+nano .env
 ```
 
-## 📁 Project Structure
+### 2. Database Setup
 
-```
-cyberstreams/
-├── src/
-│   ├── components/
-│   │   ├── ErrorBoundary.tsx    # Error boundary wrapper
-│   │   ├── Button.tsx
-│   │   ├── Card.tsx
-│   │   ├── NavBar.tsx
-│   │   └── Text.tsx
-│   ├── modules/
-│   │   ├── ThreatsModule.tsx    # Threat management interface
-│   │   ├── ActivityModule.tsx   # Activity logging interface
-│   │   ├── DagensPuls.tsx       # Daily threat feed
-│   │   └── HomeContent.tsx      # Dashboard content
-│   ├── pages/
-│   │   ├── Home.tsx
-│   │   ├── Dashboard.tsx
-│   │   ├── Intelligence.tsx
-│   │   ├── About.tsx
-│   │   └── Admin.tsx
-│   ├── theme/
-│   │   ├── ThemeProvider.tsx
-│   │   └── resolveTokens.ts
-│   ├── tokens/                   # Design tokens
-│   ├── data/                     # Mock data and RSS feeds
-│   ├── App.tsx                   # Main app component
-│   ├── main.tsx                  # Entry point
-│   └── index.css                 # Global styles
-├── public/
-├── scripts/                      # Utility scripts
-├── vite.config.ts               # Vite configuration
-├── tsconfig.json                # TypeScript configuration
-├── tailwind.config.js           # Tailwind configuration
-└── package.json
-```
-
-## 🚀 Deployment
-
-### Cloudflare Pages (Recommended)
-
-1. Build the project:
 ```bash
-cd cyberstreams
+# Opret PostgreSQL database
+createdb cyberstreams
+
+# Installer pgvector extension (hvis ikke allerede installeret)
+sudo apt-get install postgresql-15-pgvector
+
+# Kør migrations
+npm run migrate
+```
+
+### 3. Local Development
+
+```bash
+# Start development server (både frontend og backend)
+npm run dev
+
+# Eller separat:
+npm run server:dev  # Backend på port 3001
+npm run client:dev  # Frontend på port 5173
+```
+
+## 🌍 Cloudflare Deployment
+
+### 1. Cloudflare Account Setup
+
+```bash
+# Login til Cloudflare
+npx wrangler login
+
+# Opret KV namespace
+npx wrangler kv:namespace create "CACHE"
+npx wrangler kv:namespace create "CACHE" --preview
+
+# Opret D1 database
+npx wrangler d1 create cyberstreams-db
+
+# Opret R2 bucket
+npx wrangler r2 bucket create cyberstreams-storage
+
+# Opret Vectorize index
+npx wrangler vectorize:index create cyberstreams-vectors --dimensions=1536 --metric=cosine
+```
+
+### 2. Opdater wrangler.toml
+
+Opdater `wrangler.toml` med de IDs du fik fra ovenstående kommandoer:
+
+```toml
+[[kv_namespaces]]
+binding = "CACHE"
+id = "YOUR_KV_NAMESPACE_ID"  # Fra output af kv:namespace create
+preview_id = "YOUR_PREVIEW_KV_ID"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "cyberstreams-db"
+database_id = "YOUR_D1_DATABASE_ID"  # Fra output af d1 create
+```
+
+### 3. Database Migration i D1
+
+```bash
+# Eksporter PostgreSQL schema til D1
+npx wrangler d1 execute cyberstreams-db --file=./scripts/d1-schema.sql
+
+# Eller kør migrations direkte
+npx wrangler d1 execute cyberstreams-db --command="CREATE TABLE keywords (id INTEGER PRIMARY KEY, keyword TEXT, category TEXT, priority INTEGER, active INTEGER DEFAULT 1)"
+```
+
+### 4. Deploy til Cloudflare
+
+```bash
+# Build production version
 npm run build
+
+# Deploy Workers
+npx wrangler deploy
+
+# Deploy Pages (for static assets)
+npx wrangler pages deploy dist --project-name=cyberstreams
+
+# Eller alt i én kommando
+npm run deploy:cloudflare
 ```
 
-2. Create deployment ZIP:
+### 5. Environment Variables i Cloudflare
+
 ```bash
-cd dist
-tar -czf ../../cyberstreams-deploy.zip .
+# Set secrets
+npx wrangler secret put OPENAI_API_KEY
+npx wrangler secret put DATABASE_URL
+npx wrangler secret put API_KEY
+
+# Set variables
+npx wrangler vars set ENVIRONMENT production
 ```
 
-3. Upload to Cloudflare Pages:
-   - Go to: https://dash.cloudflare.com/pages/new/upload
-   - Upload ZIP file
-   - Project name: `cyberstreams`
-   - Deploy
+## 🔧 Configuration
 
-### Environment Variables
-No environment variables required for basic deployment. All data is currently mock data.
+### RAG Configuration
 
-## 📝 Version History
+RAG systemet kan konfigureres gennem Admin panelet eller ved at opdatere database:
 
-### v1.1.0 (2025-10-13)
-- ✨ Add ThreatsModule with comprehensive threat management
-- ✨ Add ActivityModule with timeline and severity indicators
-- ✨ Add ErrorBoundary for graceful error handling
-- ⚡ Implement lazy loading with React.Suspense
-- ⚡ Add code splitting with separate vendor chunks
-- ⚡ Reduce bundle size by 62% (154KB → 59KB)
-- 🔧 Add TypeScript path aliases (@modules, @components, @theme, @tokens, @data)
-- 🧹 Clean up old compiled files
-- 📦 Update all dependencies
+```sql
+UPDATE rag_config SET config_value = 'gpt-4' WHERE config_key = 'model';
+UPDATE rag_config SET config_value = '0.5' WHERE config_key = 'temperature';
+```
 
-### v1.0.0 (2025-10-12)
-- 🎉 Initial release
-- ✨ Dashboard with threat statistics
-- ✨ Dagens Puls threat intelligence feed
-- ✨ Basic navigation and layout
+### Monitoring Sources
 
-## 🤖 AI-Assisted Development
+Tilføj nye overvågningskilder gennem Admin UI eller direkte i database:
 
-This repository uses Claude Code for AI-assisted development and automated code review:
+```sql
+INSERT INTO monitoring_sources (source_type, url, scan_frequency) 
+VALUES ('web', 'https://example.com/feed', 3600);
+```
 
-### GitHub Actions Integration
-- **Claude Code** (`@claude` trigger): Tag `@claude` in issues or PR comments to get AI assistance
-- **Automated Code Review**: All pull requests are automatically reviewed for:
-  - Code quality and best practices
-  - Potential bugs and security issues
-  - Performance considerations
-  - Test coverage
+## 📊 API Endpoints
 
-For detailed information about the Claude integration, see [CLAUDE.md](CLAUDE.md).
+### Keywords Management
+- `GET /api/admin/keywords` - List alle søgeord
+- `POST /api/admin/keywords` - Opret nyt søgeord
+- `DELETE /api/admin/keywords/:id` - Slet søgeord
+- `PUT /api/admin/keywords/:id/toggle` - Aktiver/deaktiver søgeord
 
-### Setup
-To use Claude integration, ensure you have set the `ANTHROPIC_API_KEY` secret in your repository settings.
+### Sources Management
+- `GET /api/admin/sources` - List alle kilder
+- `POST /api/admin/sources` - Tilføj ny kilde
+- `DELETE /api/admin/sources/:id` - Slet kilde
 
-## 🔐 Security
+### RAG Operations
+- `GET /api/admin/rag-config` - Hent RAG konfiguration
+- `PUT /api/admin/rag-config` - Opdater RAG konfiguration
+- `POST /api/admin/run-rag-analysis` - Kør RAG analyse
 
-This is a demonstration platform with mock data. For production use:
-- Implement proper authentication and authorization
-- Connect to real threat intelligence APIs
-- Enable rate limiting and CSRF protection
-- Use environment variables for sensitive configuration
-- Implement proper data validation and sanitization
+### Search
+- `POST /api/search` - Semantic search i dokumenter
+
+## 🏗️ Architecture
+
+```
+┌─────────────────────────────────────────┐
+│           Cloudflare Edge               │
+│  ┌─────────────────────────────────┐   │
+│  │     Workers (API Gateway)       │   │
+│  └──────────┬──────────────────────┘   │
+│             │                           │
+│  ┌──────────▼──────────┐               │
+│  │    KV (Cache)       │               │
+│  └─────────────────────┘               │
+│                                         │
+│  ┌─────────────────────┐               │
+│  │    D1 (Database)    │               │
+│  └─────────────────────┘               │
+│                                         │
+│  ┌─────────────────────┐               │
+│  │  Vectorize (Search) │               │
+│  └─────────────────────┘               │
+│                                         │
+│  ┌─────────────────────┐               │
+│  │   R2 (Storage)      │               │
+│  └─────────────────────┘               │
+└─────────────────────────────────────────┘
+                    │
+                    ▼
+    ┌──────────────────────────────┐
+    │     External Services        │
+    │  - OpenAI API                │
+    │  - Web Scrapers              │
+    │  - RSS Feeds                 │
+    └──────────────────────────────┘
+```
+
+## 🔒 Security
+
+- Alle API endpoints er beskyttet med Bearer token authentication
+- CORS er konfigureret for production miljø
+- Rate limiting implementeret via Cloudflare
+- Sensitive data gemmes som secrets i Cloudflare
+
+## 📝 Environment Variables
+
+Se `.env.example` for komplet liste af konfigurationsmuligheder.
+
+### Kritiske Variables:
+- `DATABASE_URL` - PostgreSQL connection string
+- `OPENAI_API_KEY` - For RAG funktionalitet
+- `CF_ACCOUNT_ID` - Cloudflare account ID
+- `API_KEY` - For API authentication
+
+## 🐛 Troubleshooting
+
+### Database Connection Issues
+```bash
+# Test PostgreSQL connection
+psql $DATABASE_URL -c "SELECT 1"
+
+# Check pgvector installation
+psql $DATABASE_URL -c "SELECT * FROM pg_extension WHERE extname = 'vector'"
+```
+
+### Cloudflare Deployment Issues
+```bash
+# Check deployment status
+npx wrangler tail
+
+# View logs
+npx wrangler logs
+
+# Test worker locally
+npx wrangler dev
+```
+
+### RAG Processing Issues
+- Verificer OpenAI API key er korrekt
+- Check API rate limits
+- Se logs for error messages
+
+## 🤝 Contributing
+
+1. Fork repository
+2. Opret feature branch (`git checkout -b feature/AmazingFeature`)
+3. Commit changes (`git commit -m 'Add AmazingFeature'`)
+4. Push til branch (`git push origin feature/AmazingFeature`)
+5. Åben Pull Request
 
 ## 📄 License
 
-MIT License - see LICENSE file for details
+MIT License - se LICENSE fil for detaljer
 
-## 👥 Contributing
+## 📧 Support
 
-Contributions are welcome! Please feel free to submit a Pull Request.
+For support og spørgsmål:
+- Opret issue på GitHub
+- Email: support@cyberstreams.com
+- Documentation: https://docs.cyberstreams.com
 
-1. Fork the repository
-2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
-3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
-4. Push to the branch (`git push origin feature/AmazingFeature`)
-5. Open a Pull Request
+## 🚀 Roadmap
 
-## 📧 Contact
+- [ ] Machine Learning baseret threat scoring
+- [ ] Integration med MISP og andre threat intelligence platforms
+- [ ] Advanced alerting med Slack/Teams/Discord
+- [ ] Automated response playbooks
+- [ ] Enhanced dark web monitoring
+- [ ] Multi-tenant support
+- [ ] Advanced analytics dashboard
+- [ ] Mobile app
 
-- **Project**: https://github.com/Clauskraft/cyberstreams
-- **Issues**: https://github.com/Clauskraft/cyberstreams/issues
-- **Website**: https://cyberstreams.dk
+## 🔄 Updates
 
-## 🙏 Acknowledgments
+### Version 2.0.0 (Current)
+- Administrator panel med fuld CRUD funktionalitet
+- RAG integration med OpenAI/Anthropic
+- PostgreSQL pgvector for semantic search
+- Cloudflare edge deployment
+- Enhanced monitoring capabilities
 
-- Built with [React](https://react.dev/)
-- Styled with [Tailwind CSS](https://tailwindcss.com/)
-- Icons by [Lucide](https://lucide.dev/)
-- Hosted on [Cloudflare Pages](https://pages.cloudflare.com/)
-- Developed with [Claude Code](https://claude.com/claude-code)
-
----
-
-**Status**: ✅ Production Ready | 🚀 Deployed on Cloudflare Pages | 📦 Version 1.3.0
-
-## 🆕 Recent Updates (v1.2.0 - 2025-10-19)
-
-### ✨ New Admin Features
-
-#### Intel Control Panel
-- Real-time scraper monitoring and status dashboard
-- System performance metrics (uptime, success rate, response time)
-- Resource usage tracking (CPU, memory, pending approvals)
-- Control actions (Start/Stop Scraper, Force Refresh, Emergency Bypass)
-- Recent activity timeline with status indicators
-
-#### Vector Database Management
-- Advanced vector database table with 45K+ vectors
-- Multi-column filtering (Source, Category, Tags)
-- Powerful search across all vector attributes
-- Sortable columns with visual indicators
-- Statistics dashboard (Total Vectors, Storage, Performance, Last Indexed)
-- Administrative actions (Rebuild Index, Test Search, Clear Database)
-
-#### Link Validation System
-- Single URL testing with detailed metrics
-- Bulk link validation (up to 50 URLs simultaneously)
-- Response time measurement
-- SSL/HTTPS verification
-- HTTP status code tracking
-- Content-type detection
-- Redirect following with final destination tracking
-- Error handling with descriptive messages
-
-### 🔧 Backend Enhancements
-
-#### Intel Scraper API
-Complete RESTful API for intelligence scraper management:
-- `POST /api/intel-scraper/start` - Start intelligence scraper
-- `POST /api/intel-scraper/stop` - Stop scraper safely
-- `GET /api/intel-scraper/status` - Get current scraper status
-- `POST /api/intel-scraper/emergency-bypass` - Enable compliance bypass (1-hour limit)
-- `GET /api/intel-scraper/approvals` - Get pending source approvals
-- `POST /api/intel-scraper/approvals/:id` - Process approval decision
-- `GET /api/intel-scraper/candidates` - Get discovered source candidates
-- `POST /api/intel-scraper/discover` - Run source discovery scan
-
-#### Link Validation API
-- `POST /api/validate-link` - Validate single URL with full metrics
-- `POST /api/validate-links-bulk` - Batch validate up to 50 URLs
-
-### 📊 Component Improvements
-- Enhanced Admin Panel with 8 specialized tabs
-- Improved navigation and visual hierarchy
-- Real-time status updates and live monitoring
-- Professional error handling across all new features
-- Responsive design for all new components
-
-### 🎯 Quality Assurance
-- TypeScript type safety across all new components
-- Full build verification (1265 modules, 3.1s build time)
-- Browser testing with Playwright
-- API endpoint verification
-- Component integration testing
-
----
-
-
-## 🆕 Recent Updates (v1.3.0 - 2025-10-19)
-
-### 🎯 SignalStream Intelligence Module
-Replaces Dagens Puls with advanced AI-powered intelligence aggregation:
-
-#### Core Features
-- **In-Memory Vector Store**: Real-time semantic search with custom embedding
-- **Evidence Scoring**: Multi-dimensional ranking (Vector + BM25 + Freshness + Domain Authority)
-- **Focus Lanes**: Categorized intelligence streams for targeted analysis
-- **Session Tracing**: Interactive drill-down tracking for investigation workflows
-- **Multi-Language Support**: Danish and English content generation
-
-#### Intelligence Generation
-- **Configurable Sources**: RSS, Atom, Web, API ingestion
-- **Image Handling**: Generate, fetch, or hybrid mode with licensing
-- **Citation Requirements**: Trust labels and verification for all sources
-- **Article Synthesis**: AI-powered summaries with key points, analysis, and implications
-
-#### User Experience
-- **Interactive UI**: Expandable cards with drill-down capabilities
-- **Real-Time Updates**: Live intelligence feed with freshness indicators
-- **Filter & Search**: Category-based filtering with text search
-- **Evidence Transparency**: Full source attribution and confidence scores
-
-### 📦 Build Improvements
-- **Optimized Bundle**: SignalStream module at 25.30 KB (7.25 KB gzipped)
-- **Total Modules**: 1265 compiled successfully
-- **Build Time**: 2.85s average
-
----
-
+### Version 1.0.0
+- Initial release med basic monitoring
+- Simple scraper funktionalitet
+- Basic threat intelligence feeds

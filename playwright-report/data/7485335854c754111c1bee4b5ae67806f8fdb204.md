@@ -1,0 +1,488 @@
+# Page snapshot
+
+```yaml
+- generic [ref=e3]:
+  - banner [ref=e4]:
+    - generic [ref=e6]:
+      - generic [ref=e7]:
+        - img [ref=e8]
+        - generic [ref=e10]:
+          - heading "CYBERSTREAMS" [level=1] [ref=e11]
+          - paragraph [ref=e12]: Dark Web Intelligence Platform
+      - generic [ref=e16]: LIVE
+  - navigation [ref=e19]:
+    - button "Dashboard" [ref=e20] [cursor=pointer]:
+      - img [ref=e21]
+      - generic [ref=e23]: Dashboard
+    - button "Agent" [ref=e24] [cursor=pointer]:
+      - img [ref=e25]
+      - generic [ref=e28]: Agent
+    - button "Threats" [ref=e29] [cursor=pointer]:
+      - img [ref=e30]
+      - generic [ref=e32]: Threats
+    - button "SignalStream" [ref=e33] [cursor=pointer]:
+      - img [ref=e34]
+      - generic [ref=e40]: SignalStream
+    - button "Activity" [ref=e41] [cursor=pointer]:
+      - img [ref=e42]
+      - generic [ref=e45]: Activity
+    - button "Consolidated Intel" [active] [ref=e46] [cursor=pointer]:
+      - img [ref=e47]
+      - generic [ref=e52]: Consolidated Intel
+    - button "OsintLab" [ref=e53] [cursor=pointer]:
+      - img [ref=e54]
+      - generic [ref=e57]: OsintLab
+    - button "Admin" [ref=e58] [cursor=pointer]:
+      - img [ref=e59]
+      - generic [ref=e62]: Admin
+  - main [ref=e63]:
+    - generic [ref=e64]:
+      - generic [ref=e65]:
+        - generic [ref=e66]:
+          - img [ref=e67]
+          - generic [ref=e72]:
+            - heading "Consolidated Intelligence" [level=1] [ref=e73]
+            - paragraph [ref=e74]: Unified threat intelligence across all sources with AI-powered correlation
+        - generic [ref=e75]:
+          - generic [ref=e76]: "Powered by: OpenSearch + Grafana + MISP + OpenCTI"
+          - generic [ref=e77]: • Open Source Intelligence Platform
+      - generic [ref=e78]:
+        - generic [ref=e80]:
+          - generic [ref=e81]:
+            - paragraph [ref=e82]: Total Findings
+            - paragraph [ref=e83]: "10"
+          - img [ref=e84]
+        - generic [ref=e89]:
+          - generic [ref=e90]:
+            - paragraph [ref=e91]: Critical
+            - paragraph [ref=e92]: "3"
+          - img [ref=e93]
+        - generic [ref=e96]:
+          - generic [ref=e97]:
+            - paragraph [ref=e98]: High Priority
+            - paragraph [ref=e99]: "4"
+          - img [ref=e100]
+        - generic [ref=e103]:
+          - generic [ref=e104]:
+            - paragraph [ref=e105]: Sources
+            - paragraph [ref=e106]: "10"
+          - img [ref=e107]
+        - generic [ref=e111]:
+          - generic [ref=e112]:
+            - paragraph [ref=e113]: Avg Confidence
+            - paragraph [ref=e114]: 88%
+          - img [ref=e115]
+      - generic [ref=e120]:
+        - generic [ref=e121]:
+          - img [ref=e122]
+          - textbox "Search findings, indicators, categories... (AI-powered)" [ref=e125]
+        - generic [ref=e126]:
+          - combobox [ref=e127]:
+            - option "All Severities" [selected]
+            - option "Critical"
+            - option "High"
+            - option "Medium"
+            - option "Low"
+          - combobox [ref=e128]:
+            - option "All Sources" [selected]
+            - option "RSS Feeds"
+            - option "OSINT"
+            - option "Social Intel"
+            - option "Technical"
+          - combobox [ref=e129]:
+            - option "Last Hour"
+            - option "Last 24 Hours" [selected]
+            - option "Last 7 Days"
+            - option "Last 30 Days"
+      - generic [ref=e130]:
+        - generic [ref=e131]:
+          - generic [ref=e132]:
+            - img [ref=e133]
+            - heading "Top Threat Categories" [level=3] [ref=e135]
+          - generic [ref=e136]:
+            - generic [ref=e137]:
+              - generic [ref=e139]: Critical Infrastructure
+              - generic [ref=e140]: "4"
+            - generic [ref=e141]:
+              - generic [ref=e143]: Ransomware
+              - generic [ref=e144]: "3"
+            - generic [ref=e145]:
+              - generic [ref=e147]: APT
+              - generic [ref=e148]: "2"
+            - generic [ref=e149]:
+              - generic [ref=e151]: Russia
+              - generic [ref=e152]: "2"
+            - generic [ref=e153]:
+              - generic [ref=e155]: Denmark
+              - generic [ref=e156]: "2"
+            - generic [ref=e157]:
+              - generic [ref=e159]: Espionage
+              - generic [ref=e160]: "1"
+            - generic [ref=e161]:
+              - generic [ref=e163]: FIMI
+              - generic [ref=e164]: "1"
+            - generic [ref=e165]:
+              - generic [ref=e167]: Disinformation
+              - generic [ref=e168]: "1"
+            - generic [ref=e169]:
+              - generic [ref=e171]: Energy
+              - generic [ref=e172]: "1"
+            - generic [ref=e173]:
+              - generic [ref=e175]: Influence Operations
+              - generic [ref=e176]: "1"
+        - generic [ref=e177]:
+          - generic [ref=e178]:
+            - img [ref=e179]
+            - heading "Severity Distribution" [level=3] [ref=e182]
+          - generic [ref=e183]:
+            - generic [ref=e184]:
+              - generic [ref=e185]: Critical
+              - generic [ref=e189]: "3"
+            - generic [ref=e190]:
+              - generic [ref=e191]: High
+              - generic [ref=e195]: "4"
+            - generic [ref=e196]:
+              - generic [ref=e197]: Medium
+              - generic [ref=e201]: "2"
+            - generic [ref=e202]:
+              - generic [ref=e203]: Low
+              - generic [ref=e207]: "1"
+      - generic [ref=e208]:
+        - generic [ref=e209]:
+          - heading "Intelligence Findings (10)" [level=2] [ref=e210]
+          - button "Export Report" [ref=e211] [cursor=pointer]
+        - generic [ref=e213]:
+          - img [ref=e215]
+          - generic [ref=e219]:
+            - generic [ref=e220]:
+              - generic [ref=e221]:
+                - generic [ref=e222]: INTEL-001
+                - generic [ref=e223]: CRITICAL
+                - generic [ref=e224]: OSINT
+                - generic [ref=e225]: 95% confidence
+              - heading "Russian APT28 Campaign Targeting Nordic Critical Infrastructure" [level=3] [ref=e226]
+              - paragraph [ref=e227]: Multiple indicators suggest coordinated cyber espionage campaign targeting energy and maritime sectors across Nordic countries. Correlates with CERT-DK alert and NATO CCDCOE intelligence.
+              - generic [ref=e228]:
+                - generic [ref=e229]: APT
+                - generic [ref=e230]: Critical Infrastructure
+                - generic [ref=e231]: Espionage
+                - generic [ref=e232]: Russia
+              - generic [ref=e233]:
+                - paragraph [ref=e234]: "Indicators of Compromise:"
+                - generic [ref=e235]:
+                  - code [ref=e236]: "IP: 185.220.101.45"
+                  - code [ref=e237]: "Domain: maritime-update[.]com"
+                  - code [ref=e238]: "Hash: a3f8b9c2d1e4f5a6b7c8d9e0f1a2b3c4"
+              - generic [ref=e239]:
+                - generic [ref=e240]:
+                  - img [ref=e241]
+                  - link "FE-DDIS + CERT.DK + NATO" [ref=e244] [cursor=pointer]:
+                    - /url: https://fe-ddis.dk/analysis/apt28-nordic
+                - generic [ref=e245]:
+                  - img [ref=e246]
+                  - text: 2 minutes ago
+                - generic [ref=e249]:
+                  - img [ref=e250]
+                  - text: 2 correlations
+            - link "View Source →" [ref=e255] [cursor=pointer]:
+              - /url: https://fe-ddis.dk/analysis/apt28-nordic
+        - generic [ref=e257]:
+          - img [ref=e259]
+          - generic [ref=e265]:
+            - generic [ref=e266]:
+              - generic [ref=e267]:
+                - generic [ref=e268]: INTEL-002
+                - generic [ref=e269]: HIGH
+                - generic [ref=e270]: SOCIAL
+                - generic [ref=e271]: 87% confidence
+              - 'heading "EU FIMI Detection: Coordinated Disinformation on Energy Crisis" [level=3] [ref=e272]'
+              - paragraph [ref=e273]: Foreign Information Manipulation campaign detected across social media platforms spreading false narratives about EU energy security. Linked to known Russian influence operations.
+              - generic [ref=e274]:
+                - generic [ref=e275]: FIMI
+                - generic [ref=e276]: Disinformation
+                - generic [ref=e277]: Energy
+                - generic [ref=e278]: Influence Operations
+              - generic [ref=e279]:
+                - paragraph [ref=e280]: "Indicators of Compromise:"
+                - generic [ref=e281]:
+                  - code [ref=e282]: "Account: @energy_truth_eu"
+                  - code [ref=e283]: "Hashtag: #EUEnergyCrisis"
+                  - code [ref=e284]: "Domain: eu-energy-facts[.]info"
+              - generic [ref=e285]:
+                - generic [ref=e286]:
+                  - img [ref=e287]
+                  - link "EEAS + ENISA" [ref=e290] [cursor=pointer]:
+                    - /url: https://eeas.europa.eu/fimi-alert
+                - generic [ref=e291]:
+                  - img [ref=e292]
+                  - text: 15 minutes ago
+                - generic [ref=e295]:
+                  - img [ref=e296]
+                  - text: 1 correlations
+            - link "View Source →" [ref=e301] [cursor=pointer]:
+              - /url: https://eeas.europa.eu/fimi-alert
+        - generic [ref=e303]:
+          - img [ref=e305]
+          - generic [ref=e310]:
+            - generic [ref=e311]:
+              - generic [ref=e312]:
+                - generic [ref=e313]: INTEL-003
+                - generic [ref=e314]: CRITICAL
+                - generic [ref=e315]: TECHNICAL
+                - generic [ref=e316]: 98% confidence
+              - heading "Zero-Day Vulnerability in Maritime Communication Systems" [level=3] [ref=e317]
+              - paragraph [ref=e318]: CISA alert on critical vulnerability in VSAT maritime communication systems. Actively exploited. Danish Maritime Authority notified.
+              - generic [ref=e319]:
+                - generic [ref=e320]: Vulnerability
+                - generic [ref=e321]: Maritime
+                - generic [ref=e322]: Zero-Day
+                - generic [ref=e323]: Critical Infrastructure
+              - generic [ref=e324]:
+                - paragraph [ref=e325]: "Indicators of Compromise:"
+                - generic [ref=e326]:
+                  - code [ref=e327]: "CVE: CVE-2025-XXXX"
+                  - code [ref=e328]: "Product: VSAT-CommSys v4.2"
+                  - code [ref=e329]: "Exploit: exploit-db-id-51234"
+              - generic [ref=e330]:
+                - generic [ref=e331]:
+                  - img [ref=e332]
+                  - link "CISA + Maritime Denmark" [ref=e335] [cursor=pointer]:
+                    - /url: https://www.cisa.gov/alerts
+                - generic [ref=e336]:
+                  - img [ref=e337]
+                  - text: 32 minutes ago
+            - link "View Source →" [ref=e340] [cursor=pointer]:
+              - /url: https://www.cisa.gov/alerts
+        - generic [ref=e342]:
+          - img [ref=e344]
+          - generic [ref=e348]:
+            - generic [ref=e349]:
+              - generic [ref=e350]:
+                - generic [ref=e351]: INTEL-004
+                - generic [ref=e352]: HIGH
+                - generic [ref=e353]: OSINT
+                - generic [ref=e354]: 92% confidence
+              - 'heading "NATO Intelligence: Chinese Cyber Espionage in Defense Sector" [level=3] [ref=e355]'
+              - paragraph [ref=e356]: NATO CCDCOE reports increased targeting of defense contractors across Allied nations. Focus on R&D and supply chain vulnerabilities.
+              - generic [ref=e357]:
+                - generic [ref=e358]: APT
+                - generic [ref=e359]: Defense
+                - generic [ref=e360]: China
+                - generic [ref=e361]: Supply Chain
+              - generic [ref=e362]:
+                - paragraph [ref=e363]: "Indicators of Compromise:"
+                - generic [ref=e364]:
+                  - code [ref=e365]: "Actor: APT41"
+                  - code [ref=e366]: "TTP: T1566.001 - Spearphishing Attachment"
+                  - code [ref=e367]: "TTP: T1195.002 - Supply Chain Compromise"
+              - generic [ref=e368]:
+                - generic [ref=e369]:
+                  - img [ref=e370]
+                  - link "NATO CCDCOE" [ref=e373] [cursor=pointer]:
+                    - /url: https://www.nato.int/ccdcoe
+                - generic [ref=e374]:
+                  - img [ref=e375]
+                  - text: 1 hour ago
+            - link "View Source →" [ref=e378] [cursor=pointer]:
+              - /url: https://www.nato.int/ccdcoe
+        - generic [ref=e380]:
+          - img [ref=e382]
+          - generic [ref=e387]:
+            - generic [ref=e388]:
+              - generic [ref=e389]:
+                - generic [ref=e390]: INTEL-005
+                - generic [ref=e391]: CRITICAL
+                - generic [ref=e392]: TECHNICAL
+                - generic [ref=e393]: 96% confidence
+              - heading "Ransomware Campaign Targeting Danish Healthcare Sector" [level=3] [ref=e394]
+              - paragraph [ref=e395]: Multiple Danish hospitals reported ransomware attempts. Pattern matches international LockBit 3.0 campaign. CERT-DK coordinating response.
+              - generic [ref=e396]:
+                - generic [ref=e397]: Ransomware
+                - generic [ref=e398]: Healthcare
+                - generic [ref=e399]: Denmark
+                - generic [ref=e400]: Critical Infrastructure
+              - generic [ref=e401]:
+                - paragraph [ref=e402]: "Indicators of Compromise:"
+                - generic [ref=e403]:
+                  - code [ref=e404]: "Malware: LockBit 3.0"
+                  - code [ref=e405]: "IP: 203.0.113.42"
+                  - code [ref=e406]: "C2: lockbit-c2[.]onion"
+              - generic [ref=e407]:
+                - generic [ref=e408]:
+                  - img [ref=e409]
+                  - link "CERT.DK + Shadowserver" [ref=e412] [cursor=pointer]:
+                    - /url: https://cert.dk/alerts
+                - generic [ref=e413]:
+                  - img [ref=e414]
+                  - text: 2 hours ago
+                - generic [ref=e417]:
+                  - img [ref=e418]
+                  - text: 1 correlations
+            - link "View Source →" [ref=e423] [cursor=pointer]:
+              - /url: https://cert.dk/alerts
+        - generic [ref=e425]:
+          - img [ref=e427]
+          - generic [ref=e431]:
+            - generic [ref=e432]:
+              - generic [ref=e433]:
+                - generic [ref=e434]: INTEL-006
+                - generic [ref=e435]: HIGH
+                - generic [ref=e436]: OSINT
+                - generic [ref=e437]: 89% confidence
+              - 'heading "CEPA Analysis: Russian Hybrid Warfare Tactics in Baltic Region" [level=3] [ref=e438]'
+              - paragraph [ref=e439]: Center for European Policy Analysis reports escalation of hybrid warfare tactics including cyber operations, disinformation, and GPS jamming in Baltic states.
+              - generic [ref=e440]:
+                - generic [ref=e441]: Hybrid Warfare
+                - generic [ref=e442]: Baltic
+                - generic [ref=e443]: Russia
+                - generic [ref=e444]: GPS
+              - generic [ref=e445]:
+                - paragraph [ref=e446]: "Indicators of Compromise:"
+                - generic [ref=e447]:
+                  - code [ref=e448]: "Region: Baltic Sea"
+                  - code [ref=e449]: "Activity: GPS Jamming"
+                  - code [ref=e450]: "Actor: Russian Armed Forces"
+              - generic [ref=e451]:
+                - generic [ref=e452]:
+                  - img [ref=e453]
+                  - link "CEPA + RAND Corporation" [ref=e456] [cursor=pointer]:
+                    - /url: https://www.cepa.org
+                - generic [ref=e457]:
+                  - img [ref=e458]
+                  - text: 3 hours ago
+            - link "View Source →" [ref=e461] [cursor=pointer]:
+              - /url: https://www.cepa.org
+        - generic [ref=e463]:
+          - img [ref=e465]
+          - generic [ref=e470]:
+            - generic [ref=e471]:
+              - generic [ref=e472]:
+                - generic [ref=e473]: INTEL-007
+                - generic [ref=e474]: HIGH
+                - generic [ref=e475]: TECHNICAL
+                - generic [ref=e476]: 91% confidence
+              - 'heading "Europol Warning: Cybercrime-as-a-Service Platforms Expansion" [level=3] [ref=e477]'
+              - paragraph [ref=e478]: Europol identifies new cybercrime marketplace offering DDoS, ransomware, and credential theft services. Significant threat to European businesses.
+              - generic [ref=e479]:
+                - generic [ref=e480]: Cybercrime
+                - generic [ref=e481]: Marketplace
+                - generic [ref=e482]: DDoS
+                - generic [ref=e483]: Ransomware
+              - generic [ref=e484]:
+                - paragraph [ref=e485]: "Indicators of Compromise:"
+                - generic [ref=e486]:
+                  - code [ref=e487]: "Marketplace: darkmarket[.]onion"
+                  - code [ref=e488]: "Service: DDoS-for-hire"
+                  - code [ref=e489]: "Service: Ransomware-as-a-Service"
+              - generic [ref=e490]:
+                - generic [ref=e491]:
+                  - img [ref=e492]
+                  - link "Europol" [ref=e495] [cursor=pointer]:
+                    - /url: https://www.europol.europa.eu
+                - generic [ref=e496]:
+                  - img [ref=e497]
+                  - text: 4 hours ago
+                - generic [ref=e500]:
+                  - img [ref=e501]
+                  - text: 1 correlations
+            - link "View Source →" [ref=e506] [cursor=pointer]:
+              - /url: https://www.europol.europa.eu
+        - generic [ref=e508]:
+          - img [ref=e510]
+          - generic [ref=e514]:
+            - generic [ref=e515]:
+              - generic [ref=e516]:
+                - generic [ref=e517]: INTEL-008
+                - generic [ref=e518]: MEDIUM
+                - generic [ref=e519]: RSS
+                - generic [ref=e520]: 78% confidence
+              - 'heading "DR Investigation: Cyber Threats to Danish Critical Infrastructure" [level=3] [ref=e521]'
+              - paragraph [ref=e522]: Danish media reports on increased cyber threat levels targeting energy, water, and transportation infrastructure. Government response measures implemented.
+              - generic [ref=e523]:
+                - generic [ref=e524]: Critical Infrastructure
+                - generic [ref=e525]: Denmark
+                - generic [ref=e526]: Policy
+              - generic [ref=e527]:
+                - paragraph [ref=e528]: "Indicators of Compromise:"
+                - generic [ref=e529]:
+                  - code [ref=e530]: "Sector: Energy"
+                  - code [ref=e531]: "Sector: Water"
+                  - code [ref=e532]: "Sector: Transportation"
+              - generic [ref=e533]:
+                - generic [ref=e534]:
+                  - img [ref=e535]
+                  - link "DR Nyheder" [ref=e538] [cursor=pointer]:
+                    - /url: https://www.dr.dk/nyheder
+                - generic [ref=e539]:
+                  - img [ref=e540]
+                  - text: 5 hours ago
+            - link "View Source →" [ref=e543] [cursor=pointer]:
+              - /url: https://www.dr.dk/nyheder
+        - generic [ref=e545]:
+          - img [ref=e547]
+          - generic [ref=e551]:
+            - generic [ref=e552]:
+              - generic [ref=e553]:
+                - generic [ref=e554]: INTEL-009
+                - generic [ref=e555]: MEDIUM
+                - generic [ref=e556]: OSINT
+                - generic [ref=e557]: 85% confidence
+              - 'heading "ENISA Report: Emerging AI-Powered Cyber Threats" [level=3] [ref=e558]'
+              - paragraph [ref=e559]: European cybersecurity agency warns about sophisticated AI-generated phishing campaigns and deepfake-enhanced social engineering attacks.
+              - generic [ref=e560]:
+                - generic [ref=e561]: AI
+                - generic [ref=e562]: Phishing
+                - generic [ref=e563]: Social Engineering
+                - generic [ref=e564]: Emerging Threats
+              - generic [ref=e565]:
+                - paragraph [ref=e566]: "Indicators of Compromise:"
+                - generic [ref=e567]:
+                  - code [ref=e568]: "TTP: AI-Generated Phishing"
+                  - code [ref=e569]: "TTP: Deepfake Social Engineering"
+              - generic [ref=e570]:
+                - generic [ref=e571]:
+                  - img [ref=e572]
+                  - link "ENISA" [ref=e575] [cursor=pointer]:
+                    - /url: https://www.enisa.europa.eu
+                - generic [ref=e576]:
+                  - img [ref=e577]
+                  - text: 6 hours ago
+            - link "View Source →" [ref=e580] [cursor=pointer]:
+              - /url: https://www.enisa.europa.eu
+        - generic [ref=e582]:
+          - img [ref=e584]
+          - generic [ref=e588]:
+            - generic [ref=e589]:
+              - generic [ref=e590]:
+                - generic [ref=e591]: INTEL-010
+                - generic [ref=e592]: LOW
+                - generic [ref=e593]: RSS
+                - generic [ref=e594]: 72% confidence
+              - 'heading "Reuters: Global Cyber Insurance Market Impact from Recent Attacks" [level=3] [ref=e595]'
+              - paragraph [ref=e596]: Analysis of cyber insurance market changes following major ransomware incidents. Premium increases and coverage restrictions noted.
+              - generic [ref=e597]:
+                - generic [ref=e598]: Insurance
+                - generic [ref=e599]: Market Analysis
+                - generic [ref=e600]: Ransomware
+              - generic [ref=e601]:
+                - paragraph [ref=e602]: "Indicators of Compromise:"
+                - generic [ref=e603]:
+                  - code [ref=e604]: "Trend: Premium Increase"
+                  - code [ref=e605]: "Impact: Coverage Restrictions"
+              - generic [ref=e606]:
+                - generic [ref=e607]:
+                  - img [ref=e608]
+                  - link "Reuters" [ref=e611] [cursor=pointer]:
+                    - /url: https://www.reuters.com
+                - generic [ref=e612]:
+                  - img [ref=e613]
+                  - text: 8 hours ago
+            - link "View Source →" [ref=e616] [cursor=pointer]:
+              - /url: https://www.reuters.com
+  - contentinfo [ref=e617]:
+    - generic [ref=e619]:
+      - generic [ref=e620]:
+        - generic [ref=e622]: Version
+        - generic [ref=e623]: 1.4.0
+      - generic [ref=e625]: "Released: 2025-10-19"
+```

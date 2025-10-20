@@ -17,14 +17,14 @@
     "noFallthroughCasesInSwitch": true,
     "baseUrl": ".",
     "paths": {
-      "@/*": ["./cyberstreams/src/*"],
-      "@modules/*": ["./cyberstreams/src/modules/*"],
-      "@components/*": ["./cyberstreams/src/components/*"],
-      "@theme/*": ["./cyberstreams/src/theme/*"],
-      "@tokens/*": ["./cyberstreams/src/tokens/*"],
-      "@data/*": ["./cyberstreams/src/data/*"]
+      "@/*": ["./src/*"],
+      "@modules/*": ["./src/modules/*"],
+      "@components/*": ["./src/components/*"],
+      "@theme/*": ["./src/theme/*"],
+      "@tokens/*": ["./src/tokens/*"],
+      "@data/*": ["./src/data/*"]
     }
   },
-  "include": ["cyberstreams/src"],
-  "exclude": ["cyberstreams/src/services"]
+  "include": ["src"],
+  "exclude": ["src/services"]
 }

@@ -1,10 +1,53 @@
 name = "cyberstreams"
-compatibility_date = "2025-10-12"
-pages_build_output_dir = "./dist"
+main = "worker.js"
+compatibility_date = "2024-01-01"
 
 [env.production]
 name = "cyberstreams-prod"
+vars = { ENVIRONMENT = "production" }
 
-[[env.production.vars]]
-DEPLOY_ENV = "production"
-VECTOR_DB_PATH = "vector_db.pkl"
+[[kv_namespaces]]
+binding = "CACHE"
+id = "YOUR_KV_NAMESPACE_ID"
+preview_id = "YOUR_PREVIEW_KV_ID"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "cyberstreams-db"
+database_id = "YOUR_D1_DATABASE_ID"
+
+[[r2_buckets]]
+binding = "STORAGE"
+bucket_name = "cyberstreams-storage"
+
+[[vectorize]]
+binding = "VECTORSTORE"
+index_name = "cyberstreams-vectors"
+
+[site]
+bucket = "./dist"
+
+[build]
+command = "npm run build"
+
+[[routes]]
+pattern = "cyberstreams.example.com/*"
+zone_name = "example.com"
+
+[observability]
+enabled = true
+
+[[analytics_engine_datasets]]
+binding = "ANALYTICS"
+
+[env.staging]
+name = "cyberstreams-staging"
+vars = { ENVIRONMENT = "staging" }
+
+[[env.staging.kv_namespaces]]
+binding = "CACHE"
+id = "YOUR_STAGING_KV_ID"
+
+[env.development]
+name = "cyberstreams-dev"
+vars = { ENVIRONMENT = "development" }

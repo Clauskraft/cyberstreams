@@ -1,5 +1,5 @@
 import { useState, lazy, Suspense } from 'react'
-import { Shield, Activity, Radio, FileText, Network, Settings, Bot } from 'lucide-react'
+import { Shield, Activity, Radio, FileText, Network, Settings, Bot, Database } from 'lucide-react'
 
 const HomeContent = lazy(() => import('@modules/HomeContent'))
 const ThreatsModule = lazy(() => import('@modules/ThreatsModule'))
@@ -8,6 +8,7 @@ const SignalStream = lazy(() => import('@modules/SignalStream'))
 const ConsolidatedIntelligence = lazy(() => import('@modules/ConsolidatedIntelligence'))
 const CyberstreamsAgent = lazy(() => import('@modules/CyberstreamsAgent'))
 const AdminPage = lazy(() => import('./pages/Admin'))
+const AdminV2Page = lazy(() => import('@modules/AdminV2Page'))
 
 const LoadingSpinner = () => (
   <div className="flex items-center justify-center py-20">
@@ -55,6 +56,7 @@ function App() {
               { id: 'activity', label: 'Activity', icon: FileText },
               { id: 'intel', label: 'Consolidated Intel', icon: Network },
               { id: 'admin', label: 'Admin', icon: Settings },
+              { id: 'admin-v2', label: 'Admin v2', icon: Database },
             ].map((tab) => (
               <button
                 key={tab.id}
@@ -83,6 +85,7 @@ function App() {
           {activeTab === 'activity' && <ActivityModule />}
           {activeTab === 'intel' && <ConsolidatedIntelligence />}
           {activeTab === 'admin' && <AdminPage />}
+          {activeTab === 'admin-v2' && <AdminV2Page />}
         </Suspense>
       </main>
     </div>

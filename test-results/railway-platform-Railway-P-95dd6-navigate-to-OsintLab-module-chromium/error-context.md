@@ -1,0 +1,145 @@
+# Page snapshot
+
+```yaml
+- generic [ref=e3]:
+  - banner [ref=e4]:
+    - generic [ref=e6]:
+      - generic [ref=e7]:
+        - img [ref=e8]
+        - generic [ref=e10]:
+          - heading "CYBERSTREAMS" [level=1] [ref=e11]
+          - paragraph [ref=e12]: Dark Web Intelligence Platform
+      - generic [ref=e16]: LIVE
+  - navigation [ref=e19]:
+    - button "Dashboard" [ref=e20] [cursor=pointer]:
+      - img [ref=e21]
+      - generic [ref=e23]: Dashboard
+    - button "Agent" [ref=e24] [cursor=pointer]:
+      - img [ref=e25]
+      - generic [ref=e28]: Agent
+    - button "Threats" [ref=e29] [cursor=pointer]:
+      - img [ref=e30]
+      - generic [ref=e32]: Threats
+    - button "SignalStream" [ref=e33] [cursor=pointer]:
+      - img [ref=e34]
+      - generic [ref=e40]: SignalStream
+    - button "Activity" [ref=e41] [cursor=pointer]:
+      - img [ref=e42]
+      - generic [ref=e45]: Activity
+    - button "Consolidated Intel" [ref=e46] [cursor=pointer]:
+      - img [ref=e47]
+      - generic [ref=e52]: Consolidated Intel
+    - button "OsintLab" [active] [ref=e53] [cursor=pointer]:
+      - img [ref=e54]
+      - generic [ref=e57]: OsintLab
+    - button "Admin" [ref=e58] [cursor=pointer]:
+      - img [ref=e59]
+      - generic [ref=e62]: Admin
+  - main [ref=e63]:
+    - generic [ref=e64]:
+      - generic [ref=e66]:
+        - generic [ref=e67]:
+          - heading "OsintLab" [level=2] [ref=e68]
+          - paragraph [ref=e69]: Search curated intelligence sources, review safety guardrails, and orchestrate compliant collection runs.
+        - generic [ref=e70]:
+          - button "Export JSON" [ref=e71] [cursor=pointer]
+          - button "Export CSV" [ref=e72] [cursor=pointer]
+      - generic [ref=e73]:
+        - generic [ref=e74]:
+          - generic [ref=e75]: Search
+          - textbox "Search by name, description, or tag" [ref=e76]
+        - generic [ref=e77]:
+          - generic [ref=e78]: Category
+          - combobox [ref=e79]:
+            - option "All" [selected]
+            - option "Brand Protection"
+            - option "Credential Security"
+            - option "Threat Intelligence"
+        - generic [ref=e80]:
+          - generic [ref=e81]: License
+          - combobox [ref=e82]:
+            - option "All" [selected]
+            - option "CC BY-NC 4.0"
+            - option "MIT"
+            - option "Proprietary (Read-Only)"
+        - generic [ref=e83]:
+          - generic [ref=e84]: Reliability
+          - combobox [ref=e85]:
+            - option "All" [selected]
+            - option "High"
+            - option "Medium"
+        - generic [ref=e86]:
+          - generic [ref=e87]: Sensitivity
+          - combobox [ref=e88]:
+            - option "All" [selected]
+            - option "Confidential"
+            - option "Public"
+            - option "Restricted"
+      - generic [ref=e89]:
+        - generic [ref=e90]:
+          - heading "Catalog" [level=3] [ref=e91]
+          - paragraph [ref=e92]: 3 sources match the applied filters.
+          - generic [ref=e93]:
+            - button "Beacon Breach Intel Continuously updated breach corpus with hashed credential dumps for corporate monitoring breach-data credential hash Credential Security Breach Corpuses" [ref=e94] [cursor=pointer]:
+              - generic [ref=e95]:
+                - generic [ref=e96]:
+                  - heading "Beacon Breach Intel" [level=4] [ref=e97]
+                  - paragraph [ref=e98]: Continuously updated breach corpus with hashed credential dumps for corporate monitoring
+                  - generic [ref=e99]:
+                    - generic [ref=e100]: breach-data
+                    - generic [ref=e101]: credential
+                    - generic [ref=e102]: hash
+                - generic [ref=e103]:
+                  - paragraph [ref=e104]: Credential Security
+                  - paragraph [ref=e105]: Breach Corpuses
+            - button "Darklight Marketplace Tracker Passive monitoring of high-risk darknet markets with anomaly detection alerts darknet monitoring anomaly-detection Threat Intelligence Dark Web Monitoring" [ref=e106] [cursor=pointer]:
+              - generic [ref=e107]:
+                - generic [ref=e108]:
+                  - heading "Darklight Marketplace Tracker" [level=4] [ref=e109]
+                  - paragraph [ref=e110]: Passive monitoring of high-risk darknet markets with anomaly detection alerts
+                  - generic [ref=e111]:
+                    - generic [ref=e112]: darknet
+                    - generic [ref=e113]: monitoring
+                    - generic [ref=e114]: anomaly-detection
+                - generic [ref=e115]:
+                  - paragraph [ref=e116]: Threat Intelligence
+                  - paragraph [ref=e117]: Dark Web Monitoring
+            - button "Surface Watch Feeds Aggregated surface web mentions and typosquatted domains with ML-based prioritization brand surface-web typosquat Brand Protection Surface Web Scraping" [ref=e118] [cursor=pointer]:
+              - generic [ref=e119]:
+                - generic [ref=e120]:
+                  - heading "Surface Watch Feeds" [level=4] [ref=e121]
+                  - paragraph [ref=e122]: Aggregated surface web mentions and typosquatted domains with ML-based prioritization
+                  - generic [ref=e123]:
+                    - generic [ref=e124]: brand
+                    - generic [ref=e125]: surface-web
+                    - generic [ref=e126]: typosquat
+                - generic [ref=e127]:
+                  - paragraph [ref=e128]: Brand Protection
+                  - paragraph [ref=e129]: Surface Web Scraping
+        - generic [ref=e130]:
+          - generic [ref=e131]:
+            - heading "Safety & License Controls" [level=3] [ref=e132]
+            - paragraph [ref=e133]: Cyberstreams enforces mandatory license acceptance and restricts execution of sensitive sources to compliance-approved operators. Review the policy checklist and acknowledge before triggering any playbooks.
+            - generic [ref=e134]:
+              - generic [ref=e135]:
+                - checkbox "I acknowledge the vendor licensing requirements and agree to follow the Cyberstreams acceptable use policy." [ref=e136]
+                - text: I acknowledge the vendor licensing requirements and agree to follow the Cyberstreams acceptable use policy.
+              - generic [ref=e137]:
+                - generic [ref=e138]: Operator
+                - textbox "Operator" [ref=e139]:
+                  - /placeholder: Analyst handle
+              - generic [ref=e140]:
+                - generic [ref=e141]: Notes
+                - textbox "Notes" [ref=e142]:
+                  - /placeholder: Optional collection notes
+          - generic [ref=e143]:
+            - heading "Run History" [level=3] [ref=e144]
+            - paragraph [ref=e145]: Recent orchestrations executed through OsintLab.
+            - paragraph [ref=e147]: No runs queued yet.
+  - contentinfo [ref=e148]:
+    - generic [ref=e150]:
+      - generic [ref=e151]:
+        - generic [ref=e153]: Version
+        - generic [ref=e154]: 1.4.0
+      - generic [ref=e156]: "Released: 2025-10-19"
+```
