@@ -1,0 +1,325 @@
+name: Railway Deployment Monitor
+
+on:
+  # Monitor after deployments complete
+  workflow_run:
+    workflows: ["Deploy to Railway"]
+    types:
+      - completed
+  # Run health checks periodically
+  schedule:
+    # Every 15 minutes
+    - cron: '*/15 * * * *'
+  # Manual trigger
+  workflow_dispatch:
+
+jobs:
+  monitor-deployment:
+    name: Monitor Railway Deployment Status
+    runs-on: ubuntu-latest
+    if: github.event_name == 'workflow_run'
+    permissions:
+      contents: read
+      issues: write
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Check deployment status
+        id: deployment_status
+        run: |
+          if [ "${{ github.event.workflow_run.conclusion }}" == "success" ]; then
+            echo "status=success" >> $GITHUB_OUTPUT
+            echo "✅ Deployment succeeded"
+          else
+            echo "status=failure" >> $GITHUB_OUTPUT
+            echo "❌ Deployment failed"
+          fi
+
+      - name: Wait for Railway service to be ready
+        if: steps.deployment_status.outputs.status == 'success'
+        run: |
+          echo "Waiting 30 seconds for Railway service to start..."
+          sleep 30
+
+      - name: Health check
+        if: steps.deployment_status.outputs.status == 'success'
+        id: health_check
+        run: |
+          RAILWAY_URL="${{ secrets.RAILWAY_APP_URL }}"
+          if [ -z "$RAILWAY_URL" ]; then
+            echo "⚠️ RAILWAY_APP_URL secret not configured, skipping health check"
+            echo "health_status=skipped" >> $GITHUB_OUTPUT
+            exit 0
+          fi
+
+          MAX_RETRIES=5
+          RETRY_COUNT=0
+          
+          while [ $RETRY_COUNT -lt $MAX_RETRIES ]; do
+            echo "Health check attempt $((RETRY_COUNT + 1))/$MAX_RETRIES..."
+            
+            HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" "$RAILWAY_URL/api/health" || echo "000")
+            
+            if [ "$HTTP_CODE" = "200" ]; then
+              echo "✅ Health check passed (HTTP $HTTP_CODE)"
+              echo "health_status=healthy" >> $GITHUB_OUTPUT
+              exit 0
+            else
+              echo "⚠️ Health check failed (HTTP $HTTP_CODE)"
+              RETRY_COUNT=$((RETRY_COUNT + 1))
+              if [ $RETRY_COUNT -lt $MAX_RETRIES ]; then
+                echo "Waiting 15 seconds before retry..."
+                sleep 15
+              fi
+            fi
+          done
+          
+          echo "❌ Health check failed after $MAX_RETRIES attempts"
+          echo "health_status=unhealthy" >> $GITHUB_OUTPUT
+          exit 1
+
+      - name: Create deployment success issue
+        if: steps.deployment_status.outputs.status == 'success' && steps.health_check.outputs.health_status == 'healthy'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const { data: issues } = await github.rest.issues.listForRepo({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              state: 'open',
+              labels: 'railway-deployment,monitoring'
+            });
+            
+            // Close any existing deployment failure issues
+            for (const issue of issues) {
+              if (issue.title.includes('Railway Deployment Failed') || issue.title.includes('Railway Health Check Failed')) {
+                await github.rest.issues.update({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  issue_number: issue.number,
+                  state: 'closed'
+                });
+                
+                await github.rest.issues.createComment({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  issue_number: issue.number,
+                  body: '✅ Deployment now successful. Closing this issue.'
+                });
+              }
+            }
+
+      - name: Notify team of deployment failure
+        if: steps.deployment_status.outputs.status == 'failure' || steps.health_check.outputs.health_status == 'unhealthy'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const runUrl = `https://github.com/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.payload.workflow_run.id}`;
+            const deploymentFailed = '${{ steps.deployment_status.outputs.status }}' === 'failure';
+            const healthCheckFailed = '${{ steps.health_check.outputs.health_status }}' === 'unhealthy';
+            
+            let title, body;
+            
+            if (deploymentFailed) {
+              title = '🚨 Railway Deployment Failed';
+              body = `## Railway Deployment Failure Detected
+            
+            **Status:** ❌ Deployment Failed
+            **Workflow Run:** ${runUrl}
+            **Branch:** ${context.payload.workflow_run.head_branch}
+            **Commit:** ${context.payload.workflow_run.head_sha.substring(0, 7)}
+            **Triggered by:** @${context.payload.workflow_run.head_commit.author.name}
+            
+            ### Action Required
+            - [ ] Review deployment logs
+            - [ ] Identify root cause
+            - [ ] Fix issues
+            - [ ] Re-deploy
+            
+            **Logs:** [View deployment logs](${runUrl})`;
+            } else if (healthCheckFailed) {
+              title = '⚠️ Railway Health Check Failed';
+              body = `## Railway Service Health Check Failed
+            
+            **Status:** ⚠️ Service Unhealthy
+            **Workflow Run:** ${runUrl}
+            **Branch:** ${context.payload.workflow_run.head_branch}
+            **Commit:** ${context.payload.workflow_run.head_sha.substring(0, 7)}
+            
+            The deployment succeeded but the service is not responding to health checks.
+            
+            ### Action Required
+            - [ ] Check Railway logs for runtime errors
+            - [ ] Verify service is running
+            - [ ] Check database connections
+            - [ ] Review recent changes
+            
+            **Railway Dashboard:** Check your Railway project dashboard`;
+            }
+            
+            // Check if similar issue already exists
+            const { data: existingIssues } = await github.rest.issues.listForRepo({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              state: 'open',
+              labels: 'railway-deployment,monitoring'
+            });
+            
+            const similarIssue = existingIssues.find(issue => 
+              issue.title.includes(deploymentFailed ? 'Deployment Failed' : 'Health Check Failed')
+            );
+            
+            if (similarIssue) {
+              // Update existing issue
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: similarIssue.number,
+                body: `### New Failure Detected\n\n${body}\n\n**Timestamp:** ${new Date().toISOString()}`
+              });
+            } else {
+              // Create new issue
+              await github.rest.issues.create({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                title: title,
+                body: body,
+                labels: ['railway-deployment', 'monitoring', 'urgent']
+              });
+            }
+
+  scheduled-health-check:
+    name: Scheduled Railway Health Check
+    runs-on: ubuntu-latest
+    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+    permissions:
+      contents: read
+      issues: write
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Health check
+        id: health_check
+        run: |
+          RAILWAY_URL="${{ secrets.RAILWAY_APP_URL }}"
+          if [ -z "$RAILWAY_URL" ]; then
+            echo "⚠️ RAILWAY_APP_URL secret not configured"
+            echo "health_status=skipped" >> $GITHUB_OUTPUT
+            exit 0
+          fi
+
+          echo "Checking health at: $RAILWAY_URL/api/health"
+          
+          HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" "$RAILWAY_URL/api/health" || echo "000")
+          RESPONSE=$(curl -s "$RAILWAY_URL/api/health" || echo "{}")
+          
+          echo "HTTP Status: $HTTP_CODE"
+          echo "Response: $RESPONSE"
+          
+          if [ "$HTTP_CODE" = "200" ]; then
+            echo "✅ Railway service is healthy"
+            echo "health_status=healthy" >> $GITHUB_OUTPUT
+          else
+            echo "❌ Railway service is unhealthy (HTTP $HTTP_CODE)"
+            echo "health_status=unhealthy" >> $GITHUB_OUTPUT
+            exit 1
+          fi
+
+      - name: Alert on health check failure
+        if: failure() && steps.health_check.outputs.health_status == 'unhealthy'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const railwayUrl = '${{ secrets.RAILWAY_APP_URL }}';
+            
+            // Check for existing health monitoring issues
+            const { data: existingIssues } = await github.rest.issues.listForRepo({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              state: 'open',
+              labels: 'railway-health,monitoring'
+            });
+            
+            const recentIssue = existingIssues.find(issue => 
+              issue.title.includes('Railway Service Down') &&
+              Date.now() - new Date(issue.created_at).getTime() < 3600000 // Within last hour
+            );
+            
+            if (!recentIssue) {
+              await github.rest.issues.create({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                title: '🚨 Railway Service Down - Health Check Failed',
+                body: `## Railway Service Health Check Failed
+            
+            **Status:** 🔴 Service Down
+            **Detected:** ${new Date().toISOString()}
+            **URL:** ${railwayUrl}
+            
+            The scheduled health check has detected that the Railway service is not responding.
+            
+            ### Immediate Actions Required
+            - [ ] Check Railway dashboard for service status
+            - [ ] Review recent deployments
+            - [ ] Check Railway logs for errors
+            - [ ] Verify database connectivity
+            - [ ] Check for resource exhaustion (CPU/Memory)
+            - [ ] Restart service if needed
+            
+            ### Next Steps
+            1. Investigate root cause
+            2. Apply fix
+            3. Monitor recovery
+            4. Document incident
+            
+            **Railway Dashboard:** https://railway.app/
+            
+            This issue will be automatically closed when health checks pass.`,
+                labels: ['railway-health', 'monitoring', 'critical', 'incident'],
+                assignees: [] // Add team members if needed
+              });
+            } else {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: recentIssue.number,
+                body: `⚠️ Health check still failing at ${new Date().toISOString()}`
+              });
+            }
+
+      - name: Close resolved issues
+        if: steps.health_check.outputs.health_status == 'healthy'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const { data: issues } = await github.rest.issues.listForRepo({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              state: 'open',
+              labels: 'railway-health,monitoring'
+            });
+            
+            for (const issue of issues) {
+              if (issue.title.includes('Railway Service Down')) {
+                await github.rest.issues.update({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  issue_number: issue.number,
+                  state: 'closed'
+                });
+                
+                await github.rest.issues.createComment({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  issue_number: issue.number,
+                  body: `✅ Service is now healthy. Health checks passing.\n\n**Recovered at:** ${new Date().toISOString()}`
+                });
+              }
+            }

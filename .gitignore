@@ -67,3 +67,6 @@ credentials.json
 
 # Build artifacts
 *.tsbuildinfo
+
+# Railway deployment tracking
+.railway-deployments.json

@@ -13,7 +13,10 @@
     "ingest": "node --loader ts-node/esm scripts/cron/ingest.ts",
     "migrate:sources": "node --loader ts-node/esm scripts/migrate-authorized-sources.ts",
     "railway:build": "npm run build",
-    "railway:start": "node server.js"
+    "railway:start": "node server.js",
+    "railway:health": "node scripts/railway-manager.js health",
+    "railway:check": "node scripts/railway-manager.js check",
+    "railway:report": "node scripts/railway-manager.js report"
   },
   "dependencies": {
     "cors": "^2.8.5",
