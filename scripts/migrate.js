@@ -51,17 +51,25 @@ async function migrate() {
     await pool.query(`
       CREATE TABLE IF NOT EXISTS monitoring_results (
         id SERIAL PRIMARY KEY,
-        keyword_id INTEGER REFERENCES keywords(id) ON DELETE CASCADE,
-        source_id INTEGER REFERENCES monitoring_sources(id) ON DELETE CASCADE,
+        external_id TEXT UNIQUE NOT NULL,
+        source_id INTEGER REFERENCES monitoring_sources(id) ON DELETE SET NULL,
+        title TEXT NOT NULL,
         content TEXT,
-        relevance_score FLOAT CHECK (relevance_score BETWEEN 0 AND 1),
-        alert_sent BOOLEAN DEFAULT false,
-        metadata JSONB,
+        url TEXT,
+        severity VARCHAR(20) DEFAULT 'medium' CHECK (severity IN ('low', 'medium', 'high', 'critical')),
+        category VARCHAR(100),
+        keywords TEXT[] DEFAULT ARRAY[]::TEXT[],
+        metadata JSONB DEFAULT '{}'::JSONB,
         timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        INDEX idx_monitoring_results_timestamp (timestamp),
-        INDEX idx_monitoring_results_relevance (relevance_score)
+        relevance_score FLOAT CHECK (relevance_score BETWEEN 0 AND 1),
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       )
     `)
+    await pool.query('CREATE INDEX IF NOT EXISTS idx_monitoring_results_timestamp ON monitoring_results (timestamp)')
+    await pool.query('CREATE INDEX IF NOT EXISTS idx_monitoring_results_relevance ON monitoring_results (relevance_score)')
+    await pool.query('CREATE INDEX IF NOT EXISTS idx_monitoring_results_category ON monitoring_results (category)')
+    await pool.query('CREATE INDEX IF NOT EXISTS idx_monitoring_results_severity ON monitoring_results (severity)')
     console.log('✓ Monitoring results table created')
     
     // RAG outputs table
@@ -183,7 +191,7 @@ async function migrate() {
       $$ language 'plpgsql';
     `)
     
-    const tables = ['keywords', 'monitoring_sources', 'document_embeddings']
+    const tables = ['keywords', 'monitoring_sources', 'monitoring_results', 'document_embeddings']
     for (const table of tables) {
       await pool.query(`
         CREATE TRIGGER update_${table}_updated_at 
@@ -226,8 +234,8 @@ async function insertSampleData() {
   
   // Sample sources
   await pool.query(`
-    INSERT INTO monitoring_sources (source_type, url, scan_frequency) 
-    VALUES 
+    INSERT INTO monitoring_sources (source_type, url, scan_frequency)
+    VALUES
       ('web', 'https://krebsonsecurity.com/feed/', 3600),
       ('web', 'https://www.darkreading.com/rss.xml', 3600),
       ('web', 'https://threatpost.com/feed/', 7200),
@@ -235,7 +243,60 @@ async function insertSampleData() {
       ('web', 'https://www.cisa.gov/uscert/ncas/current-activity.xml', 1800)
     ON CONFLICT DO NOTHING
   `)
-  
+
+  await pool.query(`
+    INSERT INTO monitoring_results (
+      external_id,
+      title,
+      content,
+      url,
+      severity,
+      category,
+      keywords,
+      metadata,
+      timestamp,
+      relevance_score
+    )
+    VALUES
+      (
+        'sample-ransomware',
+        'New Ransomware Campaign Targets Healthcare',
+        'A new ransomware campaign has been identified targeting healthcare organisations...',
+        'https://example.com/ransomware-healthcare',
+        'high',
+        'malware',
+        ARRAY['ransomware', 'healthcare'],
+        '{"source":"krebsonsecurity","tags":["healthcare","ransomware"]}'::jsonb,
+        NOW() - INTERVAL '1 hour',
+        0.92
+      ),
+      (
+        'sample-zero-day',
+        'APT Group Exploits Zero-Day Vulnerability',
+        'Advanced Persistent Threat group has been exploiting a zero-day vulnerability in enterprise VPN appliances...',
+        'https://example.com/apt-zero-day',
+        'critical',
+        'vulnerability',
+        ARRAY['APT', 'zero-day'],
+        '{"source":"darkreading","tags":["APT","zero-day"]}'::jsonb,
+        NOW() - INTERVAL '2 hours',
+        0.97
+      ),
+      (
+        'sample-data-breach',
+        'Data Breach Affects 1M Users',
+        'A major data breach has been reported affecting over 1 million users...',
+        'https://example.com/data-breach',
+        'high',
+        'incident',
+        ARRAY['data breach'],
+        '{"source":"threatpost","tags":["data-breach"]}'::jsonb,
+        NOW() - INTERVAL '3 hours',
+        0.88
+      )
+    ON CONFLICT (external_id) DO NOTHING
+  `)
+
   console.log('✓ Sample data inserted')
 }
 

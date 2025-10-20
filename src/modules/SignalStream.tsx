@@ -18,7 +18,8 @@ import {
   ListTree,
   ExternalLink,
   Timer,
-  AlertTriangle
+  AlertTriangle,
+  Loader2
 } from 'lucide-react'
 import { Card } from '@components/Card'
 import { Button } from '@components/Button'
@@ -93,6 +94,20 @@ interface SessionTrace {
   focus: string
   filters: string[]
   events: TraceEvent[]
+}
+
+interface SignalStreamReport {
+  id: string
+  generatedAt: string
+  headline: string
+  executiveSummary: string
+  recommendedActions: string[]
+  supportingSignals: Array<{
+    id: string
+    title: string
+    lane: string
+    evidence: number
+  }>
 }
 
 interface VectorDocument {
@@ -402,6 +417,8 @@ const SignalStream = () => {
   const [traceHistory, setTraceHistory] = useState<SessionTrace[]>([])
   const [suggestions, setSuggestions] = useState(baseScopeSuggestions)
   const [isComposing, setIsComposing] = useState(false)
+  const [reports, setReports] = useState<SignalStreamReport[]>([])
+  const [isReporting, setIsReporting] = useState(false)
 
   const activeArticle = articles.find((article) => article.id === activeArticleId) ?? null
 
@@ -472,6 +489,62 @@ const SignalStream = () => {
         }
       ]
     }))
+  }
+
+  const handleGenerateReport = () => {
+    if (!activeArticle) {
+      return
+    }
+
+    setIsReporting(true)
+    pushTraceEvent({
+      type: 'compose',
+      label: 'SignalStream genererer rapport',
+      details: { articleId: activeArticle.id, focusLane: activeArticle.focusLane }
+    })
+
+    setTimeout(() => {
+      const supportingSignals = articles
+        .filter((article) =>
+          article.id === activeArticle.id ||
+          article.focusLane === activeArticle.focusLane ||
+          article.tags.some((tag) => activeArticle.tags.includes(tag))
+        )
+        .slice(0, 3)
+        .map((article) => ({
+          id: article.id,
+          title: article.title,
+          lane: article.focusLane,
+          evidence: Number(article.evidence.vectorScore.toFixed(2))
+        }))
+
+      const recommendedActions = activeArticle.implications.length
+        ? activeArticle.implications
+        : [
+            `Prioritér responstiltag for ${activeArticle.focusLane}`,
+            'Brief ledelsen med SignalStream rapporten',
+            'Opdater overvågningsfiltre baseret på rapportens signaler'
+          ]
+
+      const executiveSummary = [
+        activeArticle.summary,
+        activeArticle.analysis[0] ? `Analytisk fokus: ${activeArticle.analysis[0]}` : undefined
+      ]
+        .filter(Boolean)
+        .join(' ')
+
+      const report: SignalStreamReport = {
+        id: createId(),
+        generatedAt: new Date().toISOString(),
+        headline: `SignalStream rapport · ${activeArticle.focusLane}`,
+        executiveSummary,
+        recommendedActions: recommendedActions.slice(0, 4),
+        supportingSignals
+      }
+
+      setReports((previous) => [report, ...previous].slice(0, 5))
+      setIsReporting(false)
+    }, 650)
   }
 
   const handleIngest = () => {
@@ -859,6 +932,72 @@ const SignalStream = () => {
         </div>
 
         <div className="space-y-6">
+          <Card>
+            <div className="flex items-center justify-between">
+              <h2 className="text-lg font-semibold flex items-center gap-2">
+                <FileText className="w-5 h-5 text-cyber-blue" /> Rapporter & analyser
+              </h2>
+              <Button
+                onClick={handleGenerateReport}
+                disabled={!activeArticle || isReporting}
+                className="bg-gray-800 hover:bg-gray-700 text-gray-100 flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {isReporting ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    Genererer...
+                  </>
+                ) : (
+                  <>
+                    <Sparkles className="w-4 h-4 text-amber-400" />
+                    Generer rapport
+                  </>
+                )}
+              </Button>
+            </div>
+            <p className="mt-2 text-xs text-gray-400">
+              Agenten destillerer aktive SignalStream-fund til ledelses- og SOC-klare briefings.
+            </p>
+            {reports.length === 0 ? (
+              <div className="mt-4 text-sm text-gray-400">
+                Vælg en artikel og generer din første rapport for at aktivere rapporteringshistorik.
+              </div>
+            ) : (
+              <div className="mt-4 space-y-4">
+                {reports.map((report) => (
+                  <div
+                    key={report.id}
+                    className="rounded-lg border border-gray-800 bg-gray-900/80 p-4 space-y-3"
+                  >
+                    <div className="flex items-center justify-between text-xs text-gray-500">
+                      <span>{new Date(report.generatedAt).toLocaleString('da-DK')}</span>
+                      <span>{report.supportingSignals.length} signaler</span>
+                    </div>
+                    <h3 className="text-sm font-semibold text-gray-100">{report.headline}</h3>
+                    <p className="text-sm text-gray-300 leading-relaxed">{report.executiveSummary}</p>
+                    <div className="space-y-1 text-xs text-gray-300">
+                      {report.recommendedActions.map((action) => (
+                        <p key={action}>• {action}</p>
+                      ))}
+                    </div>
+                    {report.supportingSignals.length > 0 && (
+                      <div className="flex flex-wrap gap-2 pt-2 border-t border-gray-800 text-xs text-gray-400">
+                        {report.supportingSignals.map((signal) => (
+                          <span
+                            key={signal.id}
+                            className="px-2 py-1 rounded-full bg-gray-800 border border-gray-700"
+                          >
+                            {signal.lane} · evidens {signal.evidence.toFixed(2)}
+                          </span>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
+          </Card>
+
           <Card>
             <h2 className="text-lg font-semibold flex items-center gap-2">
               <Database className="w-5 h-5 text-cyber-blue" /> Konfiguration
