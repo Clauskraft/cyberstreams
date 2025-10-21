@@ -1,0 +1,66 @@
+# Page snapshot
+
+```yaml
+- generic [ref=e3]:
+  - banner [ref=e4]:
+    - generic [ref=e6]:
+      - generic [ref=e7]:
+        - img [ref=e8]
+        - generic [ref=e10]:
+          - heading "CYBERSTREAMS" [level=1] [ref=e11]
+          - paragraph [ref=e12]: Dark Web Intelligence Platform
+      - generic [ref=e15]: LIVE
+  - navigation [ref=e18]:
+    - button "Dashboard" [ref=e19]:
+      - img [ref=e20]
+      - generic [ref=e22]: Dashboard
+    - button "Agent" [ref=e23]:
+      - img [ref=e24]
+      - generic [ref=e27]: Agent
+    - button "Threats" [ref=e28]:
+      - img [ref=e29]
+      - generic [ref=e31]: Threats
+    - button "SignalStream" [ref=e32]:
+      - img [ref=e33]
+      - generic [ref=e39]: SignalStream
+    - button "Activity" [ref=e40]:
+      - img [ref=e41]
+      - generic [ref=e44]: Activity
+    - button "Consolidated Intel" [ref=e45]:
+      - img [ref=e46]
+      - generic [ref=e51]: Consolidated Intel
+    - button "Admin" [ref=e52]:
+      - img [ref=e53]
+      - generic [ref=e56]: Admin
+    - button "Admin v2" [ref=e57]:
+      - img [ref=e58]
+      - generic [ref=e62]: Admin v2
+  - main [ref=e63]:
+    - generic [ref=e65]:
+      - generic [ref=e66]:
+        - heading "Admin v2.0" [level=1] [ref=e67]
+        - paragraph [ref=e68]: Advanced configuration and management for Cyberstreams v2.0
+      - generic [ref=e69]:
+        - navigation [ref=e71]:
+          - button "Keywords" [ref=e72]:
+            - img [ref=e73]
+            - generic [ref=e76]: Keywords
+          - button "Sources" [ref=e77]:
+            - img [ref=e78]
+            - generic [ref=e82]: Sources
+          - button "RAG Config" [ref=e83]:
+            - img [ref=e84]
+            - generic [ref=e87]: RAG Config
+          - button "Analysis" [ref=e88]:
+            - img [ref=e89]
+            - generic [ref=e91]: Analysis
+        - generic [ref=e94]:
+          - heading "Monitoring Keywords" [level=2] [ref=e95]
+          - generic [ref=e96]:
+            - textbox "Keyword" [ref=e97]: test-keyword
+            - textbox "Category" [ref=e98]: test-category
+            - spinbutton [ref=e99]: "1"
+            - button "Add" [ref=e100]:
+              - img [ref=e101]
+              - generic [ref=e102]: Add
+```
