@@ -11,8 +11,8 @@ const AdminPage = lazy(() => import('./pages/Admin'))
 const AdminV2Page = lazy(() => import('@modules/AdminV2Page'))
 
 const LoadingSpinner = () => (
-  <div className="tdc-flex-center py-20">
-    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-tdc-primary-digital-blue"></div>
+  <div className="flex items-center justify-center py-20">
+    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
   </div>
 )
 
@@ -20,23 +20,23 @@ function App() {
   const [activeTab, setActiveTab] = useState('dashboard')
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-tdc-primary-dark-blue to-tdc-primary-digital-blue text-white">
+    <div className="min-h-screen bg-gradient-to-b from-blue-900 to-blue-600 text-white">
       {/* Header */}
-      <header className="tdc-nav">
-        <div className="tdc-container">
-          <div className="tdc-flex-between">
-            <div className="tdc-flex">
+      <header className="bg-blue-600 text-white py-4">
+        <div className="max-w-7xl mx-auto px-6">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-3">
               <Shield className="w-8 h-8 text-white" />
               <div>
-                <h1 className="tdc-heading-2 text-white">
+                <h1 className="text-2xl font-bold text-white">
                   CYBERSTREAMS
                 </h1>
-                <p className="tdc-body-small text-white/80">Dark Web Intelligence Platform</p>
+                <p className="text-sm text-white/80">Dark Web Intelligence Platform</p>
               </div>
             </div>
-            <div className="tdc-flex">
-              <div className="tdc-status-success">
-                <div className="w-2 h-2 bg-white rounded-full animate-pulse mr-2" />
+            <div className="flex items-center">
+              <div className="bg-green-500 text-white px-3 py-1 rounded-full text-sm font-medium">
+                <div className="w-2 h-2 bg-white rounded-full animate-pulse mr-2 inline-block" />
                 LIVE
               </div>
             </div>
@@ -46,7 +46,7 @@ function App() {
 
       {/* Navigation Tabs */}
       <div className="bg-white/10 backdrop-blur-xl">
-        <div className="tdc-container">
+        <div className="max-w-7xl mx-auto px-6">
           <nav className="flex space-x-1 overflow-x-auto">
             {[
               { id: 'dashboard', label: 'Dashboard', icon: Shield },
@@ -61,8 +61,10 @@ function App() {
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
-                className={`tdc-nav-item ${
-                  activeTab === tab.id ? 'active' : ''
+                className={`flex items-center space-x-2 px-6 py-3 font-medium transition-all ${
+                  activeTab === tab.id
+                    ? 'bg-white/20 text-white border-b-2 border-white'
+                    : 'text-white/70 hover:text-white hover:bg-white/10'
                 }`}
               >
                 <tab.icon className="w-4 h-4" />
@@ -74,7 +76,7 @@ function App() {
       </div>
 
       {/* Main Content */}
-      <main className="tdc-container tdc-p-lg">
+      <main className="max-w-7xl mx-auto px-6 py-8">
         <Suspense fallback={<LoadingSpinner />}>
           {activeTab === 'dashboard' && <HomeContent />}
           {activeTab === 'agent' && <CyberstreamsAgent />}

@@ -12,20 +12,20 @@ const HomeContent = () => {
   return (
     <div className="space-y-8">
       {/* Stats Grid */}
-      <div className="tdc-grid tdc-grid-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         {stats.map((stat, idx) => (
           <div
             key={idx}
-            className="tdc-card tdc-fade-in"
+            className="bg-white/10 backdrop-blur-sm rounded-xl p-6 border border-white/20 hover:bg-white/20 transition-all"
           >
-            <div className="tdc-flex-between tdc-mb-md">
-              <stat.icon className={`w-8 h-8 text-${stat.color}-500`} />
-              <span className={`tdc-status-${stat.color === 'red' ? 'error' : stat.color === 'green' ? 'success' : 'warning'}`}>
+            <div className="flex items-center justify-between mb-4">
+              <stat.icon className={`w-8 h-8 text-${stat.color}-400`} />
+              <span className={`text-xs font-medium px-2 py-1 rounded-full bg-${stat.color}-500/20 text-${stat.color}-300 border border-${stat.color}-500/30`}>
                 {stat.change}
               </span>
             </div>
-            <p className="tdc-heading-2 text-white">{stat.value}</p>
-            <p className="tdc-body-small text-white/80">{stat.label}</p>
+            <p className="text-3xl font-bold mb-1 text-white">{stat.value}</p>
+            <p className="text-sm text-white/80">{stat.label}</p>
           </div>
         ))}
       </div>
@@ -34,11 +34,9 @@ const HomeContent = () => {
       {/* <SignalStream /> */}
 
       {/* Additional Dashboard Widgets */}
-      <div className="tdc-grid tdc-grid-2">
-        <div className="tdc-card tdc-fade-in">
-          <div className="tdc-card-header">
-            <h3 className="tdc-heading-3">Threat Categories</h3>
-          </div>
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div className="bg-white/10 backdrop-blur-sm rounded-xl p-6 border border-white/20">
+          <h3 className="text-lg font-semibold mb-4 text-white">Threat Categories</h3>
           <div className="space-y-3">
             {[
               { name: 'Ransomware', count: 45, percentage: 75 },
@@ -47,13 +45,13 @@ const HomeContent = () => {
               { name: 'Phishing', count: 21, percentage: 35 },
             ].map((category, idx) => (
               <div key={idx}>
-                <div className="tdc-flex-between tdc-mb-sm">
-                  <span className="tdc-body-small text-white/80">{category.name}</span>
-                  <span className="tdc-body-small font-medium text-white">{category.count}</span>
+                <div className="flex items-center justify-between mb-1">
+                  <span className="text-sm text-white/80">{category.name}</span>
+                  <span className="text-sm font-medium text-white">{category.count}</span>
                 </div>
                 <div className="w-full bg-gray-700 rounded-full h-2">
                   <div
-                    className="bg-tdc-primary-digital-blue h-2 rounded-full transition-all"
+                    className="bg-blue-500 h-2 rounded-full transition-all"
                     style={{ width: `${category.percentage}%` }}
                   />
                 </div>
@@ -62,10 +60,8 @@ const HomeContent = () => {
           </div>
         </div>
 
-        <div className="tdc-card tdc-fade-in">
-          <div className="tdc-card-header">
-            <h3 className="tdc-heading-3">Recent Activity</h3>
-          </div>
+        <div className="bg-white/10 backdrop-blur-sm rounded-xl p-6 border border-white/20">
+          <h3 className="text-lg font-semibold mb-4 text-white">Recent Activity</h3>
           <div className="space-y-3">
             {[
               { time: '2 min ago', action: 'New threat detected', severity: 'high' },
@@ -73,18 +69,18 @@ const HomeContent = () => {
               { time: '1 hour ago', action: 'Data indexed', severity: 'medium' },
               { time: '2 hours ago', action: 'Alert triggered', severity: 'high' },
             ].map((activity, idx) => (
-              <div key={idx} className="tdc-flex-between py-2 border-b border-gray-700 last:border-0">
+              <div key={idx} className="flex items-center justify-between py-2 border-b border-white/10 last:border-0">
                 <div>
-                  <p className="tdc-body-small font-medium text-white">{activity.action}</p>
-                  <p className="tdc-body-small text-white/60">{activity.time}</p>
+                  <p className="text-sm font-medium text-white">{activity.action}</p>
+                  <p className="text-xs text-white/60">{activity.time}</p>
                 </div>
                 <span
                   className={`w-2 h-2 rounded-full ${
                     activity.severity === 'high'
-                      ? 'bg-tdc-accent-red'
+                      ? 'bg-red-500'
                       : activity.severity === 'medium'
-                      ? 'bg-tdc-accent-yellow'
-                      : 'bg-tdc-accent-green'
+                      ? 'bg-yellow-500'
+                      : 'bg-green-500'
                   }`}
                 />
               </div>
