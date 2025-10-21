@@ -2,67 +2,53 @@ name: Deploy to Railway
 
 on:
   push:
-    branches:
-      - master
-      - main
+    branches: [ master ]
   workflow_dispatch:
 
+permissions:
+  contents: read
+
 jobs:
-  deploy:
-    name: Deploy service
+  build-and-deploy:
     runs-on: ubuntu-latest
-    if: ${{ secrets.RAILWAY_TOKEN != '' && secrets.RAILWAY_PROJECT_ID != '' && secrets.RAILWAY_SERVICE_ID != '' }}
+    env:
+      NODE_ENV: production
+      DATABASE_URL: ${{ secrets.DATABASE_URL }}
+      PGSSL: ${{ secrets.PGSSL }}
+      VITE_API_BASE_URL: ${{ secrets.VITE_API_BASE_URL }}
     steps:
-      - name: Check out repository
+      - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Set up Node.js
+      - name: Setup PNPM
+        uses: pnpm/action-setup@v3
+        with:
+          version: 9
+
+      - name: Setup Node
         uses: actions/setup-node@v4
         with:
           node-version: '20'
+          cache: 'pnpm'
 
       - name: Install dependencies
-        run: npm ci
+        run: pnpm install --frozen-lockfile
 
-      - name: Build application
-        run: npm run build
+      - name: Lint (non-blocking)
+        run: pnpm -r lint || true
+
+      - name: Build
+        run: pnpm -r build || pnpm build
+
+      - name: Run DB migrations
+        run: node scripts/migrate.mjs
 
       - name: Install Railway CLI
-        run: npm install -g @railway/cli@4
+        run: npm i -g @railway/cli@latest
 
       - name: Deploy to Railway
         env:
           RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
-          RAILWAY_ENVIRONMENT: ${{ secrets.RAILWAY_ENVIRONMENT }}
-          RAILWAY_PROJECT_ID: ${{ secrets.RAILWAY_PROJECT_ID }}
-          RAILWAY_SERVICE_ID: ${{ secrets.RAILWAY_SERVICE_ID }}
         run: |
-          set -euo pipefail
-
-          if [ -z "${RAILWAY_TOKEN:-}" ]; then
-            echo "RAILWAY_TOKEN secret is required to deploy" >&2
-            exit 1
-          fi
-
-          railway login --token "$RAILWAY_TOKEN"
-
-          if [ -z "${RAILWAY_PROJECT_ID:-}" ]; then
-            echo "RAILWAY_PROJECT_ID secret is required to link the GitHub workflow" >&2
-            exit 1
-          fi
-
-          if [ -z "${RAILWAY_SERVICE_ID:-}" ]; then
-            echo "RAILWAY_SERVICE_ID secret is required to target the correct service" >&2
-            exit 1
-          fi
-
-          railway link --project "$RAILWAY_PROJECT_ID"
-
-          if [ -n "${RAILWAY_ENVIRONMENT:-}" ]; then
-            export RAILWAY_ENVIRONMENT
-            railway use environment "$RAILWAY_ENVIRONMENT" \
-              || railway use --environment "$RAILWAY_ENVIRONMENT" \
-              || echo "Warning: unable to pre-select environment, relying on CLI defaults"
-          fi
-
-          railway up --ci --build --wait --no-confirm --service "$RAILWAY_SERVICE_ID"
+          set -e
+          railway up --ci || railway deploy --yes

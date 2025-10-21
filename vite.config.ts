@@ -1,8 +1,9 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
-import path from 'path'
+import path from 'node:path'
 
 export default defineConfig({
+  base: '/',
   plugins: [react()],
   resolve: {
     alias: {
@@ -13,21 +14,5 @@ export default defineConfig({
       '@tokens': path.resolve(__dirname, './src/tokens'),
       '@data': path.resolve(__dirname, './src/data'),
     },
-  },
-  build: {
-    outDir: 'dist',
-    sourcemap: false,
-    rollupOptions: {
-      output: {
-        manualChunks: {
-          'react-vendor': ['react', 'react-dom'],
-          'lucide': ['lucide-react'],
-        },
-      },
-    },
-  },
-  server: {
-    port: 5173,
-    host: true,
   },
 })
