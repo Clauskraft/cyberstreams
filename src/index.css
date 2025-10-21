@@ -2,6 +2,9 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Import TDC CVI Styles */
+@import './styles/tdc-cvi.css';
+
 :root {
   font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
   line-height: 1.5;

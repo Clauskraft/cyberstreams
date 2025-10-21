@@ -1,0 +1,401 @@
+/* TDC Erhverv CVI CSS - Baseret på officiel brand guide */
+
+:root {
+  /* TDC Primary Colors */
+  --tdc-primary-light-blue: #ADD8E6;
+  --tdc-primary-digital-blue: #0000FF;
+  --tdc-primary-dark-blue: #00008B;
+  
+  /* TDC Secondary Colors */
+  --tdc-secondary-gray: #6B7280;
+  --tdc-secondary-light-gray: #F3F4F6;
+  
+  /* TDC Accent Colors */
+  --tdc-accent-green: #10B981;
+  --tdc-accent-red: #EF4444;
+  --tdc-accent-yellow: #F59E0B;
+  
+  /* TDC Typography */
+  --tdc-font-primary: 'Inter', system-ui, sans-serif;
+  --tdc-font-secondary: 'Arial', sans-serif;
+  
+  /* TDC Spacing */
+  --tdc-space-xs: 4px;
+  --tdc-space-sm: 8px;
+  --tdc-space-md: 16px;
+  --tdc-space-lg: 24px;
+  --tdc-space-xl: 32px;
+  --tdc-space-2xl: 48px;
+  --tdc-space-3xl: 64px;
+  
+  /* TDC Border Radius */
+  --tdc-radius-sm: 4px;
+  --tdc-radius-md: 8px;
+  --tdc-radius-lg: 12px;
+  --tdc-radius-xl: 16px;
+  
+  /* TDC Shadows */
+  --tdc-shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+  --tdc-shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+  --tdc-shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+}
+
+/* TDC Brand Typography */
+.tdc-heading-1 {
+  font-family: var(--tdc-font-primary);
+  font-size: 2.5rem;
+  font-weight: 700;
+  line-height: 1.2;
+  color: var(--tdc-primary-digital-blue);
+}
+
+.tdc-heading-2 {
+  font-family: var(--tdc-font-primary);
+  font-size: 2rem;
+  font-weight: 600;
+  line-height: 1.3;
+  color: var(--tdc-primary-digital-blue);
+}
+
+.tdc-heading-3 {
+  font-family: var(--tdc-font-primary);
+  font-size: 1.5rem;
+  font-weight: 600;
+  line-height: 1.4;
+  color: var(--tdc-primary-dark-blue);
+}
+
+.tdc-body-large {
+  font-family: var(--tdc-font-primary);
+  font-size: 1.125rem;
+  font-weight: 400;
+  line-height: 1.6;
+  color: var(--tdc-secondary-gray);
+}
+
+.tdc-body {
+  font-family: var(--tdc-font-primary);
+  font-size: 1rem;
+  font-weight: 400;
+  line-height: 1.5;
+  color: var(--tdc-secondary-gray);
+}
+
+.tdc-body-small {
+  font-family: var(--tdc-font-primary);
+  font-size: 0.875rem;
+  font-weight: 400;
+  line-height: 1.4;
+  color: var(--tdc-secondary-gray);
+}
+
+/* TDC Brand Components */
+.tdc-button-primary {
+  background-color: var(--tdc-primary-digital-blue);
+  color: white;
+  border: none;
+  border-radius: var(--tdc-radius-md);
+  padding: var(--tdc-space-sm) var(--tdc-space-lg);
+  font-family: var(--tdc-font-primary);
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: var(--tdc-shadow-sm);
+}
+
+.tdc-button-primary:hover {
+  background-color: var(--tdc-primary-dark-blue);
+  box-shadow: var(--tdc-shadow-md);
+  transform: translateY(-1px);
+}
+
+.tdc-button-secondary {
+  background-color: transparent;
+  color: var(--tdc-primary-digital-blue);
+  border: 2px solid var(--tdc-primary-digital-blue);
+  border-radius: var(--tdc-radius-md);
+  padding: var(--tdc-space-sm) var(--tdc-space-lg);
+  font-family: var(--tdc-font-primary);
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.tdc-button-secondary:hover {
+  background-color: var(--tdc-primary-digital-blue);
+  color: white;
+}
+
+.tdc-card {
+  background-color: white;
+  border-radius: var(--tdc-radius-lg);
+  padding: var(--tdc-space-xl);
+  box-shadow: var(--tdc-shadow-md);
+  border: 1px solid var(--tdc-secondary-light-gray);
+}
+
+.tdc-card-header {
+  margin-bottom: var(--tdc-space-lg);
+  padding-bottom: var(--tdc-space-md);
+  border-bottom: 1px solid var(--tdc-secondary-light-gray);
+}
+
+.tdc-input {
+  width: 100%;
+  padding: var(--tdc-space-sm) var(--tdc-space-md);
+  border: 2px solid var(--tdc-secondary-light-gray);
+  border-radius: var(--tdc-radius-md);
+  font-family: var(--tdc-font-primary);
+  font-size: 1rem;
+  transition: border-color 0.2s ease;
+}
+
+.tdc-input:focus {
+  outline: none;
+  border-color: var(--tdc-primary-digital-blue);
+  box-shadow: 0 0 0 3px rgba(0, 0, 255, 0.1);
+}
+
+/* TDC Brand Layout */
+.tdc-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 var(--tdc-space-lg);
+}
+
+.tdc-grid {
+  display: grid;
+  gap: var(--tdc-space-lg);
+}
+
+.tdc-grid-2 {
+  grid-template-columns: repeat(2, 1fr);
+}
+
+.tdc-grid-3 {
+  grid-template-columns: repeat(3, 1fr);
+}
+
+.tdc-grid-4 {
+  grid-template-columns: repeat(4, 1fr);
+}
+
+.tdc-flex {
+  display: flex;
+  gap: var(--tdc-space-md);
+}
+
+.tdc-flex-center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.tdc-flex-between {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+/* TDC Brand Status Indicators */
+.tdc-status-success {
+  background-color: var(--tdc-accent-green);
+  color: white;
+  padding: var(--tdc-space-xs) var(--tdc-space-sm);
+  border-radius: var(--tdc-radius-sm);
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+.tdc-status-warning {
+  background-color: var(--tdc-accent-yellow);
+  color: white;
+  padding: var(--tdc-space-xs) var(--tdc-space-sm);
+  border-radius: var(--tdc-radius-sm);
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+.tdc-status-error {
+  background-color: var(--tdc-accent-red);
+  color: white;
+  padding: var(--tdc-space-xs) var(--tdc-space-sm);
+  border-radius: var(--tdc-radius-sm);
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+/* TDC Brand Navigation */
+.tdc-nav {
+  background-color: var(--tdc-primary-digital-blue);
+  color: white;
+  padding: var(--tdc-space-md) 0;
+}
+
+.tdc-nav-item {
+  color: white;
+  text-decoration: none;
+  padding: var(--tdc-space-sm) var(--tdc-space-md);
+  border-radius: var(--tdc-radius-sm);
+  transition: background-color 0.2s ease;
+  font-family: var(--tdc-font-primary);
+  font-weight: 500;
+}
+
+.tdc-nav-item:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+.tdc-nav-item.active {
+  background-color: rgba(255, 255, 255, 0.2);
+}
+
+/* TDC Brand Header */
+.tdc-header {
+  background: linear-gradient(135deg, var(--tdc-primary-digital-blue) 0%, var(--tdc-primary-dark-blue) 100%);
+  color: white;
+  padding: var(--tdc-space-xl) 0;
+  text-align: center;
+}
+
+.tdc-header h1 {
+  font-family: var(--tdc-font-primary);
+  font-size: 3rem;
+  font-weight: 700;
+  margin-bottom: var(--tdc-space-md);
+}
+
+.tdc-header p {
+  font-family: var(--tdc-font-primary);
+  font-size: 1.25rem;
+  opacity: 0.9;
+}
+
+/* TDC Brand Footer */
+.tdc-footer {
+  background-color: var(--tdc-primary-dark-blue);
+  color: white;
+  padding: var(--tdc-space-xl) 0;
+  text-align: center;
+}
+
+.tdc-footer p {
+  font-family: var(--tdc-font-primary);
+  font-size: 0.875rem;
+  opacity: 0.8;
+}
+
+/* TDC Brand Responsive */
+@media (max-width: 768px) {
+  .tdc-grid-2,
+  .tdc-grid-3,
+  .tdc-grid-4 {
+    grid-template-columns: 1fr;
+  }
+  
+  .tdc-container {
+    padding: 0 var(--tdc-space-md);
+  }
+  
+  .tdc-header h1 {
+    font-size: 2rem;
+  }
+  
+  .tdc-header p {
+    font-size: 1rem;
+  }
+}
+
+/* TDC Brand Animations */
+@keyframes tdc-fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.tdc-fade-in {
+  animation: tdc-fade-in 0.6s ease-out;
+}
+
+@keyframes tdc-slide-in {
+  from {
+    opacity: 0;
+    transform: translateX(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.tdc-slide-in {
+  animation: tdc-slide-in 0.4s ease-out;
+}
+
+/* TDC Brand Utilities */
+.tdc-text-center {
+  text-align: center;
+}
+
+.tdc-text-left {
+  text-align: left;
+}
+
+.tdc-text-right {
+  text-align: right;
+}
+
+.tdc-mb-sm {
+  margin-bottom: var(--tdc-space-sm);
+}
+
+.tdc-mb-md {
+  margin-bottom: var(--tdc-space-md);
+}
+
+.tdc-mb-lg {
+  margin-bottom: var(--tdc-space-lg);
+}
+
+.tdc-mb-xl {
+  margin-bottom: var(--tdc-space-xl);
+}
+
+.tdc-mt-sm {
+  margin-top: var(--tdc-space-sm);
+}
+
+.tdc-mt-md {
+  margin-top: var(--tdc-space-md);
+}
+
+.tdc-mt-lg {
+  margin-top: var(--tdc-space-lg);
+}
+
+.tdc-mt-xl {
+  margin-top: var(--tdc-space-xl);
+}
+
+.tdc-p-sm {
+  padding: var(--tdc-space-sm);
+}
+
+.tdc-p-md {
+  padding: var(--tdc-space-md);
+}
+
+.tdc-p-lg {
+  padding: var(--tdc-space-lg);
+}
+
+.tdc-p-xl {
+  padding: var(--tdc-space-xl);
+}
