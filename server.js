@@ -236,7 +236,18 @@ app.get('/ready', (req, res) => {
   })
 })
 
-// This 404 handler will be added at the end after all API routes are defined
+// Helper function to get source icon
+function getSourceIcon(sourceDomain) {
+  const iconMap = {
+    'cfcs.dk': 'shield',
+    'enisa.europa.eu': 'shield-check',
+    'cert.europa.eu': 'shield-alert',
+    'cisa.gov': 'flag',
+    'nvd.nist.gov': 'database',
+    'msrc.microsoft.com': 'building'
+  }
+  return iconMap[sourceDomain] || 'shield'
+}
 
 // Error handling middleware
 app.use((err, req, res, next) => {
@@ -588,13 +599,29 @@ app.get('/api/pulse', checkDatabase, async (req, res) => {
 app.get('/api/daily-pulse', checkDatabase, async (req, res) => {
   try {
     const result = await pool.query(`
-      SELECT * FROM monitoring_results 
-      WHERE DATE(timestamp) = CURRENT_DATE 
-      ORDER BY timestamp DESC
+      SELECT 
+        mr.*,
+        ms.url as source_url,
+        ms.source_type,
+        getSourceIcon(ms.url) as sourceIcon
+      FROM monitoring_results mr
+      LEFT JOIN monitoring_sources ms ON mr.source_id = ms.id
+      WHERE DATE(mr.timestamp) = CURRENT_DATE 
+      ORDER BY mr.timestamp DESC
     `)
+    
+    // Transform data to include sourceIcon
+    const transformedData = result.rows.map(row => {
+      const sourceDomain = row.source_url ? new URL(row.source_url).hostname : 'unknown'
+      return {
+        ...row,
+        sourceIcon: getSourceIcon(sourceDomain)
+      }
+    })
+    
     res.json({
       success: true,
-      data: result.rows,
+      data: transformedData,
       correlationId: req.correlationId,
       timestamp: new Date().toISOString()
     })
