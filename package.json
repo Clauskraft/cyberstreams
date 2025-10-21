@@ -12,7 +12,7 @@
     "start": "node server.js",
     "test": "vitest run",
     "test:e2e": "playwright test",
-    "migrate": "node scripts/migrate.js",
+    "migrate": "node scripts/migrate.mjs",
     "brand:brandA": "cross-env VITE_BRAND=brandA vite",
     "brand:brandB": "cross-env VITE_BRAND=brandB vite",
     "brand:brandC": "cross-env VITE_BRAND=brandC vite"
