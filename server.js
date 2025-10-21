@@ -123,8 +123,13 @@ async function initDB() {
   console.log('Starting database initialization...')
   
   try {
-    // Enable pgvector extension
-    await pool.query('CREATE EXTENSION IF NOT EXISTS vector')
+    // Enable pgvector extension (skip if not available)
+    try {
+      await pool.query('CREATE EXTENSION IF NOT EXISTS vector')
+      console.log('✓ Vector extension created')
+    } catch (error) {
+      console.log('⚠ Vector extension not available, skipping...')
+    }
     
     await pool.query(`
       CREATE TABLE IF NOT EXISTS keywords (
@@ -137,6 +142,7 @@ async function initDB() {
         UNIQUE(keyword)
       )
     `)
+    console.log('✓ Keywords table created')
     
     await pool.query(`
       CREATE TABLE IF NOT EXISTS monitoring_sources (
@@ -149,6 +155,7 @@ async function initDB() {
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       )
     `)
+    console.log('✓ Monitoring sources table created')
     
     await pool.query(`
       CREATE TABLE IF NOT EXISTS monitoring_results (
@@ -161,6 +168,7 @@ async function initDB() {
         timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       )
     `)
+    console.log('✓ Monitoring results table created')
     
     await pool.query(`
       CREATE TABLE IF NOT EXISTS rag_config (
@@ -170,18 +178,36 @@ async function initDB() {
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       )
     `)
+    console.log('✓ RAG config table created')
     
-    await pool.query(`
-      CREATE TABLE IF NOT EXISTS documents (
-        id SERIAL PRIMARY KEY,
-        title TEXT,
-        content TEXT,
-        source_url TEXT,
-        embedding vector(1536),
-        metadata JSONB,
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-      )
-    `)
+    // Create documents table with vector support (skip if pgvector not available)
+    try {
+      await pool.query(`
+        CREATE TABLE IF NOT EXISTS documents (
+          id SERIAL PRIMARY KEY,
+          title TEXT,
+          content TEXT,
+          source_url TEXT,
+          embedding vector(1536),
+          metadata JSONB,
+          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )
+      `)
+      console.log('✓ Documents table created with vector support')
+    } catch (error) {
+      // Fallback to table without vector support
+      await pool.query(`
+        CREATE TABLE IF NOT EXISTS documents (
+          id SERIAL PRIMARY KEY,
+          title TEXT,
+          content TEXT,
+          source_url TEXT,
+          metadata JSONB,
+          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )
+      `)
+      console.log('✓ Documents table created without vector support')
+    }
     
     // Insert default RAG config
     await pool.query(`
@@ -194,8 +220,9 @@ async function initDB() {
         ('embedding_model', 'text-embedding-ada-002')
       ON CONFLICT (config_key) DO NOTHING
     `)
+    console.log('✓ Default RAG config inserted')
     
-    console.log('Database initialized successfully')
+    console.log('✅ Database initialized successfully')
   } catch (error) {
     console.error('Database initialization error:', error)
   }
