@@ -1,0 +1,6 @@
+# Set CODEOWNERS for core paths
+* @your-org/infra-team
+
+/lib/* @your-org/backend-team
+/cyberstreams/src/* @your-org/frontend-team
+/.github/workflows/* @your-org/infra-team

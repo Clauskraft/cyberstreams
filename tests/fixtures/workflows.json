@@ -1,0 +1,19 @@
+[
+  {
+    "id": "test-workflow-1",
+    "name": "Test Email Warning Generation",
+    "description": "Test workflow for generating email warnings",
+    "category": "communication",
+    "steps": [
+      {
+        "id": "test-step-1",
+        "name": "Test Threat Assessment",
+        "type": "analysis",
+        "description": "Test threat analysis step"
+      }
+    ],
+    "triggers": ["test_trigger"],
+    "estimated_duration": "5-10 minutes",
+    "success_criteria": ["test_success"]
+  }
+]

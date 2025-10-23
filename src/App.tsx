@@ -1,43 +1,56 @@
-import { useState, lazy, Suspense } from 'react'
-import { Shield, Activity, Radio, FileText, Network, Settings, Bot, Database } from 'lucide-react'
+import { useState, lazy, Suspense } from "react";
+import {
+  Shield,
+  Activity,
+  Radio,
+  FileText,
+  Network,
+  Settings,
+  Bot,
+  Database,
+} from "lucide-react";
 
-const HomeContent = lazy(() => import('@modules/HomeContent'))
-const ThreatsModule = lazy(() => import('@modules/ThreatsModule'))
-const ActivityModule = lazy(() => import('@modules/ActivityModule'))
-const SignalStream = lazy(() => import('@modules/SignalStream'))
-const ConsolidatedIntelligence = lazy(() => import('@modules/ConsolidatedIntelligence'))
-const CyberstreamsAgent = lazy(() => import('@modules/CyberstreamsAgent'))
-const AdminPage = lazy(() => import('./pages/Admin'))
-const AdminV2Page = lazy(() => import('@modules/AdminV2Page'))
+const HomeContent = lazy(() => import("@modules/HomeContent"));
+const ThreatsModule = lazy(() => import("@modules/ThreatsModule"));
+const ActivityModule = lazy(() => import("@modules/ActivityModule"));
+const SignalStream = lazy(() => import("@modules/SignalStream"));
+const ConsolidatedIntelligence = lazy(
+  () => import("@modules/ConsolidatedIntelligence")
+);
+const CyberstreamsAgent = lazy(() => import("@modules/CyberstreamsAgent"));
+const AgenticStudio = lazy(() => import("@modules/AgenticStudio"));
+const AdminV2Page = lazy(() => import("@modules/AdminV2Page"));
 
 const LoadingSpinner = () => (
   <div className="flex items-center justify-center py-20">
-    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
+    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-cyber-blue"></div>
   </div>
-)
+);
 
 function App() {
-  const [activeTab, setActiveTab] = useState('dashboard')
+  const [activeTab, setActiveTab] = useState("dashboard");
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-blue-900 to-blue-600 text-white">
+    <div className="min-h-screen bg-gradient-to-b from-cyber-dark to-cyber-darker text-white">
       {/* Header */}
-      <header className="bg-blue-600 text-white py-4">
-        <div className="max-w-7xl mx-auto px-6">
+      <header className="border-b border-gray-800 backdrop-blur-xl bg-cyber-dark/50 sticky top-0 z-50">
+        <div className="container mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-3">
-              <Shield className="w-8 h-8 text-white" />
+              <Shield className="w-8 h-8 text-cyber-blue" />
               <div>
-                <h1 className="text-2xl font-bold text-white">
+                <h1 className="text-2xl font-bold bg-gradient-to-r from-cyber-blue to-cyber-purple bg-clip-text text-transparent">
                   CYBERSTREAMS
                 </h1>
-                <p className="text-sm text-white/80">Dark Web Intelligence Platform</p>
+                <p className="text-xs text-gray-400">
+                  Dark Web Intelligence Platform
+                </p>
               </div>
             </div>
-            <div className="flex items-center">
-              <div className="bg-green-500 text-white px-3 py-1 rounded-full text-sm font-medium">
-                <div className="w-2 h-2 bg-white rounded-full animate-pulse mr-2 inline-block" />
-                LIVE
+            <div className="flex items-center space-x-2">
+              <div className="flex items-center space-x-2 px-3 py-2 rounded-lg bg-green-500/10 border border-green-500/20">
+                <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
+                <span className="text-xs text-green-400 font-medium">LIVE</span>
               </div>
             </div>
           </div>
@@ -45,26 +58,26 @@ function App() {
       </header>
 
       {/* Navigation Tabs */}
-      <div className="bg-white/10 backdrop-blur-xl">
-        <div className="max-w-7xl mx-auto px-6">
+      <div className="border-b border-gray-800 backdrop-blur-xl bg-cyber-dark/30">
+        <div className="container mx-auto px-4">
           <nav className="flex space-x-1 overflow-x-auto">
             {[
-              { id: 'dashboard', label: 'Dashboard', icon: Shield },
-              { id: 'agent', label: 'Agent', icon: Bot },
-              { id: 'threats', label: 'Threats', icon: Activity },
-              { id: 'pulse', label: 'SignalStream', icon: Radio },
-              { id: 'activity', label: 'Activity', icon: FileText },
-              { id: 'intel', label: 'Consolidated Intel', icon: Network },
-              { id: 'admin', label: 'Admin', icon: Settings },
-              { id: 'admin-v2', label: 'Admin v2', icon: Database },
+              { id: "dashboard", label: "Dashboard", icon: Shield },
+              { id: "agent", label: "AI Agent", icon: Bot },
+              { id: "agentic", label: "OSINT Studio", icon: Settings },
+              { id: "threats", label: "Threats", icon: Activity },
+              { id: "pulse", label: "Signal Stream", icon: Radio },
+              { id: "activity", label: "Activity", icon: FileText },
+              { id: "intel", label: "Intelligence", icon: Network },
+              { id: "admin", label: "Admin", icon: Database },
             ].map((tab) => (
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
                 className={`flex items-center space-x-2 px-6 py-3 font-medium transition-all ${
                   activeTab === tab.id
-                    ? 'bg-white/20 text-white border-b-2 border-white'
-                    : 'text-white/70 hover:text-white hover:bg-white/10'
+                    ? "border-b-2 border-cyber-blue text-cyber-blue"
+                    : "text-gray-400 hover:text-white"
                 }`}
               >
                 <tab.icon className="w-4 h-4" />
@@ -76,20 +89,20 @@ function App() {
       </div>
 
       {/* Main Content */}
-      <main className="max-w-7xl mx-auto px-6 py-8">
+      <main className="container mx-auto px-4 py-8">
         <Suspense fallback={<LoadingSpinner />}>
-          {activeTab === 'dashboard' && <HomeContent />}
-          {activeTab === 'agent' && <CyberstreamsAgent />}
-          {activeTab === 'threats' && <ThreatsModule />}
-          {activeTab === 'pulse' && <SignalStream />}
-          {activeTab === 'activity' && <ActivityModule />}
-          {activeTab === 'intel' && <ConsolidatedIntelligence />}
-          {activeTab === 'admin' && <AdminPage />}
-          {activeTab === 'admin-v2' && <AdminV2Page />}
+          {activeTab === "dashboard" && <HomeContent />}
+          {activeTab === "agent" && <CyberstreamsAgent />}
+          {activeTab === "agentic" && <AgenticStudio />}
+          {activeTab === "threats" && <ThreatsModule />}
+          {activeTab === "pulse" && <SignalStream />}
+          {activeTab === "activity" && <ActivityModule />}
+          {activeTab === "intel" && <ConsolidatedIntelligence />}
+          {activeTab === "admin" && <AdminV2Page />}
         </Suspense>
       </main>
     </div>
-  )
+  );
 }
 
-export default App
+export default App;

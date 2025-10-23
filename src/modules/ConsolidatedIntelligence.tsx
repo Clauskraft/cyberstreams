@@ -34,8 +34,50 @@ const ConsolidatedIntelligence = () => {
   const [timeRange, setTimeRange] = useState('24h')
 
   useEffect(() => {
-    // Mock consolidated intelligence data
-    const mockFindings: ThreatFinding[] = [
+    // Load real intelligence data from Intel Scraper
+    const loadRealData = async () => {
+      try {
+        const response = await fetch('/api/intel-scraper/status')
+        if (!response.ok) {
+          console.error('Failed to fetch intel data, using fallback');
+          loadMockData();
+          return;
+        }
+        
+        const data = await response.json()
+        
+        if (data.success && data.data.latestFindings && data.data.latestFindings.length > 0) {
+          const realFindings: ThreatFinding[] = data.data.latestFindings.map((finding: any) => ({
+            id: finding.id || `INTEL-${Date.now()}`,
+            timestamp: new Date(finding.timestamp).toLocaleString('da-DK'),
+            title: finding.title || 'No title',
+            description: finding.description || 'No description',
+            source: finding.source || 'Unknown',
+            sourceType: finding.origin === 'misp' ? 'technical' : 'osint' as any,
+            severity: finding.severity || 'medium',
+            category: finding.category || [],
+            indicators: (finding.iocs || []).map((ioc: string) => ({
+              type: 'IOC',
+              value: ioc
+            })),
+            confidence: finding.confidence || 0,
+            link: finding.url
+          }))
+          setFindings(realFindings)
+          setLoading(false)
+        } else {
+          // No real data, load fallback
+          loadMockData()
+        }
+      } catch (error) {
+        console.error('Failed to load intel data:', error)
+        // Fallback to mock data on error
+        loadMockData()
+      }
+    }
+    
+    const loadMockData = () => {
+      const mockFindings: ThreatFinding[] = [
       {
         id: 'INTEL-001',
         timestamp: '2 minutes ago',
@@ -209,26 +251,11 @@ const ConsolidatedIntelligence = () => {
         link: 'https://www.reuters.com'
       }
     ]
-
-    const fetchIntelligence = async () => {
-      try {
-        setLoading(true)
-        const response = await fetch('/api/intel')
-        const data = await response.json()
-        
-        if (data.success) {
-          setFindings(data.data)
-        } else {
-          console.error('Failed to fetch intelligence data:', data.error)
-        }
-      } catch (error) {
-        console.error('Error fetching intelligence data:', error)
-      } finally {
-        setLoading(false)
-      }
+      setFindings(mockFindings)
+      setLoading(false)
     }
-
-    fetchIntelligence()
+    
+    loadRealData()
   }, [])
 
   const getSeverityColor = (severity: string) => {
@@ -268,7 +295,7 @@ const ConsolidatedIntelligence = () => {
     critical: findings.filter(f => f.severity === 'critical').length,
     high: findings.filter(f => f.severity === 'high').length,
     sources: Array.from(new Set(findings.map(f => f.source))).length,
-    avgConfidence: Math.round(findings.reduce((acc, f) => acc + f.confidence, 0) / findings.length)
+    avgConfidence: Math.round(findings.reduce((acc, f) => acc + f.confidence, 0) / findings.length) || 0
   }
 
   const topCategories = findings
@@ -449,7 +476,7 @@ const ConsolidatedIntelligence = () => {
                 <div className="w-48 bg-gray-800 rounded-full h-4">
                   <div
                     className="h-full bg-red-500 rounded-full"
-                    style={{ width: `${(stats.critical / stats.total) * 100}%` }}
+                    style={{ width: `${stats.total > 0 ? (stats.critical / stats.total) * 100 : 0}%` }}
                   ></div>
                 </div>
                 <span className="text-sm text-red-400 w-12 text-right">{stats.critical}</span>
@@ -461,7 +488,7 @@ const ConsolidatedIntelligence = () => {
                 <div className="w-48 bg-gray-800 rounded-full h-4">
                   <div
                     className="h-full bg-orange-500 rounded-full"
-                    style={{ width: `${(stats.high / stats.total) * 100}%` }}
+                    style={{ width: `${stats.total > 0 ? (stats.high / stats.total) * 100 : 0}%` }}
                   ></div>
                 </div>
                 <span className="text-sm text-orange-400 w-12 text-right">{stats.high}</span>
@@ -473,7 +500,7 @@ const ConsolidatedIntelligence = () => {
                 <div className="w-48 bg-gray-800 rounded-full h-4">
                   <div
                     className="h-full bg-yellow-500 rounded-full"
-                    style={{ width: `${(findings.filter(f => f.severity === 'medium').length / stats.total) * 100}%` }}
+                    style={{ width: `${stats.total > 0 ? (findings.filter(f => f.severity === 'medium').length / stats.total) * 100 : 0}%` }}
                   ></div>
                 </div>
                 <span className="text-sm text-yellow-400 w-12 text-right">
@@ -487,7 +514,7 @@ const ConsolidatedIntelligence = () => {
                 <div className="w-48 bg-gray-800 rounded-full h-4">
                   <div
                     className="h-full bg-blue-500 rounded-full"
-                    style={{ width: `${(findings.filter(f => f.severity === 'low').length / stats.total) * 100}%` }}
+                    style={{ width: `${stats.total > 0 ? (findings.filter(f => f.severity === 'low').length / stats.total) * 100 : 0}%` }}
                   ></div>
                 </div>
                 <span className="text-sm text-blue-400 w-12 text-right">
@@ -551,19 +578,21 @@ const ConsolidatedIntelligence = () => {
                       </div>
 
                       {/* Indicators */}
-                      <div className="mb-3">
-                        <p className="text-xs text-gray-500 mb-2">Indicators of Compromise:</p>
-                        <div className="flex flex-wrap gap-2">
-                          {finding.indicators.map((indicator, idx) => (
-                            <code
-                              key={idx}
-                              className="text-xs px-2 py-1 bg-gray-800 text-cyber-blue rounded border border-gray-700 font-mono"
-                            >
-                              {indicator.type}: {indicator.value}
-                            </code>
-                          ))}
+                      {finding.indicators.length > 0 && (
+                        <div className="mb-3">
+                          <p className="text-xs text-gray-500 mb-2">Indicators of Compromise:</p>
+                          <div className="flex flex-wrap gap-2">
+                            {finding.indicators.map((indicator, idx) => (
+                              <code
+                                key={idx}
+                                className="text-xs px-2 py-1 bg-gray-800 text-cyber-blue rounded border border-gray-700 font-mono"
+                              >
+                                {indicator.type}: {indicator.value}
+                              </code>
+                            ))}
+                          </div>
                         </div>
-                      </div>
+                      )}
 
                       {/* Metadata */}
                       <div className="flex items-center gap-4 text-xs text-gray-500">

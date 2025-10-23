@@ -1,0 +1,50 @@
+version: '3.8'
+
+services:
+  online-smoketest:
+    build:
+      context: .
+      dockerfile: Dockerfile.online-testing
+    environment:
+      - ONLINE_BASE_URL=${ONLINE_BASE_URL:-https://cyberstreams.dk}
+      - STAGING_BASE_URL=${STAGING_BASE_URL:-https://staging.cyberstreams.dk}
+      - TIMEOUT=${TIMEOUT:-15000}
+      - CRITICAL_THRESHOLD=${CRITICAL_THRESHOLD:-10000}
+    command: ["node", "online-smoketest.js"]
+    restart: "no"
+    networks:
+      - testing
+
+  online-monitor:
+    build:
+      context: .
+      dockerfile: Dockerfile.online-testing
+    environment:
+      - ONLINE_BASE_URL=${ONLINE_BASE_URL:-https://cyberstreams.dk}
+      - MONITOR_INTERVAL=${MONITOR_INTERVAL:-60000}
+      - ALERT_THRESHOLD=${ALERT_THRESHOLD:-3}
+      - ALERT_WEBHOOK_URL=${ALERT_WEBHOOK_URL}
+      - ALERT_EMAIL=${ALERT_EMAIL}
+    command: ["node", "monitor-online.js"]
+    restart: unless-stopped
+    volumes:
+      - ./monitoring-logs:/app/logs
+    networks:
+      - testing
+
+  quick-health-check:
+    build:
+      context: .
+      dockerfile: Dockerfile.online-testing
+    environment:
+      - ONLINE_BASE_URL=${ONLINE_BASE_URL:-https://cyberstreams.dk}
+    command: ["node", "quick-smoketest.js"]
+    restart: "no"
+    networks:
+      - testing
+
+networks:
+  testing:
+    driver: bridge
+
+

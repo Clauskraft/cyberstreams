@@ -1,0 +1,93 @@
+name: Online Smoketest
+
+on:
+  schedule:
+    # Run every hour
+    - cron: '0 * * * *'
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Environment to test'
+        required: true
+        default: 'production'
+        type: choice
+        options:
+        - production
+        - staging
+        - both
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  online-smoketest:
+    runs-on: ubuntu-latest
+    
+    strategy:
+      matrix:
+        environment: [production, staging]
+        exclude:
+          - environment: staging
+            when: github.event.inputs.environment == 'production'
+          - environment: production
+            when: github.event.inputs.environment == 'staging'
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'npm'
+        
+    - name: Install dependencies
+      run: npm install
+      
+    - name: Run online smoketest - Production
+      if: matrix.environment == 'production'
+      run: npm run smoketest:online:production
+      env:
+        ONLINE_BASE_URL: ${{ secrets.PRODUCTION_URL }}
+        STAGING_BASE_URL: ${{ secrets.STAGING_URL }}
+        
+    - name: Run online smoketest - Staging
+      if: matrix.environment == 'staging'
+      run: npm run smoketest:online:staging
+      env:
+        ONLINE_BASE_URL: ${{ secrets.STAGING_URL }}
+        STAGING_BASE_URL: ${{ secrets.STAGING_URL }}
+        
+    - name: Run online smoketest - Both
+      if: github.event.inputs.environment == 'both'
+      run: npm run smoketest:online:both
+      env:
+        ONLINE_BASE_URL: ${{ secrets.PRODUCTION_URL }}
+        STAGING_BASE_URL: ${{ secrets.STAGING_URL }}
+        
+    - name: Upload test results
+      uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: smoketest-results-${{ matrix.environment }}
+        path: smoketest-report-*.json
+        
+    - name: Notify on failure
+      if: failure()
+      uses: 8398a7/action-slack@v3
+      with:
+        status: failure
+        text: "🚨 Online smoketest failed for ${{ matrix.environment }} environment!"
+        webhook_url: ${{ secrets.SLACK_WEBHOOK }}
+        
+    - name: Notify on success
+      if: success()
+      uses: 8398a7/action-slack@v3
+      with:
+        status: success
+        text: "✅ Online smoketest passed for ${{ matrix.environment }} environment!"
+        webhook_url: ${{ secrets.SLACK_WEBHOOK }}
+
+

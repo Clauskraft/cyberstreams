@@ -1,0 +1,29 @@
+# Dockerfile for Online Testing
+FROM node:18-alpine
+
+# Install dependencies
+WORKDIR /app
+COPY package*.json ./
+RUN npm install
+
+# Copy test scripts
+COPY smoketest.js .
+COPY online-smoketest.js .
+COPY monitor-online.js .
+COPY quick-smoketest.js .
+
+# Create non-root user
+RUN addgroup -g 1001 -S nodejs
+RUN adduser -S nextjs -u 1001
+
+# Switch to non-root user
+USER nextjs
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
+  CMD node quick-smoketest.js || exit 1
+
+# Default command
+CMD ["node", "online-smoketest.js"]
+
+

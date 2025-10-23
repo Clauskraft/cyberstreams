@@ -1,0 +1,210 @@
+# Page snapshot
+
+```yaml
+- generic [ref=e3]:
+  - banner [ref=e4]:
+    - generic [ref=e6]:
+      - generic [ref=e7]:
+        - img [ref=e8]
+        - generic [ref=e10]:
+          - heading "CYBERSTREAMS" [level=1] [ref=e11]
+          - paragraph [ref=e12]: Dark Web Intelligence Platform
+      - generic [ref=e16]: LIVE
+  - navigation [ref=e19]:
+    - button "Dashboard" [ref=e20] [cursor=pointer]:
+      - img [ref=e21]
+      - generic [ref=e23]: Dashboard
+    - button "AI Agent" [active] [ref=e24] [cursor=pointer]:
+      - img [ref=e25]
+      - generic [ref=e28]: AI Agent
+    - button "OSINT Studio" [ref=e29] [cursor=pointer]:
+      - img [ref=e30]
+      - generic [ref=e33]: OSINT Studio
+    - button "Threats" [ref=e34] [cursor=pointer]:
+      - img [ref=e35]
+      - generic [ref=e37]: Threats
+    - button "Signal Stream" [ref=e38] [cursor=pointer]:
+      - img [ref=e39]
+      - generic [ref=e45]: Signal Stream
+    - button "Activity" [ref=e46] [cursor=pointer]:
+      - img [ref=e47]
+      - generic [ref=e50]: Activity
+    - button "Intelligence" [ref=e51] [cursor=pointer]:
+      - img [ref=e52]
+      - generic [ref=e57]: Intelligence
+    - button "Admin" [ref=e58] [cursor=pointer]:
+      - img [ref=e59]
+      - generic [ref=e63]: Admin
+  - main [ref=e64]:
+    - generic [ref=e65]:
+      - generic [ref=e66]:
+        - generic [ref=e67]:
+          - img [ref=e68]
+          - generic [ref=e71]:
+            - heading "CYBERSTREAMS-AGENT ACTIVE" [level=1] [ref=e72]:
+              - text: CYBERSTREAMS-AGENT
+              - generic [ref=e73]: ACTIVE
+            - paragraph [ref=e74]: Deterministisk threat-intel-agent for Danmark & EU
+        - generic [ref=e75]:
+          - generic [ref=e76]:
+            - img [ref=e77]
+            - text: "Sidst kørt: 4m ago"
+          - generic [ref=e80]:
+            - img [ref=e81]
+            - text: "Næste: 0s ago"
+          - generic [ref=e83]:
+            - img [ref=e84]
+            - text: 3 nye i dag
+          - generic [ref=e88]:
+            - img [ref=e89]
+            - text: 3 total
+          - generic [ref=e93]:
+            - img [ref=e94]
+            - text: 0 unverified
+          - generic [ref=e96]:
+            - img [ref=e97]
+            - text: "Scraper: RUNNING (0/0)"
+      - navigation [ref=e100]:
+        - button "Trusler 3" [ref=e101] [cursor=pointer]:
+          - img [ref=e102]
+          - generic [ref=e104]: Trusler
+          - generic [ref=e105]: "3"
+        - button "Politik 1" [ref=e106] [cursor=pointer]:
+          - img [ref=e107]
+          - generic [ref=e110]: Politik
+          - generic [ref=e111]: "1"
+        - button "Begge 1" [ref=e112] [cursor=pointer]:
+          - img [ref=e113]
+          - generic [ref=e115]: Begge
+          - generic [ref=e116]: "1"
+      - generic [ref=e118]:
+        - generic [ref=e119]:
+          - img [ref=e120]
+          - textbox "Søg i findings, CVE'er, IoC'er, tags..." [ref=e123]
+        - generic [ref=e124]:
+          - combobox [ref=e125]:
+            - option "Alle Severities" [selected]
+            - option "Critical"
+            - option "High"
+            - option "Medium"
+            - option "Low"
+          - combobox [ref=e126]:
+            - option "Alle Kilder" [selected]
+            - option "Government"
+            - option "Vendor"
+            - option "Media"
+            - option "Social"
+            - option "Dark Web"
+      - generic [ref=e127]:
+        - generic [ref=e128]:
+          - heading "Agent Chat" [level=2] [ref=e129]:
+            - img [ref=e130]
+            - text: Agent Chat
+          - generic [ref=e133]:
+            - textbox "Stil et spørgsmål om cyberangreb, IoCs, CVEs..." [ref=e134]
+            - button "Send" [ref=e135] [cursor=pointer]
+        - generic [ref=e136]:
+          - heading "Intelligence Knowledge Base" [level=2] [ref=e137]:
+            - img [ref=e138]
+            - text: Intelligence Knowledge Base
+          - generic [ref=e142]:
+            - generic [ref=e143]:
+              - heading "Available Knowledge Categories" [level=3] [ref=e144]
+              - generic [ref=e145]:
+                - generic [ref=e148]: WikiLeaks Sources
+                - generic [ref=e151]: Intelligence Methods
+                - generic [ref=e154]: OSINT Techniques
+                - generic [ref=e157]: Analysis Frameworks
+            - generic [ref=e158]:
+              - heading "Sample Knowledge Queries" [level=3] [ref=e159]
+              - generic [ref=e160]:
+                - paragraph [ref=e161]: • "WikiLeaks CIA hacking methods"
+                - paragraph [ref=e162]: • "OSINT social media intelligence"
+                - paragraph [ref=e163]: • "Intelligence analysis cycle"
+                - paragraph [ref=e164]: • "Threat modeling framework"
+            - button "Search Knowledge Base" [ref=e165] [cursor=pointer]:
+              - img [ref=e166]
+              - text: Search Knowledge Base
+      - generic [ref=e170]:
+        - generic [ref=e173]:
+          - generic [ref=e174]:
+            - generic [ref=e175]: fallback-misp-1
+            - generic [ref=e176]: HIGH
+            - generic [ref=e177]: TRUSSEL
+            - generic [ref=e178]: VERIFIED
+            - generic [ref=e179]: 75% confidence
+          - 'heading "CFCS Advisory: Active exploitation of Danish energy providers" [level=3] [ref=e180]'
+          - paragraph [ref=e181]: CFCS reports increased intrusion attempts targeting Danish energy distribution systems with spear-phishing and credential theft.
+          - generic [ref=e182]:
+            - paragraph [ref=e183]: "IoC'er:"
+            - code [ref=e185]: 185.199.120.45
+          - generic [ref=e187]:
+            - generic [ref=e188]: energy
+            - generic [ref=e189]: critical infrastructure
+            - generic [ref=e190]: phishing
+          - generic [ref=e191]:
+            - generic [ref=e192]:
+              - img [ref=e193]
+              - link "CFCS.dk" [ref=e195] [cursor=pointer]:
+                - /url: https://cfcs.dk/advisories/dk-energy
+            - generic [ref=e196]:
+              - img [ref=e197]
+              - text: 49m ago
+            - generic [ref=e200]:
+              - img [ref=e201]
+              - text: "Målgruppe: CISO, SOC, Incident Response"
+        - generic [ref=e207]:
+          - generic [ref=e208]:
+            - generic [ref=e209]: fallback-opencti-1
+            - generic [ref=e210]: CRITICAL
+            - generic [ref=e211]: TRUSSEL
+            - generic [ref=e212]: VERIFIED
+            - generic [ref=e213]: 85% confidence
+          - 'heading "OpenCTI: Observable domain linked to ransomware deployment" [level=3] [ref=e214]'
+          - paragraph [ref=e215]: Detected malicious domain delivering LockBit payloads across Nordic manufacturing targets.
+          - generic [ref=e216]:
+            - paragraph [ref=e217]: "IoC'er:"
+            - code [ref=e219]: lockbit-update[.]com
+          - generic [ref=e221]:
+            - generic [ref=e222]: lockbit
+            - generic [ref=e223]: ransomware
+          - generic [ref=e224]:
+            - generic [ref=e225]:
+              - img [ref=e226]
+              - text: OpenCTI
+            - generic [ref=e228]:
+              - img [ref=e229]
+              - text: 2h ago
+            - generic [ref=e232]:
+              - img [ref=e233]
+              - text: "Målgruppe: CISO, SOC, Incident Response"
+        - generic [ref=e239]:
+          - generic [ref=e240]:
+            - generic [ref=e241]: fallback-misp-2
+            - generic [ref=e242]: HIGH
+            - generic [ref=e243]: BEGGE
+            - generic [ref=e244]: VERIFIED
+            - generic [ref=e245]: 80% confidence
+          - 'heading "CERT-EU: APT28 phishing kit targeting ministries" [level=3] [ref=e246]'
+          - paragraph [ref=e247]: APT28 spear phishing kit detected with references to Danish ministries. Payload contains macro-enabled documents communicating to .onion infrastructure.
+          - generic [ref=e248]:
+            - paragraph [ref=e249]: "CVE'er:"
+            - code [ref=e251]: CVE-2024-4587
+          - generic [ref=e252]:
+            - paragraph [ref=e253]: "IoC'er:"
+            - code [ref=e255]: 203.0.113.77
+          - generic [ref=e257]:
+            - generic [ref=e258]: APT28
+            - generic [ref=e259]: phishing
+          - generic [ref=e260]:
+            - generic [ref=e261]:
+              - img [ref=e262]
+              - link "CERT-EU" [ref=e264] [cursor=pointer]:
+                - /url: https://cert.europa.eu/publications/apt28-campaign
+            - generic [ref=e265]:
+              - img [ref=e266]
+              - text: 4h ago
+            - generic [ref=e269]:
+              - img [ref=e270]
+              - text: "Målgruppe: Ledelse, Compliance, CISO, SOC, Incident Response"
+```

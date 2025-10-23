@@ -1,0 +1,22 @@
+[
+  {
+    "id": "test-knowledge-1",
+    "category": "cia_methods",
+    "title": "Test CIA HUMINT Techniques",
+    "content": "This is test content about CIA Human Intelligence collection methods.",
+    "tags": ["CIA", "HUMINT", "intelligence"],
+    "source": "Test Source",
+    "author": "Test Author",
+    "date": "2025-01-27T10:00:00Z"
+  },
+  {
+    "id": "test-knowledge-2",
+    "category": "osint_techniques",
+    "title": "Test OSINT Social Media Intelligence",
+    "content": "This is test content about Open Source Intelligence techniques for social media.",
+    "tags": ["OSINT", "SOCMINT", "social media"],
+    "source": "Test Source",
+    "author": "Test Author",
+    "date": "2025-01-27T10:00:00Z"
+  }
+]

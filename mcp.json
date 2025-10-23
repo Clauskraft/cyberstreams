@@ -1,0 +1,37 @@
+{
+  "mcpServers": {
+    "filesystem": {
+      "command": "docker",
+      "args": [
+        "run",
+        "-i",
+        "--rm",
+        "-v",
+        "/local-directory:/local-directory",
+        "mcp/filesystem",
+        "/local-directory"
+      ]
+    },
+    "mcp-api-gateway": {
+      "command": "docker",
+      "args": [
+        "run",
+        "-i",
+        "--rm",
+        "-e",
+        "API_1_NAME",
+        "-e",
+        "API_1_SWAGGER_URL",
+        "-e",
+        "API_1_HEADER_AUTHORIZATION",
+        "mcp/api-gateway"
+      ],
+      "env": {
+        "API_1_NAME": "name",
+        "API_1_SWAGGER_URL": "https://api.github.com/swagger.json",
+        "API_1_HEADER_AUTHORIZATION": "token"
+      }
+    }
+  }
+}
+

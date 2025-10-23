@@ -4,8 +4,12 @@
   "builder": "dockerfile",
   "startCommand": "node server.js",
   "env": {
-    "PORT": "3000",
-    "NODE_ENV": "production"
+    "PORT": "3001",
+    "NODE_ENV": "production",
+    "SQLITE_DB_PATH": "data/cyberstreams.db",
+    "LOG_LEVEL": "info",
+    "API_PORT": "3001",
+    "DEV_PORT": "3001"
   },
   "volumes": [],
   "crons": []

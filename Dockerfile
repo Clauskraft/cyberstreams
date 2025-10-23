@@ -35,15 +35,18 @@ COPY --from=builder /app/dist ./dist
 COPY server.js .
 COPY lib ./lib
 
+# Copy data directory
+COPY data ./data
+
 # Copy public assets if any (optional)
-RUN mkdir -p ./public || true
+COPY public ./public || true
 
 # Expose port (Railway sets PORT env var)
-EXPOSE 3000
+EXPOSE 3001
 
-# Health check
-HEALTHCHECK --interval=30s --timeout=3s --start-period=10s --retries=3 \
-  CMD node -e "require('http').get('http://localhost:' + (process.env.PORT || 3000), (r) => {if (r.statusCode !== 200) throw new Error(r.statusCode)})"
+# Health check using API health endpoint
+HEALTHCHECK --interval=30s --timeout=5s --start-period=20s --retries=3 \
+  CMD node -e "require('http').get('http://localhost:' + (process.env.PORT || 3001) + '/api/health', (r) => {if (r.statusCode !== 200) throw new Error('status ' + r.statusCode)})"
 
 # Start the server
 CMD ["node", "server.js"]

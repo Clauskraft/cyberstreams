@@ -1,0 +1,21 @@
+{
+  "id": "osint-wifi-mapping-001",
+  "title": "WiFi Mapping and Geolocation Intelligence",
+  "description": "Comprehensive guide to WiFi mapping techniques using Wigle WiFi database and Google Maps integration for OSINT operations.",
+  "category": "technical_intelligence",
+  "tags": [
+    "wigle",
+    "wifi_mapping",
+    "geolocation",
+    "osint",
+    "google_maps",
+    "wardriving",
+    "mac_address"
+  ],
+  "content": "WiFi Mapping and Geolocation Intelligence:\n\n1. **Wigle WiFi Database Integration**:\n   - Wigle.net database contains millions of WiFi access points\n   - MAC address to geolocation mapping\n   - SSID (network name) intelligence\n   - Signal strength and coverage analysis\n   - Historical data and trends\n\n2. **Google Maps Integration**:\n   - Google Maps API for geolocation services\n   - Street View integration for visual verification\n   - Places API for location intelligence\n   - Geolocation API for device positioning\n   - Maps JavaScript API for interactive mapping\n\n3. **WiFi Intelligence Collection Methods**:\n   - Wardriving: Mobile WiFi scanning\n   - Wardriving tools: Kismet, Aircrack-ng, WiFi Pineapple\n   - Mobile apps: WiFi Analyzer, NetSpot\n   - Automated scanning scripts\n   - Crowdsourced data collection\n\n4. **MAC Address Intelligence**:\n   - OUI (Organizationally Unique Identifier) lookup\n   - Device manufacturer identification\n   - MAC address randomization detection\n   - Tracking and correlation techniques\n   - Privacy implications and countermeasures\n\n5. **Geolocation Techniques**:\n   - Triangulation using multiple access points\n   - Signal strength analysis (RSSI)\n   - Time-based location tracking\n   - Cell tower triangulation\n   - GPS spoofing detection\n\n6. **OSINT Applications**:\n   - Target location verification\n   - Movement pattern analysis\n   - Network infrastructure mapping\n   - Security assessment\n   - Digital forensics\n\n7. **API Integration Examples**:\n   - Wigle API: /api/v2/network/search\n   - Google Maps Geocoding API\n   - Google Places API\n   - Custom mapping applications\n   - Real-time location services\n\n8. **Legal and Ethical Considerations**:\n   - Privacy laws and regulations\n   - Consent requirements\n   - Data protection compliance\n   - Ethical hacking guidelines\n   - Responsible disclosure",
+  "source": "OSINT Community",
+  "date": "2025-01-27",
+  "classification": "unclassified",
+  "relevance": "high"
+}
+

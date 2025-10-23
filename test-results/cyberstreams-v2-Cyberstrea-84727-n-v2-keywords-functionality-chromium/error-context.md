@@ -1,0 +1,96 @@
+# Page snapshot
+
+```yaml
+- generic [ref=e3]:
+  - banner [ref=e4]:
+    - generic [ref=e6]:
+      - generic [ref=e7]:
+        - img [ref=e8]
+        - generic [ref=e10]:
+          - heading "CYBERSTREAMS" [level=1] [ref=e11]
+          - paragraph [ref=e12]: Dark Web Intelligence Platform
+      - generic [ref=e16]: LIVE
+  - navigation [ref=e19]:
+    - button "Dashboard" [ref=e20] [cursor=pointer]:
+      - img [ref=e21]
+      - generic [ref=e23]: Dashboard
+    - button "AI Agent" [ref=e24] [cursor=pointer]:
+      - img [ref=e25]
+      - generic [ref=e28]: AI Agent
+    - button "OSINT Studio" [ref=e29] [cursor=pointer]:
+      - img [ref=e30]
+      - generic [ref=e33]: OSINT Studio
+    - button "Threats" [ref=e34] [cursor=pointer]:
+      - img [ref=e35]
+      - generic [ref=e37]: Threats
+    - button "Signal Stream" [ref=e38] [cursor=pointer]:
+      - img [ref=e39]
+      - generic [ref=e45]: Signal Stream
+    - button "Activity" [ref=e46] [cursor=pointer]:
+      - img [ref=e47]
+      - generic [ref=e50]: Activity
+    - button "Intelligence" [ref=e51] [cursor=pointer]:
+      - img [ref=e52]
+      - generic [ref=e57]: Intelligence
+    - button "Admin" [ref=e58] [cursor=pointer]:
+      - img [ref=e59]
+      - generic [ref=e63]: Admin
+  - main [ref=e64]:
+    - generic [ref=e65]:
+      - generic [ref=e66]:
+        - generic [ref=e67]:
+          - generic [ref=e68]:
+            - img [ref=e69]
+            - generic [ref=e71]: +12%
+          - paragraph [ref=e72]: "156"
+          - paragraph [ref=e73]: Active Threats
+        - generic [ref=e74]:
+          - generic [ref=e75]:
+            - img [ref=e76]
+            - generic [ref=e79]: +5%
+          - paragraph [ref=e80]: "89"
+          - paragraph [ref=e81]: Monitored Sources
+        - generic [ref=e82]:
+          - generic [ref=e83]:
+            - img [ref=e84]
+            - generic [ref=e86]: +8%
+          - paragraph [ref=e87]: 2.4K
+          - paragraph [ref=e88]: Protected Systems
+        - generic [ref=e89]:
+          - generic [ref=e90]:
+            - img [ref=e91]
+            - generic [ref=e94]: +2%
+          - paragraph [ref=e95]: "94"
+          - paragraph [ref=e96]: Trend Score
+      - generic [ref=e97]:
+        - generic [ref=e98]:
+          - heading "Threat Categories" [level=3] [ref=e99]
+          - generic [ref=e100]:
+            - generic [ref=e102]:
+              - generic [ref=e103]: Ransomware
+              - generic [ref=e104]: "45"
+            - generic [ref=e108]:
+              - generic [ref=e109]: Data Leaks
+              - generic [ref=e110]: "32"
+            - generic [ref=e114]:
+              - generic [ref=e115]: Malware
+              - generic [ref=e116]: "28"
+            - generic [ref=e120]:
+              - generic [ref=e121]: Phishing
+              - generic [ref=e122]: "21"
+        - generic [ref=e125]:
+          - heading "Recent Activity" [level=3] [ref=e126]
+          - generic [ref=e127]:
+            - generic [ref=e129]:
+              - paragraph [ref=e130]: New threat detected
+              - paragraph [ref=e131]: 2 min ago
+            - generic [ref=e134]:
+              - paragraph [ref=e135]: Source scan completed
+              - paragraph [ref=e136]: 15 min ago
+            - generic [ref=e139]:
+              - paragraph [ref=e140]: Data indexed
+              - paragraph [ref=e141]: 1 hour ago
+            - generic [ref=e144]:
+              - paragraph [ref=e145]: Alert triggered
+              - paragraph [ref=e146]: 2 hours ago
+```

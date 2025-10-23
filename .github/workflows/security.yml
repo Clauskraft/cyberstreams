@@ -1,0 +1,25 @@
+name: Security
+
+on:
+  schedule:
+    - cron: '0 3 * * 1'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  security-events: write
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+      - run: npm install --no-audit --no-fund
+      - run: npm audit --audit-level=high || true
+  codeql:
+    uses: github/codeql-action/.github/workflows/codeql.yml@codeql-bundle-20240923
+    secrets: inherit

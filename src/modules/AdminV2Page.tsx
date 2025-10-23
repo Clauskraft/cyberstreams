@@ -29,7 +29,7 @@ interface RAGConfig {
 }
 
 export default function AdminV2Page() {
-  const [activeTab, setActiveTab] = useState<'keywords' | 'sources' | 'rag' | 'analysis'>('keywords')
+  const [activeTab, setActiveTab] = useState<'keywords' | 'sources' | 'rag' | 'analysis' | 'agents'>('keywords')
   const [keywords, setKeywords] = useState<Keyword[]>([])
   const [sources, setSources] = useState<Source[]>([])
   const [ragConfig, setRagConfig] = useState<RAGConfig>({
@@ -48,7 +48,37 @@ export default function AdminV2Page() {
     loadKeywords()
     loadSources()
     loadRAGConfig()
+    loadAgents()
   }, [])
+  const [agents, setAgents] = useState<{ id: string; name: string; systemPrompt: string }[]>([])
+  const [savingAgents, setSavingAgents] = useState(false)
+
+  const loadAgents = async () => {
+    try {
+      const response = await fetch('/api/admin/agents')
+      const data = await response.json()
+      if (data.success) setAgents(data.data)
+    } catch (e) {
+      console.error('Error loading agents', e)
+    }
+  }
+
+  const saveAgents = async () => {
+    setSavingAgents(true)
+    try {
+      const response = await fetch('/api/admin/agents', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ agents })
+      })
+      const data = await response.json()
+      if (data.success) setAgents(data.data)
+    } catch (e) {
+      console.error('Error saving agents', e)
+    } finally {
+      setSavingAgents(false)
+    }
+  }
 
   const loadKeywords = async () => {
     try {
@@ -198,30 +228,31 @@ export default function AdminV2Page() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 p-6">
+    <div className="min-h-screen bg-gradient-to-b from-cyber-dark to-cyber-darker p-6 text-white">
       <div className="max-w-7xl mx-auto">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">Admin v2.0</h1>
-          <p className="text-gray-600">Advanced configuration and management for Cyberstreams v2.0</p>
+          <h1 className="text-3xl font-bold bg-gradient-to-r from-cyber-blue to-cyber-purple bg-clip-text text-transparent mb-2">Admin v2.0</h1>
+          <p className="text-gray-400">Advanced configuration and management for Cyberstreams v2.0</p>
         </div>
 
         {/* Tab Navigation */}
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 mb-6">
-          <div className="border-b border-gray-200">
+        <div className="bg-gray-900 rounded-lg shadow-sm border border-gray-700 mb-6">
+          <div className="border-b border-gray-800">
             <nav className="flex space-x-8 px-6">
               {[
                 { id: 'keywords', label: 'Keywords', icon: Search },
                 { id: 'sources', label: 'Sources', icon: Database },
                 { id: 'rag', label: 'RAG Config', icon: Settings },
-                { id: 'analysis', label: 'Analysis', icon: Play }
+                { id: 'analysis', label: 'Analysis', icon: Play },
+                { id: 'agents', label: 'Agents & Roles', icon: Settings }
               ].map(({ id, label, icon: Icon }) => (
                 <button
                   key={id}
                   onClick={() => setActiveTab(id as any)}
                   className={`flex items-center space-x-2 py-4 px-1 border-b-2 font-medium text-sm ${
                     activeTab === id
-                      ? 'border-blue-500 text-blue-600'
-                      : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                      ? 'border-cyber-blue text-cyber-blue'
+                      : 'border-transparent text-gray-400 hover:text-white hover:border-gray-600'
                   }`}
                 >
                   <Icon className="w-4 h-4" />
@@ -236,14 +267,14 @@ export default function AdminV2Page() {
             {activeTab === 'keywords' && (
               <div>
                 <div className="flex items-center justify-between mb-6">
-                  <h2 className="text-xl font-semibold text-gray-900">Monitoring Keywords</h2>
+                  <h2 className="text-xl font-semibold">Monitoring Keywords</h2>
                   <div className="flex space-x-3">
                     <input
                       type="text"
                       placeholder="Keyword"
                       value={newKeyword.keyword}
                       onChange={(e) => setNewKeyword({ ...newKeyword, keyword: e.target.value })}
-                      className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className="px-3 py-2 bg-gray-800 border border-gray-700 rounded-md focus:outline-none focus:border-cyber-blue"
                     />
                     <input
                       type="text"
@@ -270,10 +301,10 @@ export default function AdminV2Page() {
                   </div>
                 </div>
 
-                <div className="bg-gray-50 rounded-lg p-4">
+                <div className="bg-gray-800 rounded-lg p-4 border border-gray-700">
                   <div className="grid grid-cols-1 gap-4">
                     {keywords.map((keyword) => (
-                      <div key={keyword.id} className="bg-white p-4 rounded-lg border border-gray-200 flex items-center justify-between">
+                      <div key={keyword.id} className="bg-gray-900 p-4 rounded-lg border border-gray-700 flex items-center justify-between">
                         <div className="flex items-center space-x-4">
                           <button
                             onClick={() => toggleKeyword(keyword.id)}
@@ -286,8 +317,8 @@ export default function AdminV2Page() {
                             )}
                           </button>
                           <div>
-                            <div className="font-medium text-gray-900">{keyword.keyword}</div>
-                            <div className="text-sm text-gray-500">
+                            <div className="font-medium">{keyword.keyword}</div>
+                            <div className="text-sm text-gray-400">
                               {keyword.category} • Priority: {keyword.priority}
                             </div>
                           </div>
@@ -309,12 +340,12 @@ export default function AdminV2Page() {
             {activeTab === 'sources' && (
               <div>
                 <div className="flex items-center justify-between mb-6">
-                  <h2 className="text-xl font-semibold text-gray-900">Monitoring Sources</h2>
+                  <h2 className="text-xl font-semibold">Monitoring Sources</h2>
                   <div className="flex space-x-3">
                     <select
                       value={newSource.sourceType}
                       onChange={(e) => setNewSource({ ...newSource, sourceType: e.target.value })}
-                      className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className="px-3 py-2 bg-gray-800 border border-gray-700 rounded-md focus:outline-none focus:border-cyber-blue"
                     >
                       <option value="">Select Type</option>
                       <option value="rss">RSS Feed</option>
@@ -327,14 +358,14 @@ export default function AdminV2Page() {
                       placeholder="URL"
                       value={newSource.url}
                       onChange={(e) => setNewSource({ ...newSource, url: e.target.value })}
-                      className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 w-64"
+                      className="px-3 py-2 bg-gray-800 border border-gray-700 rounded-md focus:outline-none focus:border-cyber-blue w-64"
                     />
                     <input
                       type="number"
                       placeholder="Frequency (seconds)"
                       value={newSource.scanFrequency}
                       onChange={(e) => setNewSource({ ...newSource, scanFrequency: parseInt(e.target.value) || 3600 })}
-                      className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 w-32"
+                      className="px-3 py-2 bg-gray-800 border border-gray-700 rounded-md focus:outline-none focus:border-cyber-blue w-32"
                     />
                     <button
                       onClick={addSource}
@@ -347,14 +378,14 @@ export default function AdminV2Page() {
                   </div>
                 </div>
 
-                <div className="bg-gray-50 rounded-lg p-4">
+                <div className="bg-gray-800 rounded-lg p-4 border border-gray-700">
                   <div className="grid grid-cols-1 gap-4">
                     {sources.map((source) => (
-                      <div key={source.id} className="bg-white p-4 rounded-lg border border-gray-200 flex items-center justify-between">
+                      <div key={source.id} className="bg-gray-900 p-4 rounded-lg border border-gray-700 flex items-center justify-between">
                         <div>
-                          <div className="font-medium text-gray-900">{source.source_type}</div>
-                          <div className="text-sm text-gray-500">{source.url}</div>
-                          <div className="text-xs text-gray-400">
+                          <div className="font-medium">{source.source_type}</div>
+                          <div className="text-sm text-gray-400">{source.url}</div>
+                          <div className="text-xs text-gray-500">
                             Frequency: {source.scan_frequency}s • 
                             Last scanned: {source.last_scanned ? new Date(source.last_scanned).toLocaleString() : 'Never'}
                           </div>
@@ -376,11 +407,11 @@ export default function AdminV2Page() {
             {activeTab === 'rag' && (
               <div>
                 <div className="flex items-center justify-between mb-6">
-                  <h2 className="text-xl font-semibold text-gray-900">RAG Configuration</h2>
+                  <h2 className="text-xl font-semibold">RAG Configuration</h2>
                   <button
                     onClick={updateRAGConfig}
                     disabled={loading}
-                    className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50"
+                    className="px-4 py-2 bg-cyber-blue rounded-md hover:bg-cyber-blue/80 disabled:opacity-50"
                   >
                     Save Configuration
                   </button>
@@ -388,19 +419,21 @@ export default function AdminV2Page() {
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Model</label>
+                    <label className="block text-sm font-medium text-gray-300 mb-2">Model</label>
                     <select
                       value={ragConfig.model}
                       onChange={(e) => setRagConfig({ ...ragConfig, model: e.target.value })}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-md focus:outline-none focus:border-cyber-blue"
                     >
-                      <option value="gpt-4">GPT-4</option>
-                      <option value="gpt-3.5-turbo">GPT-3.5 Turbo</option>
+                      <option value="llama3.1:8b">Ollama - Llama3.1:8B</option>
+                      <option value="dolphin-llama3:8b">Ollama - Dolphin Llama3:8B (uncensored)</option>
+                      <option value="gpt-4">OpenAI - GPT-4</option>
+                      <option value="gpt-3.5-turbo">OpenAI - GPT-3.5 Turbo</option>
                     </select>
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Temperature</label>
+                    <label className="block text-sm font-medium text-gray-300 mb-2">Temperature</label>
                     <input
                       type="number"
                       step="0.1"
@@ -408,39 +441,40 @@ export default function AdminV2Page() {
                       max="2"
                       value={ragConfig.temperature}
                       onChange={(e) => setRagConfig({ ...ragConfig, temperature: e.target.value })}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-md focus:outline-none focus:border-cyber-blue"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Max Tokens</label>
+                    <label className="block text-sm font-medium text-gray-300 mb-2">Max Tokens</label>
                     <input
                       type="number"
                       value={ragConfig.max_tokens}
                       onChange={(e) => setRagConfig({ ...ragConfig, max_tokens: e.target.value })}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-md focus:outline-none focus:border-cyber-blue"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Vector Store Provider</label>
+                    <label className="block text-sm font-medium text-gray-300 mb-2">Vector Store Provider</label>
                     <select
                       value={ragConfig.vector_store_provider}
                       onChange={(e) => setRagConfig({ ...ragConfig, vector_store_provider: e.target.value })}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-md focus:outline-none focus:border-cyber-blue"
                     >
+                      <option value="memory">In-memory (default)</option>
                       <option value="pgvector">PostgreSQL + pgvector</option>
                     </select>
                   </div>
 
                   <div className="md:col-span-2">
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Embedding Model</label>
+                    <label className="block text-sm font-medium text-gray-300 mb-2">Embedding Model</label>
                     <select
                       value={ragConfig.embedding_model}
                       onChange={(e) => setRagConfig({ ...ragConfig, embedding_model: e.target.value })}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-md focus:outline-none focus:border-cyber-blue"
                     >
-                      <option value="text-embedding-ada-002">text-embedding-ada-002</option>
+                      <option value="nomic-embed-text">nomic-embed-text (default)</option>
                       <option value="text-embedding-3-small">text-embedding-3-small</option>
                       <option value="text-embedding-3-large">text-embedding-3-large</option>
                     </select>
@@ -453,28 +487,56 @@ export default function AdminV2Page() {
             {activeTab === 'analysis' && (
               <div>
                 <div className="flex items-center justify-between mb-6">
-                  <h2 className="text-xl font-semibold text-gray-900">RAG Analysis</h2>
+                  <h2 className="text-xl font-semibold">RAG Analysis</h2>
                   <button
                     onClick={runRAGAnalysis}
                     disabled={loading}
-                    className="flex items-center space-x-2 px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 disabled:opacity-50"
+                    className="flex items-center space-x-2 px-4 py-2 bg-green-600 rounded-md hover:bg-green-500 disabled:opacity-50"
                   >
                     <Play className="w-4 h-4" />
                     <span>Run Analysis</span>
                   </button>
                 </div>
 
-                <div className="bg-gray-50 rounded-lg p-6">
+                <div className="bg-gray-800 rounded-lg p-6 border border-gray-700">
                   <div className="text-center">
                     <Play className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-                    <h3 className="text-lg font-medium text-gray-900 mb-2">Run RAG Analysis</h3>
-                    <p className="text-gray-600 mb-4">
+                    <h3 className="text-lg font-medium mb-2">Run RAG Analysis</h3>
+                    <p className="text-gray-400 mb-4">
                       Execute RAG analysis on configured keywords and sources to generate intelligence insights.
                     </p>
-                    <div className="text-sm text-gray-500">
+                    <div className="text-sm text-gray-400">
                       This will process all active keywords against configured sources and generate AI-powered analysis.
                     </div>
                   </div>
+                </div>
+              </div>
+            )}
+
+            {/* Agents & Roles Tab */}
+            {activeTab === 'agents' && (
+              <div>
+                <div className="flex items-center justify-between mb-6">
+                  <h2 className="text-xl font-semibold">Agents & Roles</h2>
+                  <button
+                    onClick={saveAgents}
+                    disabled={savingAgents}
+                    className="px-4 py-2 bg-cyber-blue rounded-md hover:bg-cyber-blue/80 disabled:opacity-50"
+                  >
+                    Save Prompts
+                  </button>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {agents.map((agent) => (
+                    <div key={agent.id} className="bg-gray-800 rounded-lg p-4 border border-gray-700">
+                      <div className="font-medium mb-2">{agent.name}</div>
+                      <textarea
+                        value={agent.systemPrompt}
+                        onChange={(e) => setAgents(agents.map(a => a.id === agent.id ? { ...a, systemPrompt: e.target.value } : a))}
+                        className="w-full h-32 px-3 py-2 bg-gray-900 border border-gray-700 rounded focus:outline-none focus:border-cyber-blue text-sm"
+                      />
+                    </div>
+                  ))}
                 </div>
               </div>
             )}

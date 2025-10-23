@@ -1,0 +1,22 @@
+[
+  {
+    "id": "test-source-1",
+    "name": "Test Government Source",
+    "domain": "test.gov.dk",
+    "type": "government",
+    "credibilityScore": 95,
+    "geography": ["DK"],
+    "sectors": ["government", "cybersecurity"],
+    "verified": true
+  },
+  {
+    "id": "test-source-2",
+    "name": "Test Media Source",
+    "domain": "test-news.dk",
+    "type": "media",
+    "credibilityScore": 85,
+    "geography": ["DK"],
+    "sectors": ["media", "news"],
+    "verified": true
+  }
+]
