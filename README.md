@@ -1,6 +1,6 @@
 # Cyberstreams - Dark Web Threat Intelligence Platform
 
-![Version](https://img.shields.io/badge/version-1.7.0-blue)
+![Version](https://img.shields.io/badge/version-2.0.0-blue)
 ![Status](https://img.shields.io/badge/status-production%20ready-green)
 ![License](https://img.shields.io/badge/license-MIT-green)
 ![React](https://img.shields.io/badge/React-18.2.0-61dafb)
@@ -21,6 +21,7 @@ See [ENVIRONMENT.md](ENVIRONMENT.md) for configuration.
 ## 🚀 Quick Start
 
 ### ⚡ Complete Platform Setup (5 minutes)
+
 ```bash
 # 1. Clone and install
 git clone https://github.com/Clauskraft/cyberstreams.git
@@ -37,6 +38,7 @@ npm install
 ```
 
 ### 🔧 Manual Setup (if needed)
+
 ```bash
 # Basic services only
 npm run server    # API server (port 3001)
@@ -54,6 +56,7 @@ Cyberstreams includes comprehensive startup scripts and data loading tools to bo
 ### 🚀 Complete Platform Startup
 
 #### **`scripts/start-complete.sh`**
+
 **One-command platform initialization** that automatically:
 
 - ✅ **Starts Ollama service** (port 11434)
@@ -81,6 +84,7 @@ npm run dev                      # Start frontend
 ### 📊 Intelligence Data Loading
 
 #### **`scripts/load-startkit.sh`**
+
 **Comprehensive OSINT data loader** that provisions:
 
 - ✅ **50+ Intelligence Sources**:
@@ -98,6 +102,7 @@ npm run dev                      # Start frontend
 - ✅ **Intel Scraper Setup** for automated data collection
 
 #### **`scripts/load-knowledge-base.sh`**
+
 **Intelligence knowledge base loader** with:
 
 - ✅ **CIA Declassified Methods**:
@@ -116,6 +121,7 @@ npm run dev                      # Start frontend
 ### 🔄 Real-time Data Ingestion
 
 #### **`scripts/cron/ingest.ts`**
+
 **Automated RSS ingestion pipeline** that:
 
 - ✅ **Parses RSS feeds** from authorized intelligence sources
@@ -136,7 +142,9 @@ npx ts-node scripts/cron/ingest.ts
 ### 📁 Data Configuration Files
 
 #### **`data/startkit.json`**
+
 **OSINT Startkit Configuration** (1,377 lines):
+
 - 127+ pre-configured intelligence sources with RSS feeds and APIs
 - Geographic coverage: All 27 EU member states + Denmark, Nordic, US, Global
 - Multi-language support: 25 languages including DA, EN, DE, FR, ES, IT, NL, SV, NO, FI, PL, CS, SK, HU, RO, BG, HR, SL, ET, LV, LT, EL, MT, GA, CY
@@ -146,7 +154,9 @@ npx ts-node scripts/cron/ingest.ts
 - Parliamentary APIs: 27+ national parliaments with Open Data access
 
 #### **`data/knowledge-base.json`**
+
 **Intelligence Knowledge Base** (223 lines):
+
 - CIA declassified intelligence methods and techniques
 - OSINT methodologies and best practices
 - Analysis frameworks and threat modeling approaches
@@ -155,6 +165,7 @@ npx ts-node scripts/cron/ingest.ts
 ### 🛠️ System Requirements
 
 #### **Minimum Requirements**
+
 - **Node.js**: >=18.0.0
 - **npm**: >=8.0.0
 - **Ollama**: >=0.1.0 (for AI models)
@@ -163,6 +174,7 @@ npx ts-node scripts/cron/ingest.ts
 - **Storage**: >=50GB (increased for parliamentary APIs and EU institutions)
 
 #### **Recommended Setup**
+
 - **RAM**: >=32GB (for multiple AI models and 127+ data sources)
 - **Storage**: >=100GB (for vector embeddings, knowledge base, and parliamentary data)
 - **CPU**: >=8 cores (for concurrent processing and API integrations)
@@ -187,6 +199,7 @@ After running the startup scripts, the platform provides:
 #### **Common Issues**
 
 **Ollama models not loading:**
+
 ```bash
 # Check available space
 df -h
@@ -197,6 +210,7 @@ ollama pull nomic-embed-text
 ```
 
 **RSS feeds not updating:**
+
 ```bash
 # Check feed accessibility
 curl -I https://cfcs.dk/da/nyheder/rss
@@ -206,6 +220,7 @@ npx ts-node scripts/cron/ingest.ts
 ```
 
 **Database connection issues:**
+
 ```bash
 # Verify PostgreSQL status
 pg_isready -h localhost -p 5432
@@ -263,6 +278,7 @@ cat .env | grep DATABASE_URL
 - **Interactive threat exploration** with drill-down capabilities
 
 #### **RAG (Retrieval-Augmented Generation) System**
+
 - **Single consolidated RAG setup** - unified knowledge retrieval system
 - **Knowledge base integration** with CIA methods and OSINT techniques
 - **Vector embeddings** for semantic search and similarity matching
@@ -289,6 +305,7 @@ cat .env | grep DATABASE_URL
 - **STIX 2.1 integration** with MISP and OpenCTI distribution
 
 #### **Search Functionality**
+
 - **Single consolidated search field** across all intelligence data
 - **Multi-dimensional search**: titles, descriptions, categories, indicators
 - **Real-time filtering** by severity, source type, and time range
@@ -394,6 +411,7 @@ npm install
 ### 📦 Step-by-Step Setup
 
 #### **1. Basic Setup**
+
 ```bash
 # Clone repository
 git clone https://github.com/Clauskraft/cyberstreams.git
@@ -404,6 +422,7 @@ npm install
 ```
 
 #### **2. Start Core Services**
+
 ```bash
 # Start API server (includes PostgreSQL setup)
 npm run server
@@ -413,6 +432,7 @@ npm run dev
 ```
 
 #### **3. Load Intelligence Data**
+
 ```bash
 # Load OSINT startkit (50+ sources + AI models)
 ./scripts/load-startkit.sh
@@ -422,6 +442,7 @@ npm run dev
 ```
 
 #### **4. Verify Setup**
+
 ```bash
 # Check platform status
 curl http://localhost:3001/api/health
@@ -442,11 +463,13 @@ npm run mcp:integration-test
 ### 🧪 Development & Testing
 
 #### **Quick Start with GitHub Codespaces 🚀**
+
 The fastest way to get started! Click the button below to open in a cloud-based development environment:
 
 [![Open in GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://codespaces.new/Clauskraft/cyberstreams)
 
 Everything is pre-configured:
+
 - ✅ Node.js 20 environment
 - ✅ All dependencies installed automatically
 - ✅ VS Code extensions ready
@@ -456,6 +479,7 @@ Everything is pre-configured:
 See [`.devcontainer/README.md`](.devcontainer/README.md) for details.
 
 #### **Manual Development**
+
 ```bash
 # Run development server
 npm run dev
@@ -488,6 +512,16 @@ npm run security:monitor   # Monitor security events
 npm run security:config    # Configure security settings
 
 # Monitoring
+
+### Monitoring
+
+- See system prompt for the Cyberstreams Monitoring Agent: [docs/MONITORING_AGENT_SYSTEM_PROMPT.md](docs/MONITORING_AGENT_SYSTEM_PROMPT.md)
+- Scripts:
+  - `npm run monitor:online` → runs `monitor-online.js` against production by default (set `ONLINE_BASE_URL`)
+  - `npm run monitoring:start` → MCP monitoring integration
+  - `npm run monitoring:system` → system metrics monitor
+  - `npm run monitoring:performance` → performance monitor
+  - `npm run monitoring:alerts` → alerting subsystem
 npm run monitoring:start   # Start monitoring system
 npm run monitoring:system  # System monitoring
 npm run monitoring:performance # Performance monitoring
@@ -497,6 +531,7 @@ npm run monitoring:alerts  # Alert management
 ### 🗄️ Database & Intelligence Services
 
 #### **Environment Configuration**
+
 ```bash
 # Copy environment template
 cp .env.example .env
@@ -510,6 +545,7 @@ echo "OLLAMA_CHAT_MODEL=dolphin-llama3:8b" >> .env
 ```
 
 #### **Database Setup**
+
 ```bash
 # Create PostgreSQL database
 createdb cyberstreams
@@ -525,6 +561,7 @@ npx ts-node scripts/cron/ingest.ts
 ```
 
 #### **Production Deployment**
+
 ```bash
 # Build for production
 npm run build
@@ -911,6 +948,7 @@ Complete RESTful API for intelligence scraper management:
 Cyberstreams platformen er nu udvidet med omfattende EU intelligence integration der dækker alle 27 medlemslande og EU institutioner:
 
 #### 🏛️ EU Institutions Integration
+
 - **ENISA**: Publications & Threat Analysis
 - **EDPB**: European Data Protection Board
 - **Europol EC3**: European Cybercrime Centre
@@ -920,12 +958,14 @@ Cyberstreams platformen er nu udvidet med omfattende EU intelligence integration
 - **ECCC**: European Cybersecurity Competence Centre
 
 ####️ National CERTs Coverage
+
 - **All 27 EU Member States**: Complete coverage of national cybersecurity authorities
 - **Multi-language Support**: 25 languages including local languages
 - **RSS Feeds & APIs**: Real-time threat intelligence and alerts
 - **Credibility Scoring**: Automated source validation and scoring
 
 #### 🏛️ Parliamentary Data Integration
+
 - **27+ National Parliaments**: Open Data access to legislative information
 - **API Integration**: Real-time parliamentary data collection
 - **Legislation Tracking**: Cybersecurity and data protection laws
@@ -945,18 +985,21 @@ Cyberstreams platformen er nu udvidet med et komplet MCP (Model Context Protocol
 #### 🔧 MCP Komponenter
 
 **Core MCP Server (Port 3003)**
+
 - Health checks og system status monitoring
 - Server registration og management
 - Request routing og load balancing
 - Performance metrics og monitoring
 
 **Threat Intelligence MCP Server (Port 3004)**
+
 - AI-drevet threat analysis og correlation
 - MISP og OpenCTI integration
 - IOC analysis og risk assessment
 - Threat correlation across multiple sources
 
 **WiFi Analysis MCP Server (Port 3005)**
+
 - Intelligent network analysis og security assessment
 - Wigle Maps integration
 - Anomaly detection og network mapping
@@ -978,11 +1021,11 @@ curl http://localhost:3003/health
 #### 📊 MCP Client Integration
 
 ```javascript
-import { getMCPClient } from './lib/mcp-client.js';
+import { getMCPClient } from "./lib/mcp-client.js";
 
 const mcpClient = getMCPClient({
-  coreServerUrl: 'http://localhost:3003',
-  timeout: 10000
+  coreServerUrl: "http://localhost:3003",
+  timeout: 10000,
 });
 
 await mcpClient.connect();
@@ -992,6 +1035,7 @@ const status = await mcpClient.getSystemStatus();
 #### 🗄️ Database Schema
 
 Komplet MCP database design med:
+
 - Core tables (servers, requests, metrics, health, logs)
 - Specialized tables (threat intel, wifi networks, analytics)
 - Performance indexes og views
