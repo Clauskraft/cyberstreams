@@ -67,3 +67,4 @@ credentials.json
 
 # Build artifacts
 *.tsbuildinfo
+nul
