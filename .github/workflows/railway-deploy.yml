@@ -22,5 +22,7 @@ jobs:
         env:
           RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
         run: |
-          echo "Deploying to Railway..."
-          railway up --detach || railway up
+          echo "Checking Railway services..."
+          railway service list || echo "Could not list services"
+          echo "Attempting deployment..."
+          railway up --service web --detach || railway up --detach || railway up
