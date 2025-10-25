@@ -2,58 +2,6 @@ name: Deploy to Railway
 
 on:
   push:
-    branches: [ "main", "master" ]
-  workflow_dispatch:
-
-jobs:
-  deploy:
-    runs-on: ubuntu-latest
-    permissions:
-      contents: read
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-          cache: 'npm'
-
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Build
-        run: npm run build
-
-      - name: Install Railway CLI
-        run: npm i -g @railway/cli
-
-      - name: Link Railway Project
-        if: ${{ secrets.RAILWAY_PROJECT_ID != '' }}
-        env:
-          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
-        run: |
-          railway link --project ${{ secrets.RAILWAY_PROJECT_ID }}
-
-      - name: Deploy to Railway
-        env:
-          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
-          NODE_ENV: production
-        run: |
-          railway up --service cyberstreams --yes || railway up --yes
-
-      - name: Show Deployment Status
-        if: always()
-        env:
-          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
-        run: |
-          railway status || true
-
-name: Deploy to Railway
-
-on:
-  push:
     branches: [ master ]
   workflow_dispatch:
 
