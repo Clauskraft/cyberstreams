@@ -1,6 +1,157 @@
 {
   "authorizedSources": [
     {
+      "id": "rediris_cert",
+      "name": "RedIRIS-CERT (Spanish Research Network CERT)",
+      "domain": "rediris.es",
+      "type": "research",
+      "credibilityScore": 91,
+      "timelinessScore": 86,
+      "accuracyScore": 89,
+      "contextScore": 82,
+      "relevanceScore": 82,
+      "rssUrl": "https://rediris.es/cert/rss",
+      "formats": [
+        "rss"
+      ],
+      "updateFrequency": 360,
+      "logoUrl": "/assets/logos/rediris-cert.png",
+      "verified": true,
+      "priority": "medium",
+      "geography": [
+        "ES",
+        "EU"
+      ],
+      "sectors": [
+        "research",
+        "education"
+      ],
+      "languages": [
+        "es",
+        "en"
+      ]
+    },
+    {
+      "id": "cert_pt",
+      "name": "CERT.pt (Portuguese Computer Emergency Response Team)",
+      "domain": "cert.pt",
+      "type": "cert",
+      "credibilityScore": 92,
+      "timelinessScore": 87,
+      "accuracyScore": 90,
+      "contextScore": 83,
+      "relevanceScore": 84,
+      "rssUrl": "https://cert.pt/rss",
+      "formats": [
+        "rss"
+      ],
+      "updateFrequency": 240,
+      "logoUrl": "/assets/logos/cert-pt.png",
+      "verified": true,
+      "priority": "medium",
+      "geography": [
+        "PT",
+        "EU"
+      ],
+      "sectors": [
+        "government",
+        "critical_infrastructure"
+      ],
+      "languages": [
+        "pt",
+        "en"
+      ]
+    },
+    {
+      "id": "govcert_ch",
+      "name": "GovCERT.ch (Swiss Government CERT)",
+      "domain": "govcert.admin.ch",
+      "type": "government",
+      "credibilityScore": 95,
+      "timelinessScore": 90,
+      "accuracyScore": 93,
+      "contextScore": 87,
+      "relevanceScore": 86,
+      "rssUrl": "https://govcert.admin.ch/rss",
+      "formats": [
+        "rss"
+      ],
+      "updateFrequency": 180,
+      "logoUrl": "/assets/logos/govcert-ch.png",
+      "verified": true,
+      "priority": "high",
+      "geography": [
+        "CH",
+        "EU"
+      ],
+      "sectors": [
+        "government"
+      ],
+      "languages": [
+        "de",
+        "fr",
+        "it",
+        "en"
+      ]
+    },
+    {
+      "id": "microsoft_psirt",
+      "name": "Microsoft Security Response Center",
+      "domain": "msrc.microsoft.com",
+      "type": "vendor",
+      "credibilityScore": 92,
+      "timelinessScore": 88,
+      "accuracyScore": 89,
+      "contextScore": 85,
+      "relevanceScore": 90,
+      "rssUrl": "https://msrc.microsoft.com/update-guide/rss",
+      "formats": [
+        "rss"
+      ],
+      "updateFrequency": 180,
+      "logoUrl": "/assets/logos/microsoft.png",
+      "verified": true,
+      "priority": "high",
+      "geography": [
+        "Global"
+      ],
+      "sectors": [
+        "all"
+      ],
+      "languages": [
+        "en"
+      ]
+    },
+    {
+      "id": "cisco_psirt",
+      "name": "Cisco Product Security Incident Response Team",
+      "domain": "sec.cloudapps.cisco.com",
+      "type": "vendor",
+      "credibilityScore": 90,
+      "timelinessScore": 85,
+      "accuracyScore": 88,
+      "contextScore": 83,
+      "relevanceScore": 80,
+      "rssUrl": "https://sec.cloudapps.cisco.com/security/center/publicationListing.x?product=all&criteria=exact&cves=any&publicationTypeIDs=1&startDate=&endDate=&limit=50&offset=0",
+      "formats": [
+        "rss"
+      ],
+      "updateFrequency": 240,
+      "logoUrl": "/assets/logos/cisco.png",
+      "verified": true,
+      "priority": "medium",
+      "geography": [
+        "Global"
+      ],
+      "sectors": [
+        "enterprise",
+        "critical_infrastructure"
+      ],
+      "languages": [
+        "en"
+      ]
+    },
+    {
       "id": "mitre_cve",
       "name": "MITRE CVE Program",
       "domain": "cve.mitre.org",
@@ -30,24 +181,1236 @@
       ]
     },
     {
-      "name": "CFCS",
+      "id": "cfcs_dk",
+      "name": "Center for Cybersikkerhed (CFCS)",
       "domain": "cfcs.dk",
-      "url": "https://www.cfcs.dk/"
+      "type": "government",
+      "credibilityScore": 98,
+      "timelinessScore": 95,
+      "accuracyScore": 96,
+      "contextScore": 92,
+      "relevanceScore": 100,
+      "rssUrl": "https://cfcs.dk/da/nyheder/rss",
+      "formats": [
+        "rss"
+      ],
+      "updateFrequency": 60,
+      "logoUrl": "/assets/logos/cfcs.png",
+      "verified": true,
+      "priority": "critical",
+      "geography": [
+        "DK",
+        "EU"
+      ],
+      "sectors": [
+        "government",
+        "critical_infrastructure",
+        "healthcare",
+        "finance"
+      ],
+      "languages": [
+        "da",
+        "en"
+      ]
     },
     {
-      "name": "ENISA",
+      "id": "enisa_eu",
+      "name": "ENISA (European Union Agency for Cybersecurity)",
       "domain": "enisa.europa.eu",
-      "url": "https://www.enisa.europa.eu/"
+      "type": "international",
+      "credibilityScore": 96,
+      "timelinessScore": 88,
+      "accuracyScore": 94,
+      "contextScore": 90,
+      "relevanceScore": 95,
+      "rssUrl": "https://www.enisa.europa.eu/news/rss",
+      "formats": [
+        "rss",
+        "atom"
+      ],
+      "updateFrequency": 120,
+      "logoUrl": "/assets/logos/enisa.png",
+      "verified": true,
+      "priority": "critical",
+      "geography": [
+        "EU"
+      ],
+      "sectors": [
+        "all"
+      ],
+      "languages": [
+        "en"
+      ]
     },
     {
-      "name": "CISA KEV",
-      "domain": "cisa.gov",
-      "url": "https://www.cisa.gov/known-exploited-vulnerabilities-catalog"
-    },
-    {
+      "id": "cert_eu",
       "name": "CERT-EU",
       "domain": "cert.europa.eu",
-      "url": "https://cert.europa.eu/"
+      "type": "cert",
+      "credibilityScore": 94,
+      "timelinessScore": 90,
+      "accuracyScore": 95,
+      "contextScore": 88,
+      "relevanceScore": 92,
+      "rssUrl": "https://cert.europa.eu/publications/rss",
+      "formats": [
+        "rss"
+      ],
+      "updateFrequency": 180,
+      "logoUrl": "/assets/logos/cert-eu.png",
+      "verified": true,
+      "priority": "high",
+      "geography": [
+        "EU"
+      ],
+      "sectors": [
+        "government",
+        "critical_infrastructure"
+      ],
+      "languages": [
+        "en"
+      ]
+    },
+    {
+      "id": "cisa_us",
+      "name": "CISA (Cybersecurity and Infrastructure Security Agency)",
+      "domain": "cisa.gov",
+      "type": "government",
+      "credibilityScore": 97,
+      "timelinessScore": 93,
+      "accuracyScore": 96,
+      "contextScore": 89,
+      "relevanceScore": 75,
+      "rssUrl": "https://www.cisa.gov/cybersecurity-advisories/rss.xml",
+      "formats": [
+        "rss",
+        "stix"
+      ],
+      "updateFrequency": 60,
+      "logoUrl": "/assets/logos/cisa.png",
+      "verified": true,
+      "priority": "high",
+      "geography": [
+        "US",
+        "Global"
+      ],
+      "sectors": [
+        "critical_infrastructure",
+        "government"
+      ],
+      "languages": [
+        "en"
+      ]
+    },
+    {
+      "id": "nvd_nist",
+      "name": "National Vulnerability Database (NVD)",
+      "domain": "nvd.nist.gov",
+      "type": "government",
+      "credibilityScore": 99,
+      "timelinessScore": 85,
+      "accuracyScore": 98,
+      "contextScore": 95,
+      "relevanceScore": 85,
+      "rssUrl": "https://nvd.nist.gov/feeds/xml/cve/misc/nvd-rss.xml",
+      "apiUrl": "https://services.nvd.nist.gov/rest/json/cves/2.0/",
+      "formats": [
+        "rss",
+        "json",
+        "xml"
+      ],
+      "updateFrequency": 120,
+      "logoUrl": "/assets/logos/nvd.png",
+      "verified": true,
+      "priority": "high",
+      "geography": [
+        "Global"
+      ],
+      "sectors": [
+        "all"
+      ],
+      "languages": [
+        "en"
+      ]
+    },
+    {
+      "id": "ncsc_nl",
+      "name": "NCSC Netherlands",
+      "domain": "ncsc.nl",
+      "type": "cert",
+      "credibilityScore": 93,
+      "timelinessScore": 89,
+      "accuracyScore": 91,
+      "contextScore": 85,
+      "relevanceScore": 88,
+      "rssUrl": "https://www.ncsc.nl/rss",
+      "formats": [
+        "rss"
+      ],
+      "updateFrequency": 240,
+      "logoUrl": "/assets/logos/ncsc-nl.png",
+      "verified": true,
+      "priority": "medium",
+      "geography": [
+        "NL",
+        "EU"
+      ],
+      "sectors": [
+        "government",
+        "critical_infrastructure"
+      ],
+      "languages": [
+        "nl",
+        "en"
+      ]
+    },
+    {
+      "id": "cert_se",
+      "name": "CERT-SE (Swedish Computer Emergency Response Team)",
+      "domain": "cert.se",
+      "type": "cert",
+      "credibilityScore": 91,
+      "timelinessScore": 86,
+      "accuracyScore": 90,
+      "contextScore": 82,
+      "relevanceScore": 85,
+      "rssUrl": "https://www.cert.se/rss",
+      "formats": [
+        "rss"
+      ],
+      "updateFrequency": 360,
+      "logoUrl": "/assets/logos/cert-se.png",
+      "verified": true,
+      "priority": "medium",
+      "geography": [
+        "SE",
+        "Nordic",
+        "EU"
+      ],
+      "sectors": [
+        "government",
+        "critical_infrastructure"
+      ],
+      "languages": [
+        "sv",
+        "en"
+      ]
+    },
+    {
+      "id": "cert_at",
+      "name": "CERT.at (Austrian Computer Emergency Response Team)",
+      "domain": "cert.at",
+      "type": "cert",
+      "credibilityScore": 94,
+      "timelinessScore": 87,
+      "accuracyScore": 92,
+      "contextScore": 85,
+      "relevanceScore": 88,
+      "rssUrl": "https://cert.at/rss",
+      "apiUrl": "https://cert.at/api/advisories",
+      "formats": [
+        "rss",
+        "json"
+      ],
+      "updateFrequency": 180,
+      "logoUrl": "/assets/logos/cert-at.png",
+      "verified": true,
+      "priority": "medium",
+      "geography": [
+        "AT",
+        "EU"
+      ],
+      "sectors": [
+        "government",
+        "critical_infrastructure"
+      ],
+      "languages": [
+        "de",
+        "en"
+      ]
+    },
+    {
+      "id": "govcert_at",
+      "name": "GovCERT Austria",
+      "domain": "govcert.gv.at",
+      "type": "government",
+      "credibilityScore": 96,
+      "timelinessScore": 90,
+      "accuracyScore": 94,
+      "contextScore": 88,
+      "relevanceScore": 85,
+      "rssUrl": "https://govcert.gv.at/feed.xml",
+      "formats": [
+        "rss"
+      ],
+      "updateFrequency": 120,
+      "logoUrl": "/assets/logos/govcert-at.png",
+      "verified": true,
+      "priority": "high",
+      "geography": [
+        "AT",
+        "EU"
+      ],
+      "sectors": [
+        "government"
+      ],
+      "languages": [
+        "de",
+        "en"
+      ]
+    },
+    {
+      "id": "aec_at",
+      "name": "Austrian Energy CERT (AEC)",
+      "domain": "energycert.at",
+      "type": "cert",
+      "credibilityScore": 92,
+      "timelinessScore": 85,
+      "accuracyScore": 90,
+      "contextScore": 83,
+      "relevanceScore": 80,
+      "apiUrl": "https://energycert.at/api/alerts",
+      "formats": [
+        "json"
+      ],
+      "updateFrequency": 240,
+      "logoUrl": "/assets/logos/aec.png",
+      "verified": true,
+      "priority": "medium",
+      "geography": [
+        "AT",
+        "EU"
+      ],
+      "sectors": [
+        "energy",
+        "critical_infrastructure"
+      ],
+      "languages": [
+        "de",
+        "en"
+      ]
+    },
+    {
+      "id": "ahc_at",
+      "name": "Austrian HealthCERT (AHC)",
+      "domain": "healthcert.gv.at",
+      "type": "cert",
+      "credibilityScore": 91,
+      "timelinessScore": 83,
+      "accuracyScore": 89,
+      "contextScore": 82,
+      "relevanceScore": 78,
+      "rssUrl": "https://healthcert.gv.at/alerts.xml",
+      "formats": [
+        "rss"
+      ],
+      "updateFrequency": 360,
+      "logoUrl": "/assets/logos/ahc.png",
+      "verified": true,
+      "priority": "medium",
+      "geography": [
+        "AT",
+        "EU"
+      ],
+      "sectors": [
+        "healthcare"
+      ],
+      "languages": [
+        "de",
+        "en"
+      ]
+    },
+    {
+      "id": "cert_be",
+      "name": "CERT.be (Belgian Computer Emergency Response Team)",
+      "domain": "cert.be",
+      "type": "cert",
+      "credibilityScore": 93,
+      "timelinessScore": 88,
+      "accuracyScore": 91,
+      "contextScore": 84,
+      "relevanceScore": 87,
+      "rssUrl": "https://cert.be/rss",
+      "formats": [
+        "rss"
+      ],
+      "updateFrequency": 180,
+      "logoUrl": "/assets/logos/cert-be.png",
+      "verified": true,
+      "priority": "medium",
+      "geography": [
+        "BE",
+        "EU"
+      ],
+      "sectors": [
+        "government",
+        "critical_infrastructure"
+      ],
+      "languages": [
+        "nl",
+        "fr",
+        "en"
+      ]
+    },
+    {
+      "id": "govcert_lu",
+      "name": "GovCERT Luxembourg",
+      "domain": "govcert.lu",
+      "type": "government",
+      "credibilityScore": 92,
+      "timelinessScore": 86,
+      "accuracyScore": 90,
+      "contextScore": 83,
+      "relevanceScore": 82,
+      "rssUrl": "https://govcert.lu/feed",
+      "formats": [
+        "rss"
+      ],
+      "updateFrequency": 240,
+      "logoUrl": "/assets/logos/govcert-lu.png",
+      "verified": true,
+      "priority": "medium",
+      "geography": [
+        "LU",
+        "EU"
+      ],
+      "sectors": [
+        "government"
+      ],
+      "languages": [
+        "fr",
+        "de",
+        "en"
+      ]
+    },
+    {
+      "id": "circl_lu",
+      "name": "CIRCL (Computer Incident Response Center Luxembourg)",
+      "domain": "circl.lu",
+      "type": "cert",
+      "credibilityScore": 95,
+      "timelinessScore": 91,
+      "accuracyScore": 93,
+      "contextScore": 89,
+      "relevanceScore": 85,
+      "rssUrl": "https://circl.lu/rss",
+      "apiUrl": "https://circl.lu/api/misp",
+      "formats": [
+        "rss",
+        "json",
+        "stix"
+      ],
+      "updateFrequency": 120,
+      "logoUrl": "/assets/logos/circl.png",
+      "verified": true,
+      "priority": "high",
+      "geography": [
+        "LU",
+        "EU"
+      ],
+      "sectors": [
+        "all"
+      ],
+      "languages": [
+        "en",
+        "fr"
+      ]
+    },
+    {
+      "id": "cert_pl",
+      "name": "CERT.pl (Polish Computer Emergency Response Team)",
+      "domain": "cert.pl",
+      "type": "cert",
+      "credibilityScore": 93,
+      "timelinessScore": 89,
+      "accuracyScore": 91,
+      "contextScore": 85,
+      "relevanceScore": 86,
+      "rssUrl": "https://cert.pl/rss",
+      "formats": [
+        "rss"
+      ],
+      "updateFrequency": 180,
+      "logoUrl": "/assets/logos/cert-pl.png",
+      "verified": true,
+      "priority": "medium",
+      "geography": [
+        "PL",
+        "EU"
+      ],
+      "sectors": [
+        "government",
+        "critical_infrastructure"
+      ],
+      "languages": [
+        "pl",
+        "en"
+      ]
+    },
+    {
+      "id": "cert_fi",
+      "name": "CERT.fi / NCSC-FI (Finnish Computer Emergency Response Team)",
+      "domain": "cert.fi",
+      "type": "cert",
+      "credibilityScore": 94,
+      "timelinessScore": 90,
+      "accuracyScore": 92,
+      "contextScore": 87,
+      "relevanceScore": 88,
+      "rssUrl": "https://cert.fi/rss",
+      "formats": [
+        "rss"
+      ],
+      "updateFrequency": 180,
+      "logoUrl": "/assets/logos/cert-fi.png",
+      "verified": true,
+      "priority": "medium",
+      "geography": [
+        "FI",
+        "Nordic",
+        "EU"
+      ],
+      "sectors": [
+        "government",
+        "critical_infrastructure"
+      ],
+      "languages": [
+        "fi",
+        "en"
+      ]
+    },
+    {
+      "id": "cert_ee",
+      "name": "CERT.ee (Estonian Computer Emergency Response Team)",
+      "domain": "cert.ee",
+      "type": "cert",
+      "credibilityScore": 93,
+      "timelinessScore": 88,
+      "accuracyScore": 91,
+      "contextScore": 84,
+      "relevanceScore": 85,
+      "rssUrl": "https://cert.ee/rss",
+      "formats": [
+        "rss"
+      ],
+      "updateFrequency": 240,
+      "logoUrl": "/assets/logos/cert-ee.png",
+      "verified": true,
+      "priority": "medium",
+      "geography": [
+        "EE",
+        "Baltic",
+        "EU"
+      ],
+      "sectors": [
+        "government",
+        "critical_infrastructure"
+      ],
+      "languages": [
+        "et",
+        "en"
+      ]
+    },
+    {
+      "id": "cert_lv",
+      "name": "CERT.lv (Latvian Computer Emergency Response Team)",
+      "domain": "cert.lv",
+      "type": "cert",
+      "credibilityScore": 92,
+      "timelinessScore": 86,
+      "accuracyScore": 90,
+      "contextScore": 82,
+      "relevanceScore": 84,
+      "rssUrl": "https://cert.lv/rss",
+      "formats": [
+        "rss"
+      ],
+      "updateFrequency": 360,
+      "logoUrl": "/assets/logos/cert-lv.png",
+      "verified": true,
+      "priority": "medium",
+      "geography": [
+        "LV",
+        "Baltic",
+        "EU"
+      ],
+      "sectors": [
+        "government",
+        "critical_infrastructure"
+      ],
+      "languages": [
+        "lv",
+        "en"
+      ]
+    },
+    {
+      "id": "cert_lt",
+      "name": "CERT.lt (Lithuanian Computer Emergency Response Team)",
+      "domain": "cert.lt",
+      "type": "cert",
+      "credibilityScore": 92,
+      "timelinessScore": 87,
+      "accuracyScore": 90,
+      "contextScore": 83,
+      "relevanceScore": 84,
+      "rssUrl": "https://cert.lt/rss",
+      "formats": [
+        "rss"
+      ],
+      "updateFrequency": 240,
+      "logoUrl": "/assets/logos/cert-lt.png",
+      "verified": true,
+      "priority": "medium",
+      "geography": [
+        "LT",
+        "Baltic",
+        "EU"
+      ],
+      "sectors": [
+        "government",
+        "critical_infrastructure"
+      ],
+      "languages": [
+        "lt",
+        "en"
+      ]
+    },
+    {
+      "id": "govcert_nl",
+      "name": "GovCERT.NL (Dutch Government CERT)",
+      "domain": "govcert.nl",
+      "type": "government",
+      "credibilityScore": 95,
+      "timelinessScore": 91,
+      "accuracyScore": 93,
+      "contextScore": 88,
+      "relevanceScore": 89,
+      "rssUrl": "https://govcert.nl/feed",
+      "formats": [
+        "rss"
+      ],
+      "updateFrequency": 120,
+      "logoUrl": "/assets/logos/govcert-nl.png",
+      "verified": true,
+      "priority": "high",
+      "geography": [
+        "NL",
+        "EU"
+      ],
+      "sectors": [
+        "government"
+      ],
+      "languages": [
+        "nl",
+        "en"
+      ]
+    },
+    {
+      "id": "cert_ro",
+      "name": "CERT-RO (Romanian Computer Emergency Response Team)",
+      "domain": "cert.ro",
+      "type": "cert",
+      "credibilityScore": 91,
+      "timelinessScore": 85,
+      "accuracyScore": 89,
+      "contextScore": 81,
+      "relevanceScore": 83,
+      "rssUrl": "https://cert.ro/rss",
+      "formats": [
+        "rss"
+      ],
+      "updateFrequency": 360,
+      "logoUrl": "/assets/logos/cert-ro.png",
+      "verified": true,
+      "priority": "medium",
+      "geography": [
+        "RO",
+        "EU"
+      ],
+      "sectors": [
+        "government",
+        "critical_infrastructure"
+      ],
+      "languages": [
+        "ro",
+        "en"
+      ]
+    },
+    {
+      "id": "csirt_cz",
+      "name": "CSIRT.cz (Czech Computer Security Incident Response Team)",
+      "domain": "csirt.cz",
+      "type": "cert",
+      "credibilityScore": 92,
+      "timelinessScore": 87,
+      "accuracyScore": 90,
+      "contextScore": 83,
+      "relevanceScore": 85,
+      "rssUrl": "https://csirt.cz/rss",
+      "formats": [
+        "rss"
+      ],
+      "updateFrequency": 240,
+      "logoUrl": "/assets/logos/csirt-cz.png",
+      "verified": true,
+      "priority": "medium",
+      "geography": [
+        "CZ",
+        "EU"
+      ],
+      "sectors": [
+        "government",
+        "critical_infrastructure"
+      ],
+      "languages": [
+        "cs",
+        "en"
+      ]
+    },
+    {
+      "id": "cert_hr",
+      "name": "CERT.hr (Croatian Computer Emergency Response Team)",
+      "domain": "cert.hr",
+      "type": "cert",
+      "credibilityScore": 90,
+      "timelinessScore": 84,
+      "accuracyScore": 88,
+      "contextScore": 80,
+      "relevanceScore": 82,
+      "rssUrl": "https://cert.hr/rss",
+      "formats": [
+        "rss"
+      ],
+      "updateFrequency": 360,
+      "logoUrl": "/assets/logos/cert-hr.png",
+      "verified": true,
+      "priority": "low",
+      "geography": [
+        "HR",
+        "EU"
+      ],
+      "sectors": [
+        "government",
+        "critical_infrastructure"
+      ],
+      "languages": [
+        "hr",
+        "en"
+      ]
+    },
+    {
+      "id": "si_cert",
+      "name": "SI-CERT (Slovenian Computer Emergency Response Team)",
+      "domain": "si-cert.si",
+      "type": "cert",
+      "credibilityScore": 91,
+      "timelinessScore": 85,
+      "accuracyScore": 89,
+      "contextScore": 82,
+      "relevanceScore": 83,
+      "rssUrl": "https://si-cert.si/rss",
+      "formats": [
+        "rss"
+      ],
+      "updateFrequency": 240,
+      "logoUrl": "/assets/logos/si-cert.png",
+      "verified": true,
+      "priority": "medium",
+      "geography": [
+        "SI",
+        "EU"
+      ],
+      "sectors": [
+        "government",
+        "critical_infrastructure"
+      ],
+      "languages": [
+        "sl",
+        "en"
+      ]
+    },
+    {
+      "id": "cert_bg",
+      "name": "CERT.bg (Bulgarian Computer Emergency Response Team)",
+      "domain": "cert.bg",
+      "type": "cert",
+      "credibilityScore": 89,
+      "timelinessScore": 82,
+      "accuracyScore": 87,
+      "contextScore": 79,
+      "relevanceScore": 81,
+      "rssUrl": "https://cert.bg/rss",
+      "formats": [
+        "rss"
+      ],
+      "updateFrequency": 480,
+      "logoUrl": "/assets/logos/cert-bg.png",
+      "verified": true,
+      "priority": "low",
+      "geography": [
+        "BG",
+        "EU"
+      ],
+      "sectors": [
+        "government",
+        "critical_infrastructure"
+      ],
+      "languages": [
+        "bg",
+        "en"
+      ]
+    },
+    {
+      "id": "cert_gr",
+      "name": "CERT.gr (Greek Computer Emergency Response Team)",
+      "domain": "cert.gr",
+      "type": "cert",
+      "credibilityScore": 90,
+      "timelinessScore": 83,
+      "accuracyScore": 88,
+      "contextScore": 80,
+      "relevanceScore": 82,
+      "rssUrl": "https://cert.gr/rss",
+      "formats": [
+        "rss"
+      ],
+      "updateFrequency": 360,
+      "logoUrl": "/assets/logos/cert-gr.png",
+      "verified": true,
+      "priority": "low",
+      "geography": [
+        "GR",
+        "EU"
+      ],
+      "sectors": [
+        "government",
+        "critical_infrastructure"
+      ],
+      "languages": [
+        "el",
+        "en"
+      ]
+    },
+    {
+      "id": "csirt_it",
+      "name": "CSIRT Italia (Italian Computer Security Incident Response Team)",
+      "domain": "csirt.gov.it",
+      "type": "government",
+      "credibilityScore": 94,
+      "timelinessScore": 89,
+      "accuracyScore": 92,
+      "contextScore": 86,
+      "relevanceScore": 87,
+      "rssUrl": "https://csirt.gov.it/rss",
+      "formats": [
+        "rss"
+      ],
+      "updateFrequency": 180,
+      "logoUrl": "/assets/logos/csirt-it.png",
+      "verified": true,
+      "priority": "medium",
+      "geography": [
+        "IT",
+        "EU"
+      ],
+      "sectors": [
+        "government",
+        "critical_infrastructure"
+      ],
+      "languages": [
+        "it",
+        "en"
+      ]
+    },
+    {
+      "id": "csirt_ie",
+      "name": "CSIRT-IE (Irish Computer Security Incident Response Team)",
+      "domain": "ncsc.gov.ie",
+      "type": "government",
+      "credibilityScore": 93,
+      "timelinessScore": 88,
+      "accuracyScore": 91,
+      "contextScore": 85,
+      "relevanceScore": 86,
+      "rssUrl": "https://ncsc.gov.ie/csirt/rss",
+      "formats": [
+        "rss"
+      ],
+      "updateFrequency": 240,
+      "logoUrl": "/assets/logos/csirt-ie.png",
+      "verified": true,
+      "priority": "medium",
+      "geography": [
+        "IE",
+        "EU"
+      ],
+      "sectors": [
+        "government",
+        "critical_infrastructure"
+      ],
+      "languages": [
+        "en",
+        "ga"
+      ]
+    },
+    {
+      "id": "ncsc_uk",
+      "name": "NCSC UK (National Cyber Security Centre)",
+      "domain": "ncsc.gov.uk",
+      "type": "government",
+      "credibilityScore": 97,
+      "timelinessScore": 92,
+      "accuracyScore": 95,
+      "contextScore": 90,
+      "relevanceScore": 88,
+      "rssUrl": "https://ncsc.gov.uk/api/1/services/v1/report-rss-feed.xml",
+      "formats": [
+        "rss"
+      ],
+      "updateFrequency": 120,
+      "logoUrl": "/assets/logos/ncsc-uk.png",
+      "verified": true,
+      "priority": "high",
+      "geography": [
+        "UK",
+        "EU"
+      ],
+      "sectors": [
+        "government",
+        "critical_infrastructure"
+      ],
+      "languages": [
+        "en"
+      ]
+    },
+    {
+      "id": "govcert_uk",
+      "name": "GovCertUK (UK Government CERT)",
+      "domain": "govcert.gov.uk",
+      "type": "government",
+      "credibilityScore": 96,
+      "timelinessScore": 91,
+      "accuracyScore": 94,
+      "contextScore": 88,
+      "relevanceScore": 86,
+      "rssUrl": "https://govcert.gov.uk/feed",
+      "formats": [
+        "rss"
+      ],
+      "updateFrequency": 180,
+      "logoUrl": "/assets/logos/govcert-uk.png",
+      "verified": true,
+      "priority": "high",
+      "geography": [
+        "UK"
+      ],
+      "sectors": [
+        "government"
+      ],
+      "languages": [
+        "en"
+      ]
+    },
+    {
+      "id": "bsi_cert",
+      "name": "BSI CERT-Bund (German Federal CERT)",
+      "domain": "cert-bund.de",
+      "type": "government",
+      "credibilityScore": 96,
+      "timelinessScore": 92,
+      "accuracyScore": 94,
+      "contextScore": 89,
+      "relevanceScore": 90,
+      "rssUrl": "https://cert-bund.de/rss",
+      "formats": [
+        "rss"
+      ],
+      "updateFrequency": 120,
+      "logoUrl": "/assets/logos/bsi-cert.png",
+      "verified": true,
+      "priority": "high",
+      "geography": [
+        "DE",
+        "EU"
+      ],
+      "sectors": [
+        "government",
+        "critical_infrastructure"
+      ],
+      "languages": [
+        "de",
+        "en"
+      ]
+    },
+    {
+      "id": "cert_dk_national",
+      "name": "CERT.dk (Danish National CERT)",
+      "domain": "cert.dk",
+      "type": "cert",
+      "credibilityScore": 97,
+      "timelinessScore": 93,
+      "accuracyScore": 95,
+      "contextScore": 91,
+      "relevanceScore": 100,
+      "rssUrl": "https://cert.dk/rss",
+      "formats": [
+        "rss"
+      ],
+      "updateFrequency": 60,
+      "logoUrl": "/assets/logos/cert-dk.png",
+      "verified": true,
+      "priority": "critical",
+      "geography": [
+        "DK",
+        "Nordic"
+      ],
+      "sectors": [
+        "all"
+      ],
+      "languages": [
+        "da",
+        "en"
+      ]
+    },
+    {
+      "id": "ccn_cert",
+      "name": "CCN-CERT (Spanish Government CERT)",
+      "domain": "ccn-cert.cni.es",
+      "type": "government",
+      "credibilityScore": 94,
+      "timelinessScore": 89,
+      "accuracyScore": 92,
+      "contextScore": 86,
+      "relevanceScore": 85,
+      "rssUrl": "https://ccn-cert.cni.es/rss",
+      "formats": [
+        "rss"
+      ],
+      "updateFrequency": 180,
+      "logoUrl": "/assets/logos/ccn-cert.png",
+      "verified": true,
+      "priority": "medium",
+      "geography": [
+        "ES",
+        "EU"
+      ],
+      "sectors": [
+        "government"
+      ],
+      "languages": [
+        "es",
+        "en"
+      ]
+    },
+    {
+      "id": "incibe_cert",
+      "name": "INCIBE-CERT (Spanish National CERT)",
+      "domain": "incibe-cert.es",
+      "type": "cert",
+      "credibilityScore": 93,
+      "timelinessScore": 88,
+      "accuracyScore": 91,
+      "contextScore": 84,
+      "relevanceScore": 84,
+      "rssUrl": "https://incibe-cert.es/rss",
+      "formats": [
+        "rss"
+      ],
+      "updateFrequency": 240,
+      "logoUrl": "/assets/logos/incibe-cert.png",
+      "verified": true,
+      "priority": "medium",
+      "geography": [
+        "ES",
+        "EU"
+      ],
+      "sectors": [
+        "all"
+      ],
+      "languages": [
+        "es",
+        "en"
+      ]
+    },
+    {
+      "id": "rediris_cert",
+      "name": "RedIRIS-CERT (Spanish Research Network CERT)",
+      "domain": "rediris.es",
+      "type": "research",
+      "credibilityScore": 91,
+      "timelinessScore": 86,
+      "accuracyScore": 89,
+      "contextScore": 82,
+      "relevanceScore": 82,
+      "rssUrl": "https://rediris.es/cert/rss",
+      "formats": [
+        "rss"
+      ],
+      "updateFrequency": 360,
+      "logoUrl": "/assets/logos/rediris-cert.png",
+      "verified": true,
+      "priority": "medium",
+      "geography": [
+        "ES",
+        "EU"
+      ],
+      "sectors": [
+        "research",
+        "education"
+      ],
+      "languages": [
+        "es",
+        "en"
+      ]
+    },
+    {
+      "id": "cert_pt",
+      "name": "CERT.pt (Portuguese Computer Emergency Response Team)",
+      "domain": "cert.pt",
+      "type": "cert",
+      "credibilityScore": 92,
+      "timelinessScore": 87,
+      "accuracyScore": 90,
+      "contextScore": 83,
+      "relevanceScore": 84,
+      "rssUrl": "https://cert.pt/rss",
+      "formats": [
+        "rss"
+      ],
+      "updateFrequency": 240,
+      "logoUrl": "/assets/logos/cert-pt.png",
+      "verified": true,
+      "priority": "medium",
+      "geography": [
+        "PT",
+        "EU"
+      ],
+      "sectors": [
+        "government",
+        "critical_infrastructure"
+      ],
+      "languages": [
+        "pt",
+        "en"
+      ]
+    },
+    {
+      "id": "govcert_ch",
+      "name": "GovCERT.ch (Swiss Government CERT)",
+      "domain": "govcert.admin.ch",
+      "type": "government",
+      "credibilityScore": 95,
+      "timelinessScore": 90,
+      "accuracyScore": 93,
+      "contextScore": 87,
+      "relevanceScore": 86,
+      "rssUrl": "https://govcert.admin.ch/rss",
+      "formats": [
+        "rss"
+      ],
+      "updateFrequency": 180,
+      "logoUrl": "/assets/logos/govcert-ch.png",
+      "verified": true,
+      "priority": "high",
+      "geography": [
+        "CH",
+        "EU"
+      ],
+      "sectors": [
+        "government"
+      ],
+      "languages": [
+        "de",
+        "fr",
+        "it",
+        "en"
+      ]
+    },
+    {
+      "id": "microsoft_psirt",
+      "name": "Microsoft Security Response Center",
+      "domain": "msrc.microsoft.com",
+      "type": "vendor",
+      "credibilityScore": 92,
+      "timelinessScore": 88,
+      "accuracyScore": 89,
+      "contextScore": 85,
+      "relevanceScore": 90,
+      "rssUrl": "https://msrc.microsoft.com/update-guide/rss",
+      "formats": [
+        "rss"
+      ],
+      "updateFrequency": 180,
+      "logoUrl": "/assets/logos/microsoft.png",
+      "verified": true,
+      "priority": "high",
+      "geography": [
+        "Global"
+      ],
+      "sectors": [
+        "all"
+      ],
+      "languages": [
+        "en"
+      ]
+    },
+    {
+      "id": "cisco_psirt",
+      "name": "Cisco Product Security Incident Response Team",
+      "domain": "sec.cloudapps.cisco.com",
+      "type": "vendor",
+      "credibilityScore": 90,
+      "timelinessScore": 85,
+      "accuracyScore": 88,
+      "contextScore": 83,
+      "relevanceScore": 80,
+      "rssUrl": "https://sec.cloudapps.cisco.com/security/center/publicationListing.x?product=all&criteria=exact&cves=any&publicationTypeIDs=1&startDate=&endDate=&limit=50&offset=0",
+      "formats": [
+        "rss"
+      ],
+      "updateFrequency": 240,
+      "logoUrl": "/assets/logos/cisco.png",
+      "verified": true,
+      "priority": "medium",
+      "geography": [
+        "Global"
+      ],
+      "sectors": [
+        "enterprise",
+        "critical_infrastructure"
+      ],
+      "languages": [
+        "en"
+      ]
+    },
+    {
+      "id": "mitre_cve",
+      "name": "MITRE CVE Program",
+      "domain": "cve.mitre.org",
+      "type": "research",
+      "credibilityScore": 96,
+      "timelinessScore": 82,
+      "accuracyScore": 97,
+      "contextScore": 90,
+      "relevanceScore": 85,
+      "rssUrl": "https://cve.mitre.org/data/refs/refmap/source-rss.xml",
+      "formats": [
+        "rss",
+        "json"
+      ],
+      "updateFrequency": 360,
+      "logoUrl": "/assets/logos/mitre.png",
+      "verified": true,
+      "priority": "medium",
+      "geography": [
+        "Global"
+      ],
+      "sectors": [
+        "all"
+      ],
+      "languages": [
+        "en"
+      ]
     }
   ],
   "mcpServers": [],
@@ -57,7 +1420,7 @@
   "performanceMetrics": [],
   "alerts": [],
   "metadata": {
-    "repairedAt": "2025-10-25T07:07:17.446Z",
+    "repairedAt": "2025-10-25T07:38:12.896Z",
     "version": "2.0.0"
   }
 }
