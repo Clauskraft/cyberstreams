@@ -25,10 +25,9 @@ jobs:
           echo "Checking Railway project status..."
           railway status || true
           echo "---"
-          echo "Attempting deployment with common service names..."
-          railway up --service cyberstreams --detach || \
-          railway up --service app --detach || \
-          railway up --service backend --detach || \
-          railway up --service api --detach || \
-          railway up --service main --detach || \
+          echo "Checking available services..."
+          railway service || true
+          echo "---"
+          echo "Attempting to link and deploy..."
+          railway link incredible-heart || true
           railway up --detach
