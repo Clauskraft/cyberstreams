@@ -9,41 +9,11 @@ permissions:
   contents: read
 
 jobs:
-  build-and-deploy:
+  deploy:
     runs-on: ubuntu-latest
-    env:
-      NODE_ENV: production
-      DATABASE_URL: ${{ secrets.DATABASE_URL }}
-      PGSSL: ${{ secrets.PGSSL }}
-      VITE_API_BASE_URL: ${{ secrets.VITE_API_BASE_URL }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-
-      - name: Setup Node
-        uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-          cache: 'npm'
-
-      - name: Install dependencies
-        run: |
-          npm ci --ignore-scripts
-          npm install @types/react @types/react-dom --save-dev
-
-      - name: Lint (non-blocking)
-        run: npm run lint || true
-
-      - name: Build
-        run: npm run build || echo "Build completed with warnings"
-
-      - name: Run DB migrations
-        env:
-          DATABASE_URL: ${{ secrets.DATABASE_URL }}
-          RAILWAY_PRIVATE_DOMAIN: ${{ secrets.RAILWAY_PRIVATE_DOMAIN }}
-        run: |
-          export DATABASE_URL=${DATABASE_URL:-postgres://user:pass@${RAILWAY_PRIVATE_DOMAIN}:5432/db}
-          node scripts/migrate.mjs
 
       - name: Install Railway CLI
         run: npm i -g @railway/cli@latest
@@ -52,5 +22,4 @@ jobs:
         env:
           RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
         run: |
-          set -e
-          railway up --ci || railway deploy --yes
+          railway up --detach || railway up
