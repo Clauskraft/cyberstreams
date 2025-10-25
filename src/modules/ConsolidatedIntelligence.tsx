@@ -355,12 +355,14 @@ const ConsolidatedIntelligence = () => {
 
   const stats = {
     total: findings.length,
-    critical: findings.filter((f) => f.severity === "critical").length,
-    high: findings.filter((f) => f.severity === "high").length,
+    critical:
+      Number(findings.filter((f) => f.severity === "critical").length) || 0,
+    high: Number(findings.filter((f) => f.severity === "high").length) || 0,
     sources: Array.from(new Set(findings.map((f) => f.source))).length,
     avgConfidence:
       Math.round(
-        findings.reduce((acc, f) => acc + f.confidence, 0) / findings.length
+        findings.reduce((acc, f) => acc + Number(f.confidence || 0), 0) /
+          (findings.length || 1)
       ) || 0,
   };
 

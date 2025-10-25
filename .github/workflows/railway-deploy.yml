@@ -90,7 +90,12 @@ jobs:
         run: npm run build || echo "Build completed with warnings"
 
       - name: Run DB migrations
-        run: node scripts/migrate.mjs
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          RAILWAY_PRIVATE_DOMAIN: ${{ secrets.RAILWAY_PRIVATE_DOMAIN }}
+        run: |
+          export DATABASE_URL=${DATABASE_URL:-postgres://user:pass@${RAILWAY_PRIVATE_DOMAIN}:5432/db}
+          node scripts/migrate.mjs
 
       - name: Install Railway CLI
         run: npm i -g @railway/cli@latest

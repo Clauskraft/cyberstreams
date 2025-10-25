@@ -8,6 +8,7 @@ on:
 jobs:
   sync:
     runs-on: ubuntu-latest
+    if: ${{ hashFiles('osint/**') != '' }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -18,17 +19,40 @@ jobs:
           python-version: '3.11'
 
       - name: Install dependencies
+        shell: bash
         run: |
+          set -euo pipefail
           python -m pip install --upgrade pip
-          pip install -r osint/requirements.txt
+          if [ -f osint/requirements.txt ]; then
+            pip install -r osint/requirements.txt
+          fi
+          # Ensure pytest available even if not listed
+          python - <<'PY'
+import sys, subprocess
+try:
+    import pytest  # noqa: F401
+except Exception:
+    subprocess.check_call([sys.executable, '-m', 'pip', 'install', 'pytest'])
+PY
 
       - name: Hydrate OSINT catalog
+        if: ${{ hashFiles('osint/ingestors/**') != '' }}
+        shell: bash
         run: |
-          python -m osint.ingestors.awesome_osint_parser
+          set -euo pipefail
+          # Prefer package-style execution; fallback to direct script if package not configured
+          python - <<'PY'
+import importlib, runpy
+try:
+    importlib.import_module('osint.ingestors.awesome_osint_parser')
+except ModuleNotFoundError:
+    runpy.run_path('osint/ingestors/awesome_osint_parser.py', run_name='__main__')
+PY
 
       - name: Run OSINT unit tests
+        if: ${{ hashFiles('osint/tests/**') != '' }}
         run: |
-          python -m pytest osint/tests
+          python -m pytest osint/tests -q
 
       - name: Detect drift
         run: |

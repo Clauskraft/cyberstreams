@@ -1,18 +1,18 @@
-import React from 'react'
-import { Search, X } from 'lucide-react'
+import React from "react";
+import { Search, X } from "lucide-react";
 
 export interface FilterOption {
-  value: string
-  label: string
+  value: string;
+  label: string;
 }
 
 export interface FilterBarProps {
-  searchValue: string
-  onSearchChange: (value: string) => void
-  filters?: Record<string, { value: string; options: FilterOption[] }>
-  onFilterChange?: (filterName: string, value: string) => void
-  placeholder?: string
-  onClear?: () => void
+  searchValue: string;
+  onSearchChange: (value: string) => void;
+  filters?: Record<string, { value: string; options: FilterOption[] }>;
+  onFilterChange?: (filterName: string, value: string) => void;
+  placeholder?: string;
+  onClear?: () => void;
 }
 
 /**
@@ -22,12 +22,13 @@ export interface FilterBarProps {
 export const FilterBar: React.FC<FilterBarProps> = ({
   searchValue,
   onSearchChange,
-  filters = {},
+  filters = {} as Record<string, { value: string; options: FilterOption[] }>,
   onFilterChange,
-  placeholder = 'Search...',
-  onClear
+  placeholder = "Search...",
+  onClear,
 }) => {
-  const hasActiveFilters = searchValue || Object.values(filters).some((f) => f.value !== 'all')
+  const hasActiveFilters =
+    searchValue || Object.values(filters).some((f) => f.value !== "all");
 
   return (
     <div className="bg-gray-900 rounded-lg p-4 border border-gray-700 space-y-4">
@@ -44,7 +45,7 @@ export const FilterBar: React.FC<FilterBarProps> = ({
           />
           {searchValue && (
             <button
-              onClick={() => onSearchChange('')}
+              onClick={() => onSearchChange("")}
               className="ml-2 hover:text-gray-300 transition-colors"
             >
               <X className="w-4 h-4" />
@@ -79,5 +80,5 @@ export const FilterBar: React.FC<FilterBarProps> = ({
         )}
       </div>
     </div>
-  )
-}
+  );
+};
