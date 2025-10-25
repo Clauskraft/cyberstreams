@@ -18,16 +18,20 @@ jobs:
       - name: Install Railway CLI
         run: npm i -g @railway/cli@latest
 
+      - name: Get Railway Services via API
+        id: get_services
+        run: |
+          echo "Fetching services from Railway API..."
+          SERVICES=$(curl -s -H "Authorization: Bearer ${{ secrets.RAILWAY_TOKEN }}" \
+            -H "Content-Type: application/json" \
+            -d '{"query":"query { projects { edges { node { name services { edges { node { name id } } } } } } }"}' \
+            https://backboard.railway.app/graphql)
+          echo "$SERVICES"
+          echo "services=$SERVICES" >> $GITHUB_OUTPUT
+
       - name: Deploy to Railway
         env:
           RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
         run: |
-          echo "Checking Railway project status..."
-          railway status || true
-          echo "---"
-          echo "Checking available services..."
-          railway service || true
-          echo "---"
-          echo "Attempting to link and deploy..."
-          railway link incredible-heart || true
-          railway up --detach
+          echo "Deploying to Railway..."
+          railway up --detach || railway up
