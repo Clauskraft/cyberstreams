@@ -22,4 +22,4 @@ jobs:
         env:
           RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
         run: |
-          railway up --detach || railway up
+          railway up --service cyberstreams --detach || railway up --service cyberstreams
