@@ -28,7 +28,7 @@ jobs:
 
       - name: Install dependencies
         run: |
-          npm ci
+          npm ci --ignore-scripts
           npm install @types/react @types/react-dom --save-dev
 
       - name: Lint (non-blocking)
