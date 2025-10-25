@@ -15,23 +15,18 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Install Railway CLI
-        run: npm i -g @railway/cli@latest
-
-      - name: Get Railway Services via API
-        id: get_services
+      - name: Deploy to Railway via GitHub Integration
         run: |
-          echo "Fetching services from Railway API..."
-          SERVICES=$(curl -s -H "Authorization: Bearer ${{ secrets.RAILWAY_TOKEN }}" \
-            -H "Content-Type: application/json" \
-            -d '{"query":"query { projects { edges { node { name services { edges { node { name id } } } } } } }"}' \
-            https://backboard.railway.app/graphql)
-          echo "$SERVICES"
-          echo "services=$SERVICES" >> $GITHUB_OUTPUT
-
-      - name: Deploy to Railway
-        env:
-          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
-        run: |
-          echo "Deploying to Railway..."
-          railway up --detach || railway up
+          echo "✅ Code pushed to GitHub"
+          echo ""
+          echo "🚂 Railway will auto-deploy if GitHub integration is configured"
+          echo ""
+          echo "📋 To set up Railway GitHub integration:"
+          echo "1. Go to https://railway.app/project/incredible-heart"
+          echo "2. Click on a service (or create new service)"
+          echo "3. Go to Settings → Connect to GitHub"
+          echo "4. Select repository: Clauskraft/cyberstreams"
+          echo "5. Railway will automatically deploy on every push to master"
+          echo ""
+          echo "Alternative: Add RAILWAY_SERVICE_NAME as GitHub secret"
+          echo "Then this workflow can use: railway up --service \$RAILWAY_SERVICE_NAME"
