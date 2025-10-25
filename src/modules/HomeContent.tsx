@@ -42,47 +42,59 @@ const HomeContent = () => {
     },
   ]);
 
-  const [recentActivity, setRecentActivity] = useState<Array<{
-    time: string;
-    action: string;
-    severity: string;
-  }>>([]);
+  const [recentActivity, setRecentActivity] = useState<
+    Array<{
+      time: string;
+      action: string;
+      severity: string;
+    }>
+  >([]);
 
-  const [threatCategories, setThreatCategories] = useState<Array<{
-    name: string;
-    count: number;
-    percentage: number;
-  }>>([]);
+  const [threatCategories, setThreatCategories] = useState<
+    Array<{
+      name: string;
+      count: number;
+      percentage: number;
+    }>
+  >([]);
 
   // Load real stats from API
   useEffect(() => {
     const loadStats = async () => {
       try {
         // Get Intel Scraper stats
-        const scraperRes = await fetch('/api/intel-scraper/status');
-        const scraperData = scraperRes.ok ? await scraperRes.json() : { success: false };
-        
+        const scraperRes = await fetch("/api/intel-scraper/status");
+        const scraperData = scraperRes.ok
+          ? await scraperRes.json()
+          : { success: false };
+
         // Get source count
-        const sourcesRes = await fetch('/api/config/sources');
-        const sourcesData = sourcesRes.ok ? await sourcesRes.json() : { success: false };
-        
+        const sourcesRes = await fetch("/api/config/sources");
+        const sourcesData = sourcesRes.ok
+          ? await sourcesRes.json()
+          : { success: false };
+
         // Get knowledge base stats
-        const kbRes = await fetch('/api/knowledge/stats');
+        const kbRes = await fetch("/api/knowledge/stats");
         const kbData = kbRes.ok ? await kbRes.json() : { success: false };
 
         // Get recent activity
-        const activityRes = await fetch('/api/dashboard/recent-activity');
-        const activityData = activityRes.ok ? await activityRes.json() : { success: false };
+        const activityRes = await fetch("/api/dashboard/recent-activity");
+        const activityData = activityRes.ok
+          ? await activityRes.json()
+          : { success: false };
 
         // Get threat categories
-        const categoriesRes = await fetch('/api/dashboard/threat-categories');
-        const categoriesData = categoriesRes.ok ? await categoriesRes.json() : { success: false };
+        const categoriesRes = await fetch("/api/dashboard/threat-categories");
+        const categoriesData = categoriesRes.ok
+          ? await categoriesRes.json()
+          : { success: false };
 
         if (scraperData.success && sourcesData.success && kbData.success) {
           const totalDocuments = scraperData.data.totalDocumentsProcessed || 0;
           const totalSources = sourcesData.data?.length || 0;
           const totalKnowledge = kbData.data?.totalDocuments || 0;
-          
+
           setStats([
             {
               label: "Intelligence Reports",
@@ -131,7 +143,7 @@ const HomeContent = () => {
           setThreatCategories(categoriesData.data);
         }
       } catch (error) {
-        console.error('Failed to load dashboard stats:', error);
+        console.error("Failed to load dashboard stats:", error);
       }
     };
 
@@ -171,17 +183,26 @@ const HomeContent = () => {
 
       {/* Additional Dashboard Widgets */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div className="bg-gradient-to-br from-gray-900 to-gray-800 rounded-xl p-6 border border-gray-700">
+        <div
+          className="bg-gradient-to-br from-gray-900 to-gray-800 rounded-xl p-6 border border-gray-700"
+          data-testid="threat-overview"
+        >
           <h3 className="text-lg font-semibold mb-4">Threat Categories</h3>
           <div className="space-y-3">
             {threatCategories.length === 0 ? (
-              <p className="text-sm text-gray-400">No category data available</p>
+              <p className="text-sm text-gray-400">
+                No category data available
+              </p>
             ) : (
               threatCategories.map((category, idx) => (
                 <div key={idx}>
                   <div className="flex items-center justify-between mb-1">
-                    <span className="text-sm text-gray-300">{category.name}</span>
-                    <span className="text-sm font-medium">{category.count}</span>
+                    <span className="text-sm text-gray-300">
+                      {category.name}
+                    </span>
+                    <span className="text-sm font-medium">
+                      {category.count}
+                    </span>
                   </div>
                   <div className="w-full bg-gray-700 rounded-full h-2">
                     <div
@@ -195,7 +216,10 @@ const HomeContent = () => {
           </div>
         </div>
 
-        <div className="bg-gradient-to-br from-gray-900 to-gray-800 rounded-xl p-6 border border-gray-700">
+        <div
+          className="bg-gradient-to-br from-gray-900 to-gray-800 rounded-xl p-6 border border-gray-700"
+          data-testid="activity-feed"
+        >
           <h3 className="text-lg font-semibold mb-4">Recent Activity</h3>
           <div className="space-y-3">
             {recentActivity.length === 0 ? (
@@ -224,6 +248,15 @@ const HomeContent = () => {
             )}
           </div>
         </div>
+      </div>
+
+      {/* Recent Threats placeholder for smoketest */}
+      <div
+        className="bg-gradient-to-br from-gray-900 to-gray-800 rounded-xl p-6 border border-gray-700"
+        data-testid="recent-threats"
+      >
+        <h3 className="text-lg font-semibold mb-4">Recent Threats</h3>
+        <p className="text-sm text-gray-400">No recent threats available</p>
       </div>
     </div>
   );

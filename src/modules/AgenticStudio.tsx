@@ -391,7 +391,10 @@ const AgenticStudio = () => {
                 </p>
                 {ollamaStatus?.reachable && (
                   <p className="text-xs text-gray-500 mt-2">
-                    Models installed: {ollamaStatus.results.length}
+                    Models installed:{" "}
+                    {Array.isArray(ollamaStatus?.results)
+                      ? ollamaStatus.results.length
+                      : 0}
                   </p>
                 )}
                 {!ollamaStatus?.reachable && (
@@ -722,7 +725,7 @@ const AgenticStudio = () => {
                     <p className="text-xs text-gray-500">
                       Created: {new Date(run.createdAt).toLocaleString()}
                     </p>
-                    {run.steps.length > 0 && (
+                    {Array.isArray(run.steps) && run.steps.length > 0 && (
                       <div className="mt-3">
                         <h4 className="text-sm font-semibold text-gray-400 mb-2">
                           Steps:
@@ -790,7 +793,8 @@ const AgenticStudio = () => {
 
             <div className="bg-gray-900 rounded-lg p-6 border border-gray-700">
               <h3 className="text-lg font-semibold mb-4">Installed Models</h3>
-              {ollamaStatus?.reachable && ollamaStatus.results.length > 0 ? (
+              {Array.isArray(ollamaStatus?.results) &&
+              ollamaStatus.results.length > 0 ? (
                 <ul className="space-y-2">
                   {ollamaStatus.results.map((model: any) => (
                     <li

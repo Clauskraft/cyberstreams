@@ -77,12 +77,18 @@ const WigleMapsIntegration = () => {
     setError(null);
 
     try {
+      // Normalize comma decimals for da-DK keyboards
+      const normalize = (v: string) => (v || "").replace(",", ".");
       const params = {
         ssid: searchParams.ssid || undefined,
         bssid: searchParams.bssid || undefined,
-        lat: searchParams.lat ? parseFloat(searchParams.lat) : undefined,
-        lon: searchParams.lon ? parseFloat(searchParams.lon) : undefined,
-        radius: parseFloat(searchParams.radius),
+        lat: searchParams.lat
+          ? parseFloat(normalize(searchParams.lat))
+          : undefined,
+        lon: searchParams.lon
+          ? parseFloat(normalize(searchParams.lon))
+          : undefined,
+        radius: parseFloat(normalize(searchParams.radius)),
         results: parseInt(searchParams.results),
       };
 
@@ -142,9 +148,9 @@ const WigleMapsIntegration = () => {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          lat: parseFloat(searchParams.lat),
-          lon: parseFloat(searchParams.lon),
-          radius: parseFloat(searchParams.radius),
+          lat: parseFloat((searchParams.lat || "").replace(",", ".")),
+          lon: parseFloat((searchParams.lon || "").replace(",", ".")),
+          radius: parseFloat((searchParams.radius || "").replace(",", ".")),
         }),
       });
 
@@ -455,38 +461,39 @@ const WigleMapsIntegration = () => {
                 </div>
               )}
 
-              {results.data.wifiNetworks.length > 0 && (
-                <div className="bg-gray-800 rounded p-4">
-                  <h3 className="font-medium text-white mb-3">
-                    WiFi Networks ({results.data.wifiNetworks.length})
-                  </h3>
-                  <div className="space-y-2 max-h-64 overflow-y-auto">
-                    {results.data.wifiNetworks
-                      .slice(0, 10)
-                      .map((network: WiFiNetwork, index: number) => (
-                        <div
-                          key={index}
-                          className="flex items-center justify-between p-2 bg-gray-700 rounded"
-                        >
-                          <div className="flex items-center gap-3">
-                            <Wifi className="w-4 h-4 text-blue-400" />
-                            <div>
-                              <div className="text-sm font-medium text-white">
-                                {network.ssid || "Hidden Network"}
-                              </div>
-                              <div className="text-xs text-gray-400">
-                                {network.bssid}
+              {Array.isArray(results.data.wifiNetworks) &&
+                results.data.wifiNetworks.length > 0 && (
+                  <div className="bg-gray-800 rounded p-4">
+                    <h3 className="font-medium text-white mb-3">
+                      WiFi Networks ({results.data.wifiNetworks.length})
+                    </h3>
+                    <div className="space-y-2 max-h-64 overflow-y-auto">
+                      {results.data.wifiNetworks
+                        .slice(0, 10)
+                        .map((network: WiFiNetwork, index: number) => (
+                          <div
+                            key={index}
+                            className="flex items-center justify-between p-2 bg-gray-700 rounded"
+                          >
+                            <div className="flex items-center gap-3">
+                              <Wifi className="w-4 h-4 text-blue-400" />
+                              <div>
+                                <div className="text-sm font-medium text-white">
+                                  {network.ssid || "Hidden Network"}
+                                </div>
+                                <div className="text-xs text-gray-400">
+                                  {network.bssid}
+                                </div>
                               </div>
                             </div>
+                            <div className="text-xs text-gray-400">
+                              {network.encryption} • Ch {network.channel}
+                            </div>
                           </div>
-                          <div className="text-xs text-gray-400">
-                            {network.encryption} • Ch {network.channel}
-                          </div>
-                        </div>
-                      ))}
+                        ))}
+                    </div>
                   </div>
-                </div>
-              )}
+                )}
             </div>
           )}
 
@@ -557,4 +564,3 @@ const WigleMapsIntegration = () => {
 };
 
 export default WigleMapsIntegration;
-

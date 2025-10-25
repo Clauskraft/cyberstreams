@@ -1,0 +1,41 @@
+{
+  "timestamp": "2025-10-24T20:16:13.814Z",
+  "baseUrl": "http://localhost:3001",
+  "summary": {
+    "totalTests": 4,
+    "passedTests": 1,
+    "failedTests": 3,
+    "totalDuration": 16144.881138999997,
+    "successRate": "25.0"
+  },
+  "results": [
+    {
+      "description": "Backend API Tests",
+      "success": false,
+      "duration": 269.737238,
+      "exitCode": 1,
+      "error": null
+    },
+    {
+      "description": "Frontend UI Tests",
+      "success": false,
+      "duration": 13189.622159999999,
+      "exitCode": 1,
+      "error": null
+    },
+    {
+      "description": "Integration Tests",
+      "success": false,
+      "duration": 2397.7094959999995,
+      "exitCode": 1,
+      "error": null
+    },
+    {
+      "description": "MCP Tests",
+      "success": true,
+      "duration": 287.81224499999917,
+      "exitCode": 0,
+      "error": null
+    }
+  ]
+}

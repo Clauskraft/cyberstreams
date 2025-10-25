@@ -195,6 +195,9 @@ const CyberstreamsAgent = () => {
     { role: "user" | "assistant"; content: string }[]
   >([]);
   const [chatLoading, setChatLoading] = useState(false);
+  const [chatModel, setChatModel] = useState(
+    (import.meta as any)?.env?.VITE_DEFAULT_CHAT_MODEL || "llama3.1:8b"
+  );
 
   useEffect(() => {
     // Load Intel Scraper status and findings
@@ -694,6 +697,7 @@ const CyberstreamsAgent = () => {
                   headers: { "Content-Type": "application/json" },
                   body: JSON.stringify({
                     messages: [{ role: "user", content: userMsg.content }],
+                    model: chatModel,
                   }),
                 });
                 const data = await res.json();
@@ -716,6 +720,19 @@ const CyberstreamsAgent = () => {
             }}
             className="flex gap-2"
           >
+            <select
+              value={chatModel}
+              onChange={(e) => setChatModel(e.target.value)}
+              className="px-2 py-2 bg-gray-800 border border-gray-700 rounded text-sm"
+              title="Vælg model"
+            >
+              <option value="llama3.1:8b">llama3.1:8b</option>
+              <option value="llama3.1:latest">llama3.1:latest</option>
+              <option value="dolphin-llama3:8b">dolphin-llama3:8b</option>
+              <option value="nomic-embed-text:latest">
+                nomic-embed-text:latest
+              </option>
+            </select>
             <input
               value={chatInput}
               onChange={(e) => setChatInput(e.target.value)}
@@ -792,7 +809,7 @@ const CyberstreamsAgent = () => {
                 })
                   .then((res) => res.json())
                   .then((data) => {
-                    if (data.success) {
+                    if (data?.success && Array.isArray(data?.data)) {
                       const knowledge = data.data
                         .map((doc: any) => {
                           const snippet = (
@@ -808,6 +825,15 @@ const CyberstreamsAgent = () => {
                         {
                           role: "assistant",
                           content: `Knowledge Base Results:\n\n${knowledge}\n\nUse this knowledge to enhance your analysis.`,
+                        },
+                      ]);
+                    } else {
+                      setChatHistory((prev) => [
+                        ...prev,
+                        {
+                          role: "assistant",
+                          content:
+                            "Ingen viden fundet eller endpoint utilgængeligt. Prøv igen senere.",
                         },
                       ]);
                     }

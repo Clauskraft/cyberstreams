@@ -1,9 +1,11 @@
 {
   "name": "cyberstreams",
-  "version": "1.7.0",
+  "version": "2.0.0",
   "description": "Advanced Dark Web Threat Intelligence Platform",
   "type": "module",
   "scripts": {
+    "seed:keywords": "BASE_URL=http://localhost:3001 node scripts/add-keywords.js",
+    "seed:dpa": "node scripts/add-dpa-sources.js",
     "dev": "vite",
     "build": "tsc && vite build",
     "preview": "vite preview",
@@ -17,6 +19,7 @@
     "smoketest:mcp": "node mcp-smoketest.js",
     "smoketest:quick": "node quick-smoketest.js",
     "smoketest:all": "node run-smoketest.js",
+    "userflows:run": "node scripts/user-flows.js",
     "smoketest:online": "node online-smoketest.js",
     "smoketest:online:production": "ONLINE_BASE_URL=https://cyberstreams.dk node online-smoketest.js",
     "smoketest:online:staging": "ONLINE_BASE_URL=https://staging.cyberstreams.dk node online-smoketest.js",
@@ -45,6 +48,7 @@
   },
   "dependencies": {
     "cheerio": "^1.1.2",
+    "compression": "^1.8.1",
     "cors": "^2.8.5",
     "dotenv": "^17.2.3",
     "express": "^4.18.2",

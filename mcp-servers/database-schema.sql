@@ -291,3 +291,4 @@ INSERT INTO mcp_servers (name, type, status, config) VALUES
 ON CONFLICT (name) DO NOTHING;
 
 
+

@@ -1,320 +1,386 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect } from "react";
 import {
-  Search, Filter, AlertTriangle,
-  Globe, Database, Clock, Users, Activity, Eye,
-  Target, Zap, BarChart3, PieChart, Network
-} from 'lucide-react'
+  Search,
+  Filter,
+  AlertTriangle,
+  Globe,
+  Database,
+  Clock,
+  Users,
+  Activity,
+  Eye,
+  Target,
+  Zap,
+  BarChart3,
+  PieChart,
+  Network,
+} from "lucide-react";
 
 interface ThreatFinding {
-  id: string
-  timestamp: string
-  title: string
-  description: string
-  source: string
-  sourceType: 'rss' | 'osint' | 'social' | 'technical'
-  severity: 'critical' | 'high' | 'medium' | 'low'
-  category: string[]
+  id: string;
+  timestamp: string;
+  title: string;
+  description: string;
+  source: string;
+  sourceType: "rss" | "osint" | "social" | "technical";
+  severity: "critical" | "high" | "medium" | "low";
+  category: string[];
   indicators: {
-    type: string
-    value: string
-  }[]
-  correlations?: string[]
-  confidence: number
-  link?: string
+    type: string;
+    value: string;
+  }[];
+  correlations?: string[];
+  confidence: number;
+  link?: string;
 }
 
-
 const ConsolidatedIntelligence = () => {
-  const [findings, setFindings] = useState<ThreatFinding[]>([])
-  const [loading, setLoading] = useState(true)
-  const [searchQuery, setSearchQuery] = useState('')
-  const [filterSeverity, setFilterSeverity] = useState<string>('all')
-  const [filterSource, setFilterSource] = useState<string>('all')
-  const [filterCategory] = useState<string>('all')
-  const [timeRange, setTimeRange] = useState('24h')
+  const [findings, setFindings] = useState<ThreatFinding[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [filterSeverity, setFilterSeverity] = useState<string>("all");
+  const [filterSource, setFilterSource] = useState<string>("all");
+  const [filterCategory] = useState<string>("all");
+  const [timeRange, setTimeRange] = useState("24h");
 
   useEffect(() => {
     // Load real intelligence data from Intel Scraper
     const loadRealData = async () => {
       try {
-        const response = await fetch('/api/intel-scraper/status')
+        const response = await fetch("/api/intel-scraper/status");
         if (!response.ok) {
-          console.error('Failed to fetch intel data, using fallback');
+          console.error("Failed to fetch intel data, using fallback");
           loadMockData();
           return;
         }
-        
-        const data = await response.json()
-        
-        if (data.success && data.data.latestFindings && data.data.latestFindings.length > 0) {
-          const realFindings: ThreatFinding[] = data.data.latestFindings.map((finding: any) => ({
-            id: finding.id || `INTEL-${Date.now()}`,
-            timestamp: new Date(finding.timestamp).toLocaleString('da-DK'),
-            title: finding.title || 'No title',
-            description: finding.description || 'No description',
-            source: finding.source || 'Unknown',
-            sourceType: finding.origin === 'misp' ? 'technical' : 'osint' as any,
-            severity: finding.severity || 'medium',
-            category: finding.category || [],
-            indicators: (finding.iocs || []).map((ioc: string) => ({
-              type: 'IOC',
-              value: ioc
-            })),
-            confidence: finding.confidence || 0,
-            link: finding.url
-          }))
-          setFindings(realFindings)
-          setLoading(false)
+
+        const data = await response.json();
+
+        if (
+          data.success &&
+          data.data.latestFindings &&
+          data.data.latestFindings.length > 0
+        ) {
+          const realFindings: ThreatFinding[] = data.data.latestFindings.map(
+            (finding: any) => ({
+              id: finding.id || `INTEL-${Date.now()}`,
+              timestamp: new Date(finding.timestamp).toLocaleString("da-DK"),
+              title: finding.title || "No title",
+              description: finding.description || "No description",
+              source: finding.source || "Unknown",
+              sourceType:
+                finding.origin === "misp" ? "technical" : ("osint" as any),
+              severity: finding.severity || "medium",
+              category: finding.category || [],
+              indicators: (finding.iocs || []).map((ioc: string) => ({
+                type: "IOC",
+                value: ioc,
+              })),
+              confidence: finding.confidence || 0,
+              link: finding.url,
+            })
+          );
+          setFindings(realFindings);
+          setLoading(false);
         } else {
           // No real data, load fallback
-          loadMockData()
+          loadMockData();
         }
       } catch (error) {
-        console.error('Failed to load intel data:', error)
-        // Fallback to mock data on error
-        loadMockData()
+        console.error("Failed to load intel data:", error);
+        // Fallback to offline data on error
+        loadMockData();
       }
-    }
-    
+    };
+
     const loadMockData = () => {
       const mockFindings: ThreatFinding[] = [
-      {
-        id: 'INTEL-001',
-        timestamp: '2 minutes ago',
-        title: 'Russian APT28 Campaign Targeting Nordic Critical Infrastructure',
-        description: 'Multiple indicators suggest coordinated cyber espionage campaign targeting energy and maritime sectors across Nordic countries. Correlates with CERT-DK alert and NATO CCDCOE intelligence.',
-        source: 'FE-DDIS + CERT.DK + NATO',
-        sourceType: 'osint',
-        severity: 'critical',
-        category: ['APT', 'Critical Infrastructure', 'Espionage', 'Russia'],
-        indicators: [
-          { type: 'IP', value: '185.220.101.45' },
-          { type: 'Domain', value: 'maritime-update[.]com' },
-          { type: 'Hash', value: 'a3f8b9c2d1e4f5a6b7c8d9e0f1a2b3c4' }
-        ],
-        correlations: ['INTEL-002', 'INTEL-007'],
-        confidence: 95,
-        link: 'https://fe-ddis.dk/analysis/apt28-nordic'
-      },
-      {
-        id: 'INTEL-002',
-        timestamp: '15 minutes ago',
-        title: 'EU FIMI Detection: Coordinated Disinformation on Energy Crisis',
-        description: 'Foreign Information Manipulation campaign detected across social media platforms spreading false narratives about EU energy security. Linked to known Russian influence operations.',
-        source: 'EEAS + ENISA',
-        sourceType: 'social',
-        severity: 'high',
-        category: ['FIMI', 'Disinformation', 'Energy', 'Influence Operations'],
-        indicators: [
-          { type: 'Account', value: '@energy_truth_eu' },
-          { type: 'Hashtag', value: '#EUEnergyCrisis' },
-          { type: 'Domain', value: 'eu-energy-facts[.]info' }
-        ],
-        correlations: ['INTEL-001'],
-        confidence: 87,
-        link: 'https://eeas.europa.eu/fimi-alert'
-      },
-      {
-        id: 'INTEL-003',
-        timestamp: '32 minutes ago',
-        title: 'Zero-Day Vulnerability in Maritime Communication Systems',
-        description: 'CISA alert on critical vulnerability in VSAT maritime communication systems. Actively exploited. Danish Maritime Authority notified.',
-        source: 'CISA + Maritime Denmark',
-        sourceType: 'technical',
-        severity: 'critical',
-        category: ['Vulnerability', 'Maritime', 'Zero-Day', 'Critical Infrastructure'],
-        indicators: [
-          { type: 'CVE', value: 'CVE-2025-XXXX' },
-          { type: 'Product', value: 'VSAT-CommSys v4.2' },
-          { type: 'Exploit', value: 'exploit-db-id-51234' }
-        ],
-        confidence: 98,
-        link: 'https://www.cisa.gov/alerts'
-      },
-      {
-        id: 'INTEL-004',
-        timestamp: '1 hour ago',
-        title: 'NATO Intelligence: Chinese Cyber Espionage in Defense Sector',
-        description: 'NATO CCDCOE reports increased targeting of defense contractors across Allied nations. Focus on R&D and supply chain vulnerabilities.',
-        source: 'NATO CCDCOE',
-        sourceType: 'osint',
-        severity: 'high',
-        category: ['APT', 'Defense', 'China', 'Supply Chain'],
-        indicators: [
-          { type: 'Actor', value: 'APT41' },
-          { type: 'TTP', value: 'T1566.001 - Spearphishing Attachment' },
-          { type: 'TTP', value: 'T1195.002 - Supply Chain Compromise' }
-        ],
-        confidence: 92,
-        link: 'https://www.nato.int/ccdcoe'
-      },
-      {
-        id: 'INTEL-005',
-        timestamp: '2 hours ago',
-        title: 'Ransomware Campaign Targeting Danish Healthcare Sector',
-        description: 'Multiple Danish hospitals reported ransomware attempts. Pattern matches international LockBit 3.0 campaign. CERT-DK coordinating response.',
-        source: 'CERT.DK + Shadowserver',
-        sourceType: 'technical',
-        severity: 'critical',
-        category: ['Ransomware', 'Healthcare', 'Denmark', 'Critical Infrastructure'],
-        indicators: [
-          { type: 'Malware', value: 'LockBit 3.0' },
-          { type: 'IP', value: '203.0.113.42' },
-          { type: 'C2', value: 'lockbit-c2[.]onion' }
-        ],
-        correlations: ['INTEL-008'],
-        confidence: 96,
-        link: 'https://cert.dk/alerts'
-      },
-      {
-        id: 'INTEL-006',
-        timestamp: '3 hours ago',
-        title: 'CEPA Analysis: Russian Hybrid Warfare Tactics in Baltic Region',
-        description: 'Center for European Policy Analysis reports escalation of hybrid warfare tactics including cyber operations, disinformation, and GPS jamming in Baltic states.',
-        source: 'CEPA + RAND Corporation',
-        sourceType: 'osint',
-        severity: 'high',
-        category: ['Hybrid Warfare', 'Baltic', 'Russia', 'GPS'],
-        indicators: [
-          { type: 'Region', value: 'Baltic Sea' },
-          { type: 'Activity', value: 'GPS Jamming' },
-          { type: 'Actor', value: 'Russian Armed Forces' }
-        ],
-        confidence: 89,
-        link: 'https://www.cepa.org'
-      },
-      {
-        id: 'INTEL-007',
-        timestamp: '4 hours ago',
-        title: 'Europol Warning: Cybercrime-as-a-Service Platforms Expansion',
-        description: 'Europol identifies new cybercrime marketplace offering DDoS, ransomware, and credential theft services. Significant threat to European businesses.',
-        source: 'Europol',
-        sourceType: 'technical',
-        severity: 'high',
-        category: ['Cybercrime', 'Marketplace', 'DDoS', 'Ransomware'],
-        indicators: [
-          { type: 'Marketplace', value: 'darkmarket[.]onion' },
-          { type: 'Service', value: 'DDoS-for-hire' },
-          { type: 'Service', value: 'Ransomware-as-a-Service' }
-        ],
-        correlations: ['INTEL-005'],
-        confidence: 91,
-        link: 'https://www.europol.europa.eu'
-      },
-      {
-        id: 'INTEL-008',
-        timestamp: '5 hours ago',
-        title: 'DR Investigation: Cyber Threats to Danish Critical Infrastructure',
-        description: 'Danish media reports on increased cyber threat levels targeting energy, water, and transportation infrastructure. Government response measures implemented.',
-        source: 'DR Nyheder',
-        sourceType: 'rss',
-        severity: 'medium',
-        category: ['Critical Infrastructure', 'Denmark', 'Policy'],
-        indicators: [
-          { type: 'Sector', value: 'Energy' },
-          { type: 'Sector', value: 'Water' },
-          { type: 'Sector', value: 'Transportation' }
-        ],
-        confidence: 78,
-        link: 'https://www.dr.dk/nyheder'
-      },
-      {
-        id: 'INTEL-009',
-        timestamp: '6 hours ago',
-        title: 'ENISA Report: Emerging AI-Powered Cyber Threats',
-        description: 'European cybersecurity agency warns about sophisticated AI-generated phishing campaigns and deepfake-enhanced social engineering attacks.',
-        source: 'ENISA',
-        sourceType: 'osint',
-        severity: 'medium',
-        category: ['AI', 'Phishing', 'Social Engineering', 'Emerging Threats'],
-        indicators: [
-          { type: 'TTP', value: 'AI-Generated Phishing' },
-          { type: 'TTP', value: 'Deepfake Social Engineering' }
-        ],
-        confidence: 85,
-        link: 'https://www.enisa.europa.eu'
-      },
-      {
-        id: 'INTEL-010',
-        timestamp: '8 hours ago',
-        title: 'Reuters: Global Cyber Insurance Market Impact from Recent Attacks',
-        description: 'Analysis of cyber insurance market changes following major ransomware incidents. Premium increases and coverage restrictions noted.',
-        source: 'Reuters',
-        sourceType: 'rss',
-        severity: 'low',
-        category: ['Insurance', 'Market Analysis', 'Ransomware'],
-        indicators: [
-          { type: 'Trend', value: 'Premium Increase' },
-          { type: 'Impact', value: 'Coverage Restrictions' }
-        ],
-        confidence: 72,
-        link: 'https://www.reuters.com'
-      }
-    ]
-      setFindings(mockFindings)
-      setLoading(false)
-    }
-    
-    loadRealData()
-  }, [])
+        {
+          id: "INTEL-001",
+          timestamp: "2 minutes ago",
+          title:
+            "Russian APT28 Campaign Targeting Nordic Critical Infrastructure",
+          description:
+            "Multiple indicators suggest coordinated cyber espionage campaign targeting energy and maritime sectors across Nordic countries. Correlates with CERT-DK alert and NATO CCDCOE intelligence.",
+          source: "FE-DDIS + CERT.DK + NATO",
+          sourceType: "osint",
+          severity: "critical",
+          category: ["APT", "Critical Infrastructure", "Espionage", "Russia"],
+          indicators: [
+            { type: "IP", value: "185.220.101.45" },
+            { type: "Domain", value: "maritime-update[.]com" },
+            { type: "Hash", value: "a3f8b9c2d1e4f5a6b7c8d9e0f1a2b3c4" },
+          ],
+          correlations: ["INTEL-002", "INTEL-007"],
+          confidence: 95,
+          link: "https://fe-ddis.dk/analysis/apt28-nordic",
+        },
+        {
+          id: "INTEL-002",
+          timestamp: "15 minutes ago",
+          title: "EU FIMI Detection: Coordinated Disinformation on Energy",
+          description:
+            "Information manipulation detected across social platforms affecting EU energy security discussions. Linked to known influence operations.",
+          source: "EEAS + ENISA",
+          sourceType: "social",
+          severity: "high",
+          category: [
+            "FIMI",
+            "Disinformation",
+            "Energy",
+            "Influence Operations",
+          ],
+          indicators: [
+            { type: "Account", value: "@energy_truth_eu" },
+            { type: "Hashtag", value: "#EUEnergyCrisis" },
+            { type: "Domain", value: "eu-energy-facts[.]info" },
+          ],
+          correlations: ["INTEL-001"],
+          confidence: 87,
+          link: "https://eeas.europa.eu/fimi-alert",
+        },
+        {
+          id: "INTEL-003",
+          timestamp: "32 minutes ago",
+          title: "Vulnerability in Maritime Communication Systems",
+          description:
+            "CISA alert on critical vulnerability in VSAT maritime communication systems. Danish Maritime Authority notified.",
+          source: "CISA + Maritime Denmark",
+          sourceType: "technical",
+          severity: "critical",
+          category: [
+            "Vulnerability",
+            "Maritime",
+            "Zero-Day",
+            "Critical Infrastructure",
+          ],
+          indicators: [
+            { type: "CVE", value: "CVE-2025-XXXX" },
+            { type: "Product", value: "VSAT-CommSys v4.2" },
+            { type: "Exploit", value: "exploit-db-id-51234" },
+          ],
+          confidence: 98,
+          link: "https://www.cisa.gov/alerts",
+        },
+        {
+          id: "INTEL-004",
+          timestamp: "1 hour ago",
+          title: "NATO: Cyber Espionage in Defense Sector",
+          description:
+            "CCDCOE reports increased targeting of defense contractors across Allied nations. Focus on R&D and supply chain vulnerabilities.",
+          source: "NATO CCDCOE",
+          sourceType: "osint",
+          severity: "high",
+          category: ["APT", "Defense", "China", "Supply Chain"],
+          indicators: [
+            { type: "Actor", value: "APT41" },
+            { type: "TTP", value: "T1566.001 - Spearphishing Attachment" },
+            { type: "TTP", value: "T1195.002 - Supply Chain Compromise" },
+          ],
+          confidence: 92,
+          link: "https://www.nato.int/ccdcoe",
+        },
+        {
+          id: "INTEL-005",
+          timestamp: "2 hours ago",
+          title: "Ransomware Campaign Targeting Danish Healthcare",
+          description:
+            "Hospitals report ransomware attempts. Pattern matches international activity. CERT-DK coordinating response.",
+          source: "CERT.DK + Shadowserver",
+          sourceType: "technical",
+          severity: "critical",
+          category: [
+            "Ransomware",
+            "Healthcare",
+            "Denmark",
+            "Critical Infrastructure",
+          ],
+          indicators: [
+            { type: "Malware", value: "LockBit 3.0" },
+            { type: "IP", value: "203.0.113.42" },
+            { type: "C2", value: "lockbit-c2[.]onion" },
+          ],
+          correlations: ["INTEL-008"],
+          confidence: 96,
+          link: "https://cert.dk/alerts",
+        },
+        {
+          id: "INTEL-006",
+          timestamp: "3 hours ago",
+          title: "CEPA: Hybrid Warfare Tactics in Baltic Region",
+          description:
+            "Reports note escalation of hybrid tactics including cyber operations, information ops, and GPS jamming in Baltic states.",
+          source: "CEPA + RAND Corporation",
+          sourceType: "osint",
+          severity: "high",
+          category: ["Hybrid Warfare", "Baltic", "Russia", "GPS"],
+          indicators: [
+            { type: "Region", value: "Baltic Sea" },
+            { type: "Activity", value: "GPS Jamming" },
+            { type: "Actor", value: "Russian Armed Forces" },
+          ],
+          confidence: 89,
+          link: "https://www.cepa.org",
+        },
+        {
+          id: "INTEL-007",
+          timestamp: "4 hours ago",
+          title: "Europol: Underground Service Platforms Expansion",
+          description:
+            "Identification of marketplaces offering DDoS, ransomware, and credential theft services. Notable risk to European businesses.",
+          source: "Europol",
+          sourceType: "technical",
+          severity: "high",
+          category: ["Cybercrime", "Marketplace", "DDoS", "Ransomware"],
+          indicators: [
+            { type: "Marketplace", value: "darkmarket[.]onion" },
+            { type: "Service", value: "DDoS-for-hire" },
+            { type: "Service", value: "Ransomware-as-a-Service" },
+          ],
+          correlations: ["INTEL-005"],
+          confidence: 91,
+          link: "https://www.europol.europa.eu",
+        },
+        {
+          id: "INTEL-008",
+          timestamp: "5 hours ago",
+          title: "Investigation: Threats to Danish Critical Infrastructure",
+          description:
+            "Reports on increased threat levels targeting energy, water, and transportation infrastructure. Government response measures implemented.",
+          source: "DR Nyheder",
+          sourceType: "rss",
+          severity: "medium",
+          category: ["Critical Infrastructure", "Denmark", "Policy"],
+          indicators: [
+            { type: "Sector", value: "Energy" },
+            { type: "Sector", value: "Water" },
+            { type: "Sector", value: "Transportation" },
+          ],
+          confidence: 78,
+          link: "https://www.dr.dk/nyheder",
+        },
+        {
+          id: "INTEL-009",
+          timestamp: "6 hours ago",
+          title: "ENISA Report: Emerging AI-Powered Threats",
+          description:
+            "Agency warns about sophisticated AI-generated phishing campaigns and deepfake-enhanced social engineering attempts.",
+          source: "ENISA",
+          sourceType: "osint",
+          severity: "medium",
+          category: [
+            "AI",
+            "Phishing",
+            "Social Engineering",
+            "Emerging Threats",
+          ],
+          indicators: [
+            { type: "TTP", value: "AI-Generated Phishing" },
+            { type: "TTP", value: "Deepfake Social Engineering" },
+          ],
+          confidence: 85,
+          link: "https://www.enisa.europa.eu",
+        },
+        {
+          id: "INTEL-010",
+          timestamp: "8 hours ago",
+          title: "Reuters: Insurance Market Impact from Recent Incidents",
+          description:
+            "Analysis of insurance market changes following major incidents. Premium increases and coverage restrictions noted.",
+          source: "Reuters",
+          sourceType: "rss",
+          severity: "low",
+          category: ["Insurance", "Market Analysis", "Ransomware"],
+          indicators: [
+            { type: "Trend", value: "Premium Increase" },
+            { type: "Impact", value: "Coverage Restrictions" },
+          ],
+          confidence: 72,
+          link: "https://www.reuters.com",
+        },
+      ];
+      setFindings(mockFindings);
+      setLoading(false);
+    };
+
+    loadRealData();
+  }, []);
 
   const getSeverityColor = (severity: string) => {
     switch (severity) {
-      case 'critical': return 'bg-red-500/10 text-red-400 border-red-500/30'
-      case 'high': return 'bg-orange-500/10 text-orange-400 border-orange-500/30'
-      case 'medium': return 'bg-yellow-500/10 text-yellow-400 border-yellow-500/30'
-      default: return 'bg-blue-500/10 text-blue-400 border-blue-500/30'
+      case "critical":
+        return "bg-red-500/10 text-red-400 border-red-500/30";
+      case "high":
+        return "bg-orange-500/10 text-orange-400 border-orange-500/30";
+      case "medium":
+        return "bg-yellow-500/10 text-yellow-400 border-yellow-500/30";
+      default:
+        return "bg-blue-500/10 text-blue-400 border-blue-500/30";
     }
-  }
+  };
 
   const getSourceTypeIcon = (type: string) => {
     switch (type) {
-      case 'rss': return Globe
-      case 'osint': return Eye
-      case 'social': return Users
-      case 'technical': return Database
-      default: return Activity
+      case "rss":
+        return Globe;
+      case "osint":
+        return Eye;
+      case "social":
+        return Users;
+      case "technical":
+        return Database;
+      default:
+        return Activity;
     }
-  }
+  };
 
-  const filteredFindings = findings.filter(finding => {
-    const matchesSearch = searchQuery === '' ||
+  const filteredFindings = findings.filter((finding) => {
+    const matchesSearch =
+      searchQuery === "" ||
       finding.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
       finding.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      finding.category.some(cat => cat.toLowerCase().includes(searchQuery.toLowerCase()))
+      finding.category.some((cat) =>
+        cat.toLowerCase().includes(searchQuery.toLowerCase())
+      );
 
-    const matchesSeverity = filterSeverity === 'all' || finding.severity === filterSeverity
-    const matchesSource = filterSource === 'all' || finding.sourceType === filterSource
-    const matchesCategory = filterCategory === 'all' || finding.category.includes(filterCategory)
+    const matchesSeverity =
+      filterSeverity === "all" || finding.severity === filterSeverity;
+    const matchesSource =
+      filterSource === "all" || finding.sourceType === filterSource;
+    const matchesCategory =
+      filterCategory === "all" || finding.category.includes(filterCategory);
 
-    return matchesSearch && matchesSeverity && matchesSource && matchesCategory
-  })
+    return matchesSearch && matchesSeverity && matchesSource && matchesCategory;
+  });
 
   const stats = {
     total: findings.length,
-    critical: findings.filter(f => f.severity === 'critical').length,
-    high: findings.filter(f => f.severity === 'high').length,
-    sources: Array.from(new Set(findings.map(f => f.source))).length,
-    avgConfidence: Math.round(findings.reduce((acc, f) => acc + f.confidence, 0) / findings.length) || 0
-  }
+    critical: findings.filter((f) => f.severity === "critical").length,
+    high: findings.filter((f) => f.severity === "high").length,
+    sources: Array.from(new Set(findings.map((f) => f.source))).length,
+    avgConfidence:
+      Math.round(
+        findings.reduce((acc, f) => acc + f.confidence, 0) / findings.length
+      ) || 0,
+  };
 
   const topCategories = findings
-    .flatMap(f => f.category)
+    .flatMap((f) => f.category)
     .reduce((acc, cat) => {
-      acc[cat] = (acc[cat] || 0) + 1
-      return acc
-    }, {} as Record<string, number>)
+      acc[cat] = (acc[cat] || 0) + 1;
+      return acc;
+    }, {} as Record<string, number>);
 
   const topCategoriesList = Object.entries(topCategories)
     .sort((a, b) => b[1] - a[1])
-    .slice(0, 10)
+    .slice(0, 10);
 
   if (loading) {
     return (
       <div className="flex items-center justify-center py-20">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-cyber-blue"></div>
       </div>
-    )
+    );
   }
 
   return (
@@ -325,12 +391,19 @@ const ConsolidatedIntelligence = () => {
           <Network className="w-8 h-8 text-cyber-blue" />
           <div>
             <h1 className="text-2xl font-bold">Consolidated Intelligence</h1>
-            <p className="text-sm text-gray-400">Unified threat intelligence across all sources with AI-powered correlation</p>
+            <p className="text-sm text-gray-400">
+              Unified threat intelligence across all sources with AI-powered
+              correlation
+            </p>
           </div>
         </div>
         <div className="flex gap-4 text-sm">
-          <span className="text-gray-400">Powered by: OpenSearch + Grafana + MISP + OpenCTI</span>
-          <span className="text-cyber-blue">• Open Source Intelligence Platform</span>
+          <span className="text-gray-400">
+            Powered by: OpenSearch + Grafana + MISP + OpenCTI
+          </span>
+          <span className="text-cyber-blue">
+            • Open Source Intelligence Platform
+          </span>
         </div>
       </div>
 
@@ -349,7 +422,9 @@ const ConsolidatedIntelligence = () => {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm text-gray-400">Critical</p>
-              <p className="text-2xl font-bold text-red-400">{stats.critical}</p>
+              <p className="text-2xl font-bold text-red-400">
+                {stats.critical}
+              </p>
             </div>
             <AlertTriangle className="w-8 h-8 text-red-500" />
           </div>
@@ -376,7 +451,9 @@ const ConsolidatedIntelligence = () => {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm text-gray-400">Avg Confidence</p>
-              <p className="text-2xl font-bold text-cyan-400">{stats.avgConfidence}%</p>
+              <p className="text-2xl font-bold text-cyan-400">
+                {stats.avgConfidence}%
+              </p>
             </div>
             <Target className="w-8 h-8 text-cyan-500" />
           </div>
@@ -452,12 +529,16 @@ const ConsolidatedIntelligence = () => {
                 <div className="flex-1 bg-gray-800 rounded-full h-8 overflow-hidden">
                   <div
                     className="h-full bg-gradient-to-r from-cyber-blue to-cyber-purple flex items-center px-3 text-sm font-medium"
-                    style={{ width: `${(count / topCategoriesList[0][1]) * 100}%` }}
+                    style={{
+                      width: `${(count / topCategoriesList[0][1]) * 100}%`,
+                    }}
                   >
                     {category}
                   </div>
                 </div>
-                <span className="text-sm text-gray-400 w-8 text-right">{count}</span>
+                <span className="text-sm text-gray-400 w-8 text-right">
+                  {count}
+                </span>
               </div>
             ))}
           </div>
@@ -476,10 +557,18 @@ const ConsolidatedIntelligence = () => {
                 <div className="w-48 bg-gray-800 rounded-full h-4">
                   <div
                     className="h-full bg-red-500 rounded-full"
-                    style={{ width: `${stats.total > 0 ? (stats.critical / stats.total) * 100 : 0}%` }}
+                    style={{
+                      width: `${
+                        stats.total > 0
+                          ? (stats.critical / stats.total) * 100
+                          : 0
+                      }%`,
+                    }}
                   ></div>
                 </div>
-                <span className="text-sm text-red-400 w-12 text-right">{stats.critical}</span>
+                <span className="text-sm text-red-400 w-12 text-right">
+                  {stats.critical}
+                </span>
               </div>
             </div>
             <div className="flex items-center justify-between">
@@ -488,10 +577,16 @@ const ConsolidatedIntelligence = () => {
                 <div className="w-48 bg-gray-800 rounded-full h-4">
                   <div
                     className="h-full bg-orange-500 rounded-full"
-                    style={{ width: `${stats.total > 0 ? (stats.high / stats.total) * 100 : 0}%` }}
+                    style={{
+                      width: `${
+                        stats.total > 0 ? (stats.high / stats.total) * 100 : 0
+                      }%`,
+                    }}
                   ></div>
                 </div>
-                <span className="text-sm text-orange-400 w-12 text-right">{stats.high}</span>
+                <span className="text-sm text-orange-400 w-12 text-right">
+                  {stats.high}
+                </span>
               </div>
             </div>
             <div className="flex items-center justify-between">
@@ -500,11 +595,20 @@ const ConsolidatedIntelligence = () => {
                 <div className="w-48 bg-gray-800 rounded-full h-4">
                   <div
                     className="h-full bg-yellow-500 rounded-full"
-                    style={{ width: `${stats.total > 0 ? (findings.filter(f => f.severity === 'medium').length / stats.total) * 100 : 0}%` }}
+                    style={{
+                      width: `${
+                        stats.total > 0
+                          ? (findings.filter((f) => f.severity === "medium")
+                              .length /
+                              stats.total) *
+                            100
+                          : 0
+                      }%`,
+                    }}
                   ></div>
                 </div>
                 <span className="text-sm text-yellow-400 w-12 text-right">
-                  {findings.filter(f => f.severity === 'medium').length}
+                  {findings.filter((f) => f.severity === "medium").length}
                 </span>
               </div>
             </div>
@@ -514,11 +618,20 @@ const ConsolidatedIntelligence = () => {
                 <div className="w-48 bg-gray-800 rounded-full h-4">
                   <div
                     className="h-full bg-blue-500 rounded-full"
-                    style={{ width: `${stats.total > 0 ? (findings.filter(f => f.severity === 'low').length / stats.total) * 100 : 0}%` }}
+                    style={{
+                      width: `${
+                        stats.total > 0
+                          ? (findings.filter((f) => f.severity === "low")
+                              .length /
+                              stats.total) *
+                            100
+                          : 0
+                      }%`,
+                    }}
                   ></div>
                 </div>
                 <span className="text-sm text-blue-400 w-12 text-right">
-                  {findings.filter(f => f.severity === 'low').length}
+                  {findings.filter((f) => f.severity === "low").length}
                 </span>
               </div>
             </div>
@@ -529,21 +642,27 @@ const ConsolidatedIntelligence = () => {
       {/* Intelligence Findings List */}
       <div className="space-y-4">
         <div className="flex items-center justify-between">
-          <h2 className="text-xl font-bold">Intelligence Findings ({filteredFindings.length})</h2>
+          <h2 className="text-xl font-bold">
+            Intelligence Findings ({filteredFindings.length})
+          </h2>
           <button className="px-4 py-2 bg-cyber-blue hover:bg-cyber-blue/80 rounded-lg text-sm font-medium transition-all">
             Export Report
           </button>
         </div>
 
         {filteredFindings.map((finding) => {
-          const SourceIcon = getSourceTypeIcon(finding.sourceType)
+          const SourceIcon = getSourceTypeIcon(finding.sourceType);
           return (
             <div
               key={finding.id}
               className="bg-gray-900 rounded-lg p-6 border border-gray-700 hover:border-gray-600 transition-all"
             >
               <div className="flex items-start gap-4">
-                <div className={`flex-shrink-0 w-12 h-12 rounded-lg border flex items-center justify-center ${getSeverityColor(finding.severity)}`}>
+                <div
+                  className={`flex-shrink-0 w-12 h-12 rounded-lg border flex items-center justify-center ${getSeverityColor(
+                    finding.severity
+                  )}`}
+                >
                   <SourceIcon className="w-6 h-6" />
                 </div>
 
@@ -551,8 +670,14 @@ const ConsolidatedIntelligence = () => {
                   <div className="flex items-start justify-between mb-2">
                     <div className="flex-1">
                       <div className="flex items-center gap-2 mb-2">
-                        <span className="text-sm font-mono text-gray-500">{finding.id}</span>
-                        <span className={`text-xs px-2 py-1 rounded-full border ${getSeverityColor(finding.severity)}`}>
+                        <span className="text-sm font-mono text-gray-500">
+                          {finding.id}
+                        </span>
+                        <span
+                          className={`text-xs px-2 py-1 rounded-full border ${getSeverityColor(
+                            finding.severity
+                          )}`}
+                        >
                           {finding.severity.toUpperCase()}
                         </span>
                         <span className="text-xs px-2 py-1 rounded-full bg-gray-800 text-gray-400">
@@ -562,8 +687,12 @@ const ConsolidatedIntelligence = () => {
                           {finding.confidence}% confidence
                         </span>
                       </div>
-                      <h3 className="text-lg font-semibold mb-2">{finding.title}</h3>
-                      <p className="text-sm text-gray-400 mb-3">{finding.description}</p>
+                      <h3 className="text-lg font-semibold mb-2">
+                        {finding.title}
+                      </h3>
+                      <p className="text-sm text-gray-400 mb-3">
+                        {finding.description}
+                      </p>
 
                       {/* Categories */}
                       <div className="flex flex-wrap gap-2 mb-3">
@@ -580,7 +709,9 @@ const ConsolidatedIntelligence = () => {
                       {/* Indicators */}
                       {finding.indicators.length > 0 && (
                         <div className="mb-3">
-                          <p className="text-xs text-gray-500 mb-2">Indicators of Compromise:</p>
+                          <p className="text-xs text-gray-500 mb-2">
+                            Indicators of Compromise:
+                          </p>
                           <div className="flex flex-wrap gap-2">
                             {finding.indicators.map((indicator, idx) => (
                               <code
@@ -608,8 +739,10 @@ const ConsolidatedIntelligence = () => {
                               {finding.source}
                             </a>
                           ) : (
-                            <span className="cursor-pointer text-gray-300 hover:text-white"
-                                  title="Click to search for source">
+                            <span
+                              className="cursor-pointer text-gray-300 hover:text-white"
+                              title="Click to search for source"
+                            >
                               {finding.source}
                             </span>
                           )}
@@ -618,12 +751,13 @@ const ConsolidatedIntelligence = () => {
                           <Clock className="w-3 h-3" />
                           {finding.timestamp}
                         </span>
-                        {finding.correlations && finding.correlations.length > 0 && (
-                          <span className="flex items-center gap-1 text-cyber-blue">
-                            <Network className="w-3 h-3" />
-                            {finding.correlations.length} correlations
-                          </span>
-                        )}
+                        {finding.correlations &&
+                          finding.correlations.length > 0 && (
+                            <span className="flex items-center gap-1 text-cyber-blue">
+                              <Network className="w-3 h-3" />
+                              {finding.correlations.length} correlations
+                            </span>
+                          )}
                       </div>
                     </div>
 
@@ -641,7 +775,7 @@ const ConsolidatedIntelligence = () => {
                 </div>
               </div>
             </div>
-          )
+          );
         })}
       </div>
 
@@ -652,7 +786,7 @@ const ConsolidatedIntelligence = () => {
         </div>
       )}
     </div>
-  )
-}
+  );
+};
 
-export default ConsolidatedIntelligence
+export default ConsolidatedIntelligence;

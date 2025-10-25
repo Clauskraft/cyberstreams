@@ -333,9 +333,19 @@ router.get("/workflows/:workflowId", (req, res) => {
 });
 
 // Start a new agent run
+// Start a new agent run (robust defaults)
 router.post("/runs", async (req, res) => {
   try {
-    const { workflowId, inputs, priority = "normal" } = req.body;
+    const body = req.body || {};
+    const workflowId = body.workflowId;
+    const priority =
+      typeof body.priority === "string" ? body.priority : "normal";
+    const inputs =
+      body.inputs &&
+      typeof body.inputs === "object" &&
+      !Array.isArray(body.inputs)
+        ? body.inputs
+        : {};
 
     if (!workflowId || !AGENT_WORKFLOWS[workflowId]) {
       return res.status(400).json({
@@ -381,7 +391,7 @@ router.post("/runs", async (req, res) => {
     // Start the workflow execution
     executeWorkflow(runId);
 
-    res.json({
+    res.status(201).json({
       success: true,
       data: {
         runId,

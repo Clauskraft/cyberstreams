@@ -5,55 +5,75 @@ test.describe("AgenticStudio UI Tests", () => {
     await page.goto("http://localhost:5173");
     await page.waitForLoadState("domcontentloaded");
 
-    // Check if AgenticStudio tab exists
-    const agenticTab = page.locator('button:has-text("AgenticStudio")');
+    // Check if Agentic/OSINT Studio tab exists (support both labels)
+    const agenticTab = page.locator(
+      'button:has-text("OSINT Studio"), button:has-text("AgenticStudio")'
+    );
     await expect(agenticTab).toBeVisible();
 
     // Click on AgenticStudio tab
     await agenticTab.click();
     await page.waitForTimeout(1000);
 
-    // Check if AgenticStudio content loads
-    const agenticHeader = page.locator('h1:has-text("AgenticStudio")');
+    // Check if Agentic/OSINT Studio content loads
+    const agenticHeader = page.locator(
+      'h1:has-text("OSINT Studio"), h1:has-text("AgenticStudio")'
+    );
     await expect(agenticHeader).toBeVisible();
 
-    // Check if tabs exist
-    await expect(page.locator('button:has-text("Dashboard")')).toBeVisible();
+    // Check if tabs exist (disambiguate duplicates)
     await expect(
-      page.locator('button:has-text("OSINT Sources")')
+      page.getByRole("button", { name: "Dashboard" }).first()
     ).toBeVisible();
-    await expect(page.locator('button:has-text("Tools")')).toBeVisible();
-    await expect(page.locator('button:has-text("Agent Runs")')).toBeVisible();
-    await expect(page.locator('button:has-text("AI Models")')).toBeVisible();
+    await expect(
+      page.getByRole("button", { name: "OSINT Sources" }).first()
+    ).toBeVisible();
+    await expect(
+      page.getByRole("button", { name: "Tools" }).first()
+    ).toBeVisible();
+    await expect(
+      page.getByRole("button", { name: "Agent Runs" }).first()
+    ).toBeVisible();
+    await expect(
+      page.getByRole("button", { name: "AI Models" }).first()
+    ).toBeVisible();
   });
 
   test("Dashboard shows system status", async ({ page }) => {
     await page.goto("http://localhost:5173");
     await page.waitForLoadState("domcontentloaded");
 
-    // Navigate to AgenticStudio
-    await page.locator('button:has-text("AgenticStudio")').click();
+    // Navigate to Agentic/OSINT Studio
+    await page
+      .locator(
+        'button:has-text("OSINT Studio"), button:has-text("AgenticStudio")'
+      )
+      .click();
     await page.waitForTimeout(1000);
 
-    // Check system status section
-    await expect(page.locator('h2:has-text("System Status")')).toBeVisible();
+    // Ensure Dashboard tab is active
+    await page.getByRole("button", { name: "Dashboard" }).first().click();
 
-    // Check for OSINT Scraper status
-    await expect(page.locator("text=OSINT Scraper")).toBeVisible();
-
-    // Check for Ollama status
-    await expect(page.locator("text=Ollama")).toBeVisible();
-
-    // Check for Agentic Tools count
-    await expect(page.locator("text=Agentic Tools")).toBeVisible();
+    // Check dashboard tiles that exist in UI
+    await expect(
+      page.locator('h2:has-text("OSINT Scraper Status")')
+    ).toBeVisible();
+    await expect(page.locator('h2:has-text("Ollama Status")')).toBeVisible();
+    await expect(
+      page.locator('h2:has-text("Pending Approvals")')
+    ).toBeVisible();
   });
 
   test("OSINT Sources tab shows sources", async ({ page }) => {
     await page.goto("http://localhost:5173");
     await page.waitForLoadState("domcontentloaded");
 
-    // Navigate to AgenticStudio
-    await page.locator('button:has-text("AgenticStudio")').click();
+    // Navigate to Agentic/OSINT Studio
+    await page
+      .locator(
+        'button:has-text("OSINT Studio"), button:has-text("AgenticStudio")'
+      )
+      .click();
     await page.waitForTimeout(1000);
 
     // Click OSINT Sources tab
@@ -88,8 +108,10 @@ test.describe("AgenticStudio UI Tests", () => {
     const toolsData = await tools.json();
     expect(toolsData.success).toBe(true);
 
-    // Test agentic runs
-    const runs = await request.get("http://localhost:3001/api/agentic/runs");
+    // Test orchestrator runs (namespace updated)
+    const runs = await request.get(
+      "http://localhost:3001/api/orchestrator/runs"
+    );
     expect(runs.ok()).toBeTruthy();
     const runsData = await runs.json();
     expect(runsData.success).toBe(true);
@@ -107,8 +129,12 @@ test.describe("AgenticStudio UI Tests", () => {
     await page.goto("http://localhost:5173");
     await page.waitForLoadState("domcontentloaded");
 
-    // Navigate to AgenticStudio
-    await page.locator('button:has-text("AgenticStudio")').click();
+    // Navigate to Agentic/OSINT Studio
+    await page
+      .locator(
+        'button:has-text("OSINT Studio"), button:has-text("AgenticStudio")'
+      )
+      .click();
     await page.waitForTimeout(1000);
 
     // Check if create run section exists

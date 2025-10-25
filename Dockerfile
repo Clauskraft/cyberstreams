@@ -38,8 +38,9 @@ COPY lib ./lib
 # Copy data directory
 COPY data ./data
 
-# Copy public assets if any (optional)
-COPY public ./public || true
+# Copy public assets if present
+RUN mkdir -p ./public
+COPY public/ ./public/
 
 # Expose port (Railway sets PORT env var)
 EXPOSE 3001
@@ -48,5 +49,6 @@ EXPOSE 3001
 HEALTHCHECK --interval=30s --timeout=5s --start-period=20s --retries=3 \
   CMD node -e "require('http').get('http://localhost:' + (process.env.PORT || 3001) + '/api/health', (r) => {if (r.statusCode !== 200) throw new Error('status ' + r.statusCode)})"
 
-# Start the server
+# Start the server with production env
+ENV NODE_ENV=production
 CMD ["node", "server.js"]

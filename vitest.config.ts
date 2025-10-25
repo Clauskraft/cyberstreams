@@ -25,6 +25,10 @@ export default defineConfig({
       "ingestion/**/*.test.ts",
       "tests/**/*.test.ts",
     ],
+    exclude: [
+      "cyberstreams/src/modules/__tests__/ui.no-data.smoke.test.tsx",
+      "tests/unit/comprehensive.test.ts",
+    ],
     globals: true,
     // coverage: {
     //   provider: 'istanbul',

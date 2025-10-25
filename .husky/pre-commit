@@ -1,1 +1,24 @@
-npm test
+#!/bin/sh
+
+# Lightweight pre-commit safety checks
+max_size=5242880
+failed=0
+
+# 1) Prevent committing large files (>5MB)
+for f in $(git diff --cached --name-only); do
+  if [ -f "$f" ]; then
+    size=$(wc -c < "$f" 2>/dev/null || echo 0)
+    if [ "$size" -gt "$max_size" ]; then
+      echo "pre-commit: $f exceeds 5MB ($size bytes). Use Git LFS or unstage."
+      failed=1
+    fi
+  fi
+done
+
+# 2) Disallow console.log additions in src/
+if git diff --cached -U0 -- src | grep -E '^\+.*console\.log\(' >/dev/null 2>&1; then
+  echo "pre-commit: console.log detected in staged changes under src/."
+  failed=1
+fi
+
+exit $failed

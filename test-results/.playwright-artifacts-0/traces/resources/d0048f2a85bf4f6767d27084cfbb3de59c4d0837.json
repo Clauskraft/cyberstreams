@@ -1,0 +1,1 @@
+{"success":true,"data":{"reachable":true,"results":[{"name":"nomic-embed-text:latest","ok":true},{"name":"llama3.1:8b","ok":true},{"name":"llama3.1:latest","ok":true},{"name":"dolphin-llama3:8b","ok":true}]}}

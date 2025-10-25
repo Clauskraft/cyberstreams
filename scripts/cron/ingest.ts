@@ -1,36 +1,36 @@
-import 'dotenv/config'
-import Parser from 'rss-parser'
-import { randomUUID } from 'crypto'
+import "dotenv/config";
+import Parser from "rss-parser";
+import { randomUUID } from "crypto";
 
-import logger from '../../lib/logger.js'
-import createMispClient from '../../lib/mispClient.js'
-import createOpenCtiClient from '../../lib/openCtiClient.js'
-import createVectorClient from '../../lib/vectorClient.js'
+import logger from "../../lib/logger.js";
+import createMispClient from "../../lib/mispClient.js";
+import createOpenCtiClient from "../../lib/openCtiClient.js";
+import createVectorClient from "../../lib/vectorClient.js";
 import {
   ensureSourcesTable,
   saveAuthorizedSources,
-  getAuthorizedSources
-} from '../../lib/authorizedSourceRepository.js'
-import { withClient, closePool } from '../../lib/postgres.js'
-import { AUTHORIZED_SOURCES } from '../../src/services/AuthorizedSources.ts'
+  getAuthorizedSources,
+} from "../../lib/authorizedSourceRepository.js";
+import { withClient, closePool } from "../../lib/postgres.js";
+import { AUTHORIZED_SOURCES } from "../../src/services/AuthorizedSources.ts";
 
-const parser = new Parser()
-const mispClient = createMispClient()
-const openCtiClient = createOpenCtiClient()
-const vectorClient = createVectorClient()
+const parser = new Parser();
+const mispClient = createMispClient();
+const openCtiClient = createOpenCtiClient();
+const vectorClient = createVectorClient();
 
-const VECTOR_COLLECTION = 'cyberstreams-intel'
-const VECTOR_SIZE = 4
-const SHOULD_SEED_SOURCES = process.env.AUTO_SEED_SOURCES !== 'false'
+const VECTOR_COLLECTION = "cyberstreams-intel";
+const VECTOR_SIZE = 4;
+const SHOULD_SEED_SOURCES = process.env.AUTO_SEED_SOURCES !== "false";
 
 interface NormalisedItem {
-  id: string
-  title: string
-  link: string
-  summary?: string
-  publishedAt?: string
-  sourceId: string
-  sourceName: string
+  id: string;
+  title: string;
+  link: string;
+  summary?: string;
+  publishedAt?: string;
+  sourceId: string;
+  sourceName: string;
 }
 
 async function ensureIngestionTables() {
@@ -46,7 +46,7 @@ async function ensureIngestionTables() {
       vector_upserted INTEGER DEFAULT 0,
       error TEXT
     );
-  `
+  `;
 
   const itemsSql = `
     CREATE TABLE IF NOT EXISTS ingestion_observables (
@@ -60,77 +60,90 @@ async function ensureIngestionTables() {
       misp_attribute_uuid TEXT,
       created_at TIMESTAMPTZ DEFAULT NOW()
     );
-  `
+  `;
 
   await withClient(async (client) => {
     // Skip SQL execution for fallback database
     if (client.query) {
-      await client.query(ingestionSql)
-      await client.query(itemsSql)
+      await client.query(ingestionSql);
+      await client.query(itemsSql);
     }
-  })
+  });
 }
 
 function computeVector(text: string): number[] {
-  const normalized = (text || '').toLowerCase()
-  const vowels = (normalized.match(/[aeiou]/g) || []).length
-  const consonants = (normalized.match(/[bcdfghjklmnpqrstvwxyz]/g) || []).length
-  const digits = (normalized.match(/\d/g) || []).length
-  const length = Math.min(normalized.length / 100, 1)
-  return [vowels / 50, consonants / 50, digits / 10, length]
+  const normalized = (text || "").toLowerCase();
+  const vowels = (normalized.match(/[aeiou]/g) || []).length;
+  const consonants = (normalized.match(/[bcdfghjklmnpqrstvwxyz]/g) || [])
+    .length;
+  const digits = (normalized.match(/\d/g) || []).length;
+  const length = Math.min(normalized.length / 100, 1);
+  return [vowels / 50, consonants / 50, digits / 10, length];
 }
 
 function buildStixIndicator(item: NormalisedItem, recordId: string) {
-  const created = item.publishedAt || new Date().toISOString()
-  const stixId = `indicator--${randomUUID()}`
+  const created = item.publishedAt || new Date().toISOString();
+  const stixId = `indicator--${randomUUID()}`;
   return {
     stixId,
     recordId,
     indicator: {
-      type: 'indicator',
-      spec_version: '2.1',
+      type: "indicator",
+      spec_version: "2.1",
       id: stixId,
       created,
       modified: created,
       name: item.title,
       description: item.summary || item.title,
-      pattern_type: 'stix',
+      pattern_type: "stix",
       pattern: `[url:value = '${item.link}']`,
       valid_from: created,
-      labels: ['threat-report', item.sourceName.toLowerCase()]
-    }
-  }
+      labels: ["threat-report", item.sourceName.toLowerCase()],
+    },
+  };
 }
 
-async function collectRssItems(sources: Awaited<ReturnType<typeof getAuthorizedSources>>) {
-  const feedSources = sources.filter((source) => source.rssUrl)
-  const items: NormalisedItem[] = []
+async function collectRssItems(
+  sources: Awaited<ReturnType<typeof getAuthorizedSources>>
+) {
+  const dpaOnly = process.env.DPA_ONLY === "true";
+  const feedSources = sources.filter((source) => {
+    const hasRss = (source as any).rssUrl;
+    if (!hasRss) return false;
+    if (!dpaOnly) return true;
+    const type = (source as any).sourceType || (source as any).source_type;
+    return String(type || "").toLowerCase() === "dpa";
+  });
+  const items: NormalisedItem[] = [];
 
   for (const source of feedSources) {
     try {
-      const feed = await parser.parseURL(source.rssUrl as string)
+      const feed = await parser.parseURL(source.rssUrl as string);
       for (const entry of feed.items) {
-        if (!entry.link) continue
+        if (!entry.link) continue;
         items.push({
           id: randomUUID(),
-          title: entry.title || 'Untitled entry',
+          title: entry.title || "Untitled entry",
           link: entry.link,
           summary: entry.contentSnippet || entry.content,
           publishedAt: entry.isoDate || entry.pubDate,
           sourceId: source.id,
-          sourceName: source.name
-        })
+          sourceName: source.name,
+        });
       }
     } catch (error) {
-      logger.error({ err: error, source: source.id }, 'Failed to parse RSS feed')
+      logger.error(
+        { err: error, source: source.id },
+        "Failed to parse RSS feed"
+      );
     }
   }
 
-  return items
+  return items;
 }
 
 async function persistObservables(items: NormalisedItem[]) {
-  const inserted: { id: string; item: NormalisedItem }[] = []
+  const inserted: { id: string; item: NormalisedItem }[] = [];
   await withClient(async (client) => {
     // Skip database operations for fallback database
     if (client.query) {
@@ -148,105 +161,126 @@ async function persistObservables(items: NormalisedItem[]) {
             item.title,
             item.summary,
             item.link,
-            item.publishedAt ? new Date(item.publishedAt) : null
-          ]
-        }
+            item.publishedAt ? new Date(item.publishedAt) : null,
+          ],
+        };
 
-        const result = await client.query(query)
+        const result = await client.query(query);
         if (result.rowCount > 0) {
-          inserted.push({ id: result.rows[0].id, item })
+          inserted.push({ id: result.rows[0].id, item });
         }
       }
     } else {
       // For fallback database, just simulate successful insertion
       for (const item of items) {
-        inserted.push({ id: item.id, item })
+        inserted.push({ id: item.id, item });
       }
     }
-  })
+  });
 
-  return inserted
+  return inserted;
 }
 
 async function run() {
-  const runId = randomUUID()
-  await ensureSourcesTable()
-  await ensureIngestionTables()
+  const runId = randomUUID();
+  await ensureSourcesTable();
+  await ensureIngestionTables();
   if (SHOULD_SEED_SOURCES) {
-    await saveAuthorizedSources(AUTHORIZED_SOURCES)
+    await saveAuthorizedSources(AUTHORIZED_SOURCES);
   }
 
-  const authorizedSources = await getAuthorizedSources()
-  logger.info({ sources: authorizedSources.length }, 'Starting ingestion pipeline')
+  const authorizedSources = await getAuthorizedSources();
+  logger.info(
+    {
+      sources: authorizedSources.length,
+      dpaOnly: process.env.DPA_ONLY === "true",
+    },
+    "Starting ingestion pipeline"
+  );
 
   await withClient(async (client) => {
     // Skip database operations for fallback database
     if (client.query) {
       await client.query(
-        'INSERT INTO ingestion_runs (id, status, started_at) VALUES ($1, $2, NOW())',
-        [runId, 'running']
-      )
+        "INSERT INTO ingestion_runs (id, status, started_at) VALUES ($1, $2, NOW())",
+        [runId, "running"]
+      );
     }
-  })
+  });
 
   try {
-    const rssItems = await collectRssItems(authorizedSources)
-    const insertedItems = await persistObservables(rssItems)
+    const rssItems = await collectRssItems(authorizedSources);
+    const insertedItems = await persistObservables(rssItems);
 
-    const stixIndicators = insertedItems.map(({ id, item }) => buildStixIndicator(item, id))
+    const stixIndicators = insertedItems.map(({ id, item }) =>
+      buildStixIndicator(item, id)
+    );
     const stixBundle = {
-      type: 'bundle',
+      type: "bundle",
       id: `bundle--${randomUUID()}`,
-      spec_version: '2.1',
-      objects: stixIndicators.map(({ indicator }) => indicator)
-    }
+      spec_version: "2.1",
+      objects: stixIndicators.map(({ indicator }) => indicator),
+    };
 
-    let mispCreated = 0
+    let mispCreated = 0;
     if (mispClient.isConfigured) {
       for (const indicator of stixIndicators) {
         try {
           await mispClient.pushObservable({
             uuid: indicator.stixId,
-            value: indicator.indicator.pattern.match(/'(.+)'/)?.[1] || indicator.indicator.name,
-            type: 'url',
+            value:
+              indicator.indicator.pattern.match(/'(.+)'/)?.[1] ||
+              indicator.indicator.name,
+            type: "url",
             comment: indicator.indicator.description,
-            tags: ['stix2', 'cyberstreams:auto']
-          })
-          mispCreated += 1
+            tags: ["stix2", "cyberstreams:auto"],
+          });
+          mispCreated += 1;
         } catch (error) {
-          logger.error({ err: error, indicator: indicator.stixId }, 'Failed to push indicator to MISP')
+          logger.error(
+            { err: error, indicator: indicator.stixId },
+            "Failed to push indicator to MISP"
+          );
         }
       }
     }
 
-    let openCtiCreated = 0
+    let openCtiCreated = 0;
     if (openCtiClient.isConfigured && stixIndicators.length > 0) {
       try {
-        await openCtiClient.publishBundle(stixBundle)
-        openCtiCreated = stixIndicators.length
+        await openCtiClient.publishBundle(stixBundle);
+        openCtiCreated = stixIndicators.length;
       } catch (error) {
-        logger.error({ err: error }, 'Failed to publish STIX bundle to OpenCTI')
+        logger.error(
+          { err: error },
+          "Failed to publish STIX bundle to OpenCTI"
+        );
       }
     }
 
-    let vectorUpserted = 0
+    let vectorUpserted = 0;
     if (vectorClient.isConfigured && stixIndicators.length > 0) {
       try {
-        await vectorClient.ensureCollection(VECTOR_COLLECTION, VECTOR_SIZE)
-        const points = stixIndicators.map(({ indicator, stixId, recordId }) => ({
-          id: recordId,
-          vector: computeVector(`${indicator.name} ${indicator.description}`),
-          payload: {
-            title: indicator.name,
-            description: indicator.description,
-            source: 'rss',
-            url: indicator.pattern.match(/'(.+)'/)?.[1] || ''
-          }
-        }))
-        await vectorClient.upsert(VECTOR_COLLECTION, points)
-        vectorUpserted = points.length
+        await vectorClient.ensureCollection(VECTOR_COLLECTION, VECTOR_SIZE);
+        const points = stixIndicators.map(
+          ({ indicator, stixId, recordId }) => ({
+            id: recordId,
+            vector: computeVector(`${indicator.name} ${indicator.description}`),
+            payload: {
+              title: indicator.name,
+              description: indicator.description,
+              source: "rss",
+              url: indicator.pattern.match(/'(.+)'/)?.[1] || "",
+            },
+          })
+        );
+        await vectorClient.upsert(VECTOR_COLLECTION, points);
+        vectorUpserted = points.length;
       } catch (error) {
-        logger.error({ err: error }, 'Failed to upsert items into vector database')
+        logger.error(
+          { err: error },
+          "Failed to upsert items into vector database"
+        );
       }
     }
 
@@ -257,7 +291,7 @@ async function run() {
           await client.query(
             `UPDATE ingestion_observables SET stix_id = $2 WHERE id = $1`,
             [indicator.recordId, indicator.stixId]
-          )
+          );
         }
       }
 
@@ -272,10 +306,17 @@ async function run() {
                  opencti_created = $5,
                  vector_upserted = $6
            WHERE id = $1`,
-          [runId, 'completed', rssItems.length, mispCreated, openCtiCreated, vectorUpserted]
-        )
+          [
+            runId,
+            "completed",
+            rssItems.length,
+            mispCreated,
+            openCtiCreated,
+            vectorUpserted,
+          ]
+        );
       }
-    })
+    });
 
     logger.info(
       {
@@ -284,30 +325,30 @@ async function run() {
         inserted: insertedItems.length,
         mispCreated,
         openCtiCreated,
-        vectorUpserted
+        vectorUpserted,
       },
-      'Ingestion pipeline completed'
-    )
+      "Ingestion pipeline completed"
+    );
   } catch (error) {
-    logger.error({ err: error, runId }, 'Ingestion pipeline failed')
+    logger.error({ err: error, runId }, "Ingestion pipeline failed");
     await withClient(async (client) => {
       // Skip database operations for fallback database
       if (client.query) {
         await client.query(
           `UPDATE ingestion_runs SET status = $2, finished_at = NOW(), error = $3 WHERE id = $1`,
-          [runId, 'failed', error.message]
-        )
+          [runId, "failed", error.message]
+        );
       }
-    })
-    process.exitCode = 1
+    });
+    process.exitCode = 1;
   }
 }
 
 run()
   .catch((error) => {
-    logger.error({ err: error }, 'Unhandled ingestion error')
-    process.exitCode = 1
+    logger.error({ err: error }, "Unhandled ingestion error");
+    process.exitCode = 1;
   })
   .finally(async () => {
-    await closePool()
-  })
+    await closePool();
+  });

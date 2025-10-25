@@ -1,10 +1,25 @@
 # Cyberstreams Changelog
 
+## Version 2.0.0 - 2025-10-24
+
+### Highlights
+
+- Indlæst 80+ verificerede kilder (EU/CERT/PSIRT/parlament) via startkit-loader til admin API
+- RAG-config kan nu importere monitoring sources (82 kilder importeret i denne session)
+- Rate limiting gjort konfigurerbar via miljøvariabler for bulk-indlæsning
+- Versionsbump til 2.0.0 (package.json og README badge)
+
+### Opsætning
+
+- Kør `./scripts/load-startkit.sh` for at indlæse kilder og nøgleord
+- Kør `POST /api/admin/rag-config/import-sources` for at populere RAG-kilder
+
 ## Version 1.2.0 - 2025-10-13
 
 ### Ny Funktionalitet: Consolidated Intelligence Platform
 
 #### ConsolidatedIntelligence Module (src/modules/ConsolidatedIntelligence.tsx)
+
 - **Open Source Intelligence Aggregation**: Unified platform for hybrid threat RSS aggregation
 - **Multi-Source Integration**: RSS feeds, OSINT, Social Intelligence, Technical feeds
 - **18 RSS Feed Sources**: FE-DDIS, CERT-DK, NATO, EU, CISA, ENISA, Europol, Reuters, Financial Times, m.fl.
@@ -34,28 +49,33 @@
 - **Export Functionality**: Generate comprehensive threat intelligence reports
 
 ### Technical Stack Additions
+
 - **OpenSearch/Elasticsearch Ready**: Index pattern `hybrid-threat-findings-*`
 - **Grafana/Kibana Compatible**: Dashboard panels with visualization orchestration
 - **MISP/OpenCTI Integration Ready**: Hooks for OSINT tool enrichment
 - **Logstash/Fluentd Pipeline**: Data ingestion and normalization architecture
 
 ### Architecture
+
 - Lazy loading for optimal performance (18.37 KB chunk, 4.86 KB gzipped)
 - Modular design maintaining full backward compatibility
 - No impact on existing dashboard functionality
 - Open Source components only
 
 ### Integration
+
 - New navigation tab: "Consolidated Intel" with Network icon
 - Seamless integration with existing modules
 - Shared design system and UI components
 
 ### Performance
+
 - Build time: 4.74s
 - Total bundle increase: +18.37 KB (optimized with lazy loading)
 - Module count: 1267 (1 new module)
 
 ### Future Enhancements (Planned)
+
 - Backend RSS feed aggregation service
 - Real-time OpenSearch/Elasticsearch integration
 - MISP threat intelligence platform integration
@@ -71,6 +91,7 @@
 ### Nye Moduler Implementeret
 
 #### ThreatsModule (src/modules/ThreatsModule.tsx)
+
 - Komplet trussel-management interface
 - 10 detaljerede mock trusler med realistisk data
 - Søgefunktionalitet på tværs af navn og beskrivelse
@@ -82,6 +103,7 @@
 - Responsivt design med Tailwind CSS
 
 #### ActivityModule (src/modules/ActivityModule.tsx)
+
 - Komplet aktivitets-logging interface
 - 20 detaljerede aktivitetslog entries
 - Type filtering (scan, alert, threat, system, user, data)
@@ -92,6 +114,7 @@
 - Responsivt grid layout
 
 ### ErrorBoundary Komponent (src/components/ErrorBoundary.tsx)
+
 - Professional React error boundary implementation
 - Catch og display af JavaScript errors i component tree
 - Fallback UI med error details og stack trace
@@ -103,6 +126,7 @@
 ### Performance Optimizationer
 
 #### Vite Build Configuration (vite.config.ts)
+
 - Terser minification aktiveret
 - Console.log fjernet i production (drop_console: true)
 - Debugger statements fjernet (drop_debugger: true)
@@ -113,6 +137,7 @@
 - Chunk size warning limit sat til 1000KB
 
 #### React Lazy Loading (App.tsx)
+
 - Alle moduler lazy loaded med React.lazy()
 - Suspense wrapper med loading spinner
 - On-demand module loading
@@ -120,6 +145,7 @@
 - Forbedret first contentful paint
 
 #### Build Resultater
+
 - 1266 moduler transformeret succesfuldt
 - Separate chunks per modul (DagensPuls: 1.50 KB, HomeContent: 2.48 KB, ActivityModule: 9.49 KB, ThreatsModule: 10.12 KB)
 - Icons separeret til egen chunk (3.62 KB)
@@ -130,24 +156,28 @@
 ### TypeScript Configuration
 
 #### tsconfig.json Updates
+
 - Tilføjet path aliases:
-  - @theme/* → ./src/theme/*
-  - @tokens/* → ./src/tokens/*
-  - @data/* → ./src/data/*
+  - @theme/_ → ./src/theme/_
+  - @tokens/_ → ./src/tokens/_
+  - @data/_ → ./src/data/_
 - noUnusedLocals og noUnusedParameters deaktiveret for build compatibility
 - tsconfig.node.json oprettet for Vite configuration
 
 #### vite.config.ts Path Aliases
+
 - Synkroniseret path aliases med TypeScript config
 - Resolver aliases for @theme, @tokens, @data
 
 ### Code Cleanup
+
 - Fjernet App.js (gammel transpiled version)
 - Fjernet ubrugte imports i ActivityModule (Shield, FileText)
 - Fjernet getTypeIcon funktion (ikke brugt)
 - Opdateret lucide-react imports til kun nødvendige ikoner
 
 ### Integration
+
 - App.tsx opdateret til at bruge alle nye moduler
 - ThreatsModule integreret i 'threats' tab
 - ActivityModule integreret i 'activity' tab
@@ -155,12 +185,14 @@
 - ErrorBoundary wrapper omkring hele app
 
 ### Deployment Status
+
 - Production build succesfuld ✅
 - Optimeret bundle klar til deployment ✅
 - cyberstreams-deploy-updated.zip oprettet (59 KB) ✅
 - Klar til Cloudflare Pages upload
 
 ### Technical Stack
+
 - React 18 med TypeScript
 - Vite 4.5.14 build tool
 - Tailwind CSS for styling
@@ -169,6 +201,7 @@
 - Lazy loading med React.Suspense
 
 ### Næste Skridt
+
 1. Upload cyberstreams-deploy-updated.zip til Cloudflare Pages
 2. Test alle nye moduler i production
 3. Verificer lazy loading fungerer korrekt
@@ -176,9 +209,11 @@
 5. Overvej backend integration for real data
 
 ### Breaking Changes
+
 Ingen breaking changes. Alle eksisterende features bevaret.
 
 ### Migration Notes
+
 - Deployment fil ændret fra cyberstreams-deploy.zip til cyberstreams-deploy-updated.zip
 - Bundle size reduceret betydeligt, kan påvirke cache strategies
 - Lazy loading kan give kortvarigt loading state ved første module access

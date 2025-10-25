@@ -1,62 +1,69 @@
-import { Component, ErrorInfo, ReactNode } from 'react'
-import { AlertTriangle, RefreshCw } from 'lucide-react'
+import { Component, ErrorInfo, ReactNode } from "react";
+import { AlertTriangle, RefreshCw } from "lucide-react";
 
 interface Props {
-  children: ReactNode
+  children: ReactNode;
 }
 
 interface State {
-  hasError: boolean
-  error: Error | null
-  errorInfo: ErrorInfo | null
+  hasError: boolean;
+  error: Error | null;
+  errorInfo: ErrorInfo | null;
 }
 
 class ErrorBoundary extends Component<Props, State> {
   constructor(props: Props) {
-    super(props)
+    super(props);
     this.state = {
       hasError: false,
       error: null,
-      errorInfo: null
-    }
+      errorInfo: null,
+    };
   }
 
   static getDerivedStateFromError(error: Error): State {
     return {
       hasError: true,
       error,
-      errorInfo: null
-    }
+      errorInfo: null,
+    };
   }
 
   componentDidCatch(error: Error, errorInfo: ErrorInfo) {
-    console.error('ErrorBoundary caught error:', error, errorInfo)
+    console.error("ErrorBoundary caught error:", error, errorInfo);
     this.setState({
       error,
-      errorInfo
-    })
+      errorInfo,
+    });
   }
 
   handleReset = () => {
     this.setState({
       hasError: false,
       error: null,
-      errorInfo: null
-    })
-  }
+      errorInfo: null,
+    });
+  };
 
   render() {
     if (this.state.hasError) {
       return (
-        <div className="min-h-screen bg-gradient-to-b from-cyber-dark to-cyber-darker flex items-center justify-center p-4">
+        <div
+          className="min-h-screen bg-gradient-to-b from-cyber-dark to-cyber-darker flex items-center justify-center p-4"
+          data-testid="error-boundary"
+        >
           <div className="max-w-2xl w-full bg-gray-900 rounded-lg border border-red-500/30 p-8">
             <div className="flex items-center gap-4 mb-6">
               <div className="w-12 h-12 rounded-lg bg-red-500/10 border border-red-500/30 flex items-center justify-center">
                 <AlertTriangle className="w-6 h-6 text-red-400" />
               </div>
               <div>
-                <h1 className="text-2xl font-bold text-white">Something went wrong</h1>
-                <p className="text-sm text-gray-400">The application encountered an unexpected error</p>
+                <h1 className="text-2xl font-bold text-white">
+                  Something went wrong
+                </h1>
+                <p className="text-sm text-gray-400">
+                  The application encountered an unexpected error
+                </p>
               </div>
             </div>
 
@@ -89,7 +96,7 @@ class ErrorBoundary extends Component<Props, State> {
                 Try Again
               </button>
               <button
-                onClick={() => window.location.href = '/'}
+                onClick={() => (window.location.href = "/")}
                 className="px-6 py-3 bg-gray-800 hover:bg-gray-700 text-white rounded-lg font-medium transition-all"
               >
                 Go to Dashboard
@@ -98,16 +105,17 @@ class ErrorBoundary extends Component<Props, State> {
 
             <div className="mt-8 pt-6 border-t border-gray-800">
               <p className="text-xs text-gray-500">
-                If this error persists, please contact support with the error details above.
+                If this error persists, please contact support with the error
+                details above.
               </p>
             </div>
           </div>
         </div>
-      )
+      );
     }
 
-    return this.props.children
+    return this.props.children;
   }
 }
 
-export default ErrorBoundary
+export default ErrorBoundary;

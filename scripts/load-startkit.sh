@@ -81,18 +81,15 @@ load_sources() {
         
         echo -e "${YELLOW}  📍 Loading: $name ($domain)${NC}"
         
-        # Create source payload
+        # Map to admin API payload
         local payload=$(echo "$decoded" | jq -c '{
-            name: .name,
-            domain: .domain,
+            sourceType: (if .rssUrl then "rss" else "website" end),
             url: (if .rssUrl then .rssUrl else ("https://" + .domain) end),
-            type: "osint",
-            credibilityScore: .credibilityScore,
-            priority: .priority
+            scanFrequency: (.update_frequency // 3600)
         }')
-        
-        # Add source via API
-        if curl -s -X POST "$API_BASE/api/config/sources" \
+
+        # Add source via Admin API (in-memory store)
+        if curl -s -X POST "$API_BASE/api/admin/sources" \
             -H "Content-Type: application/json" \
             -d "$payload" > /dev/null 2>&1; then
             echo -e "${GREEN}    ✅ Added successfully${NC}"
@@ -212,7 +209,7 @@ display_status() {
         echo -e "${YELLOW}Intel Scraper Status: $status${NC}"
         
         # Get sources count
-        local sources_count=$(curl -s "$API_BASE/api/config/sources" 2>/dev/null | jq -r '.data | length // 0')
+        local sources_count=$(curl -s "$API_BASE/api/admin/sources" 2>/dev/null | jq -r '.data | length // 0')
         echo -e "${YELLOW}Sources loaded: $sources_count${NC}"
     fi
     

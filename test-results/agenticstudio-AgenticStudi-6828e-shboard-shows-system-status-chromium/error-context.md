@@ -1,0 +1,86 @@
+# Page snapshot
+
+```yaml
+- generic [ref=e3]:
+  - banner [ref=e4]:
+    - generic [ref=e6]:
+      - generic [ref=e7]:
+        - img [ref=e8]
+        - generic [ref=e10]:
+          - heading "CYBERSTREAMS" [level=1] [ref=e11]
+          - paragraph [ref=e12]: Dark Web Intelligence Platform
+      - generic [ref=e16]: LIVE
+  - navigation [ref=e19]:
+    - button "Dashboard" [active] [ref=e20] [cursor=pointer]:
+      - img [ref=e21]
+      - generic [ref=e23]: Dashboard
+    - button "AI Agent" [ref=e24] [cursor=pointer]:
+      - img [ref=e25]
+      - generic [ref=e28]: AI Agent
+    - button "OSINT Studio" [ref=e29] [cursor=pointer]:
+      - img [ref=e30]
+      - generic [ref=e33]: OSINT Studio
+    - button "Threats" [ref=e34] [cursor=pointer]:
+      - img [ref=e35]
+      - generic [ref=e37]: Threats
+    - button "Signal Stream" [ref=e38] [cursor=pointer]:
+      - img [ref=e39]
+      - generic [ref=e45]: Signal Stream
+    - button "Activity" [ref=e46] [cursor=pointer]:
+      - img [ref=e47]
+      - generic [ref=e50]: Activity
+    - button "Intelligence" [ref=e51] [cursor=pointer]:
+      - img [ref=e52]
+      - generic [ref=e57]: Intelligence
+    - button "Admin" [ref=e58] [cursor=pointer]:
+      - img [ref=e59]
+      - generic [ref=e63]: Admin
+  - main [ref=e64]:
+    - generic [ref=e65]:
+      - generic [ref=e66]:
+        - generic [ref=e67]:
+          - generic [ref=e68]:
+            - img [ref=e69]
+            - generic [ref=e71]: +12%
+          - paragraph [ref=e72]: "0"
+          - paragraph [ref=e73]: Intelligence Reports
+        - generic [ref=e74]:
+          - generic [ref=e75]:
+            - img [ref=e76]
+            - generic [ref=e79]: +5%
+          - paragraph [ref=e80]: "21"
+          - paragraph [ref=e81]: Monitored Sources
+        - generic [ref=e82]:
+          - generic [ref=e83]:
+            - img [ref=e84]
+            - generic [ref=e86]: +8%
+          - paragraph [ref=e87]: "0"
+          - paragraph [ref=e88]: Knowledge Documents
+        - generic [ref=e89]:
+          - generic [ref=e90]:
+            - img [ref=e91]
+            - generic [ref=e94]: +2%
+          - paragraph [ref=e95]: 0%
+          - paragraph [ref=e96]: Success Rate
+      - generic [ref=e97]:
+        - generic [ref=e98]:
+          - heading "Threat Categories" [level=3] [ref=e99]
+          - generic [ref=e100]:
+            - generic [ref=e102]:
+              - generic [ref=e103]: Category 1
+              - generic [ref=e104]: "0"
+            - generic [ref=e107]:
+              - generic [ref=e108]: Category 2
+              - generic [ref=e109]: "0"
+            - generic [ref=e112]:
+              - generic [ref=e113]: Category 3
+              - generic [ref=e114]: "0"
+            - generic [ref=e117]:
+              - generic [ref=e118]: Category 4
+              - generic [ref=e119]: "0"
+        - generic [ref=e121]:
+          - heading "Recent Activity" [level=3] [ref=e122]
+          - generic [ref=e125]:
+            - paragraph [ref=e126]: Monitoring 21 intelligence sources
+            - paragraph [ref=e127]: Active
+```
