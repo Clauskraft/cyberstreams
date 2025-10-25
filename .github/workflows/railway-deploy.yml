@@ -22,7 +22,13 @@ jobs:
         env:
           RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
         run: |
-          echo "Checking Railway services..."
-          railway service list || echo "Could not list services"
-          echo "Attempting deployment..."
-          railway up --service web --detach || railway up --detach || railway up
+          echo "Checking Railway project status..."
+          railway status || true
+          echo "---"
+          echo "Attempting deployment with common service names..."
+          railway up --service cyberstreams --detach || \
+          railway up --service app --detach || \
+          railway up --service backend --detach || \
+          railway up --service api --detach || \
+          railway up --service main --detach || \
+          railway up --detach
