@@ -18,8 +18,15 @@ jobs:
       - name: Install Railway CLI
         run: npm i -g @railway/cli@latest
 
+      - name: Link Railway Project
+        if: ${{ secrets.RAILWAY_PROJECT_ID != '' }}
+        env:
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+        run: |
+          railway link ${{ secrets.RAILWAY_PROJECT_ID }}
+
       - name: Deploy to Railway
         env:
           RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
         run: |
-          railway up --service cyberstreams --detach || railway up --service cyberstreams
+          railway up --detach
